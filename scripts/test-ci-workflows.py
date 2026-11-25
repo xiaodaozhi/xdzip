@@ -238,6 +238,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(set(native['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'macos-15-intel', 'ubuntu-24.04'})
         self.assertIn('scripts/ci-release.ps1 -Stage Build', '\n'.join(step.get('run', '') for step in native['steps']))
         jobs = workflow['jobs']
+        self.assertEqual(native['permissions'], {'contents': 'read', 'actions': 'read'})
         verify = jobs['verify']
         self.assertEqual(verify['strategy']['matrix'], native['strategy']['matrix'])
         for job in (native, verify):
@@ -310,13 +311,41 @@ class WorkflowTests(unittest.TestCase):
             self.assertIn('!inputs.candidate', jobs[name]['if'])
         for name in ['resolve', 'native', 'verify', 'contracts', 'candidate-assembly', 'candidate-download']:
             self.assertNotIn('environment', jobs[name])
-            self.assertNotIn('permissions', jobs[name])
+            if name != 'native':
+                self.assertNotIn('permissions', jobs[name])
             self.assertNotIn('secrets.', repr(jobs[name]))
         self.assertEqual(jobs['sign']['environment'], 'release-signing')
         self.assertEqual(jobs['publish']['environment'], 'release-signing')
         stability = self.workflows['browser-stability.yml']
         self.assertEqual(set(stability['on']), {'workflow_dispatch'})
         self.assertIn('-BrowserStability', '\n'.join(step.get('run', '') for step in stability['jobs']['repeat']['steps']))
+
+    def test_candidate_network_probe_excludes_release_build_and_downstream_jobs(self):
+        workflow = self.workflows['release.yml']
+        inputs = workflow['on']['workflow_dispatch']['inputs']
+        jobs = workflow['jobs']
+        self.assertEqual(inputs['qt_network_probe']['default'], 'false')
+        self.assertEqual(inputs['dependencies']['options'], ['auto', 'cold'])
+        self.assertIn('[[ "$CANDIDATE" == true && "$RETRY_PROBE" == false ]]', jobs['resolve']['steps'][0]['run'])
+        for job in ('native', 'macos-signing-preflight', 'contracts'):
+            self.assertIn('!inputs.qt_network_probe', jobs[job]['if'])
+        self.assertIn("needs.native.result == 'success'", jobs['verify']['if'])
+        self.assertIn("needs.verify.result == 'success'", jobs['candidate-assembly']['if'])
+        probe = jobs['candidate-qt-network-probe']
+        self.assertIn('inputs.candidate && inputs.qt_network_probe', probe['if'])
+        self.assertEqual(probe['needs'], 'resolve')
+        self.assertEqual(probe['permissions'], {'contents': 'read', 'actions': 'read'})
+        self.assertNotIn('environment', probe)
+        self.assertEqual(set(probe['strategy']['matrix']['os']), {'windows-2022', 'macos-15', 'macos-15-intel'})
+        self.assertIn('macos-15-intel', probe['env']['XDZIP_MACOS_INTEL_CI'])
+        self.assertEqual([step['run'] for step in probe['steps'] if 'run' in step],
+                         ['./scripts/ci-release.ps1 -Stage QtNetwork -QtNetworkMode $env:QT_NETWORK_MODE'])
+        self.assertTrue(all(path.endswith('.json') for path in probe['steps'][-1]['with']['path'].splitlines()))
+        build = next(step for step in jobs['native']['steps'] if 'ci-release.ps1 -Stage Build' in step.get('run', ''))
+        for name in ('QT_NETWORK_MODE', 'XDZIP_RELEASE_QT_NETWORK_TOKEN'):
+            self.assertIn("inputs.candidate && runner.os != 'Linux'", build['env'][name])
+        self.assertIn('./scripts/ci-release.ps1 -Stage Build', build['run'].split('} else {')[1].splitlines()[1].strip())
+        self.assertNotIn('-QtNetworkMode', build['run'].split('} else {')[1])
 
     def test_store_msix_is_manual_and_exports_verified_package_only(self):
         workflow = self.workflows['windows-store-msix.yml']

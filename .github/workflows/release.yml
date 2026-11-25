@@ -1,4 +1,5 @@
 name: Release
+run-name: ${{ inputs.qt_network_probe && 'Release candidate Qt Network probe' || 'Release' }}
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +12,15 @@ on:
         default: false
       retry_probe:
         description: In candidate mode, interrupt the first Windows package verification to exercise resumption
+        type: boolean
+        default: false
+      dependencies:
+        description: Qt Network mode for Windows and macOS candidates
+        type: choice
+        default: auto
+        options: [auto, cold]
+      qt_network_probe:
+        description: In candidate mode, stop after preparing Qt Network on Windows and both Mac architectures
         type: boolean
         default: false
 permissions:
@@ -29,9 +39,13 @@ jobs:
         env:
           CANDIDATE: ${{ inputs.candidate }}
           RETRY_PROBE: ${{ inputs.retry_probe }}
+          QT_NETWORK_PROBE: ${{ inputs.qt_network_probe }}
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
+          if [[ "$QT_NETWORK_PROBE" == true ]]; then
+            [[ "$CANDIDATE" == true && "$RETRY_PROBE" == false ]]
+          fi
           if [[ "$CANDIDATE" == true ]]; then
             [[ -z "$RELEASE_TAG" ]]
           else
@@ -86,6 +100,7 @@ jobs:
           python3 scripts/publish-release.py --draft-only --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
 
   macos-signing-preflight:
+    if: ${{ !inputs.qt_network_probe }}
     needs: resolve
     strategy:
       fail-fast: false
@@ -105,7 +120,10 @@ jobs:
 
   native:
     needs: [resolve, draft, macos-signing-preflight]
-    if: always() && !cancelled() && needs.resolve.result == 'success' && needs.macos-signing-preflight.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
+    if: always() && !cancelled() && !inputs.qt_network_probe && needs.resolve.result == 'success' && needs.macos-signing-preflight.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
+    permissions:
+      contents: read
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -129,7 +147,15 @@ jobs:
         run: bash scripts/ci-release-snap.sh prepare
       - name: Build and package the native desktop and CLI candidate once
         shell: pwsh
-        run: ./scripts/ci-release.ps1 -Stage Build
+        env:
+          QT_NETWORK_MODE: ${{ inputs.candidate && runner.os != 'Linux' && inputs.dependencies || 'cold' }}
+          XDZIP_RELEASE_QT_NETWORK_TOKEN: ${{ inputs.candidate && runner.os != 'Linux' && inputs.dependencies == 'auto' && github.token || '' }}
+        run: |
+          if ($env:QT_NETWORK_MODE -eq 'auto') {
+            ./scripts/ci-release.ps1 -Stage Build -QtNetworkMode auto
+          } else {
+            ./scripts/ci-release.ps1 -Stage Build
+          }
       - name: Pack the stable Snap from the same Linux build
         if: runner.os == 'Linux' && needs.resolve.outputs.snap_stable == 'true'
         run: bash scripts/ci-release-snap.sh pack
@@ -166,6 +192,42 @@ jobs:
             build/desktop/Testing/Temporary/LastTest.log
             build/toolchain/qt-network-security/*/*.log
           retention-days: 30
+
+  candidate-qt-network-probe:
+    if: ${{ inputs.candidate && inputs.qt_network_probe }}
+    needs: resolve
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    env:
+      XDZIP_MACOS_INTEL_CI: ${{ matrix.os == 'macos-15-intel' && '1' || '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.revision }}
+          persist-credentials: false
+      - name: Prepare and validate the candidate Qt Network dependency
+        shell: pwsh
+        env:
+          QT_NETWORK_MODE: ${{ inputs.dependencies }}
+          XDZIP_RELEASE_QT_NETWORK_TOKEN: ${{ inputs.dependencies == 'auto' && github.token || '' }}
+        run: ./scripts/ci-release.ps1 -Stage QtNetwork -QtNetworkMode $env:QT_NETWORK_MODE
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: candidate-qt-network-${{ matrix.os }}-${{ github.run_attempt }}
+          path: |
+            build/review/prepare.json
+            build/review/ci-timings.json
+            build/review/qt-network-prepare.json
+          if-no-files-found: error
+          retention-days: 14
 
   verify:
     needs: [resolve, native]
@@ -226,6 +288,7 @@ jobs:
           retention-days: 30
 
   contracts:
+    if: ${{ !inputs.qt_network_probe }}
     needs: resolve
     runs-on: ubuntu-24.04
     timeout-minutes: 30

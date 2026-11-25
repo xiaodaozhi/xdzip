@@ -101,6 +101,7 @@ def verify_msix_identity(path, report):
 class Workflow:
     def __init__(self, args, *, system=None):
         self.args = args
+        self.qt_network_token = os.environ.pop('XDZIP_RELEASE_QT_NETWORK_TOKEN', '')
         self.preflights = []
         self.toolchain = ROOT/'build/toolchain'
         actual = PLATFORMS.get(platform.system())
@@ -269,6 +270,9 @@ class Workflow:
                       '--noarchives', '--modules', 'qtimageformats'], cwd=downloads)
 
     def prepare(self):
+        candidate_network = self.args.qt_network_mode == 'auto' or self.args.qt_network_only
+        if candidate_network and self.system not in ('windows', 'macos'):
+            raise ValueError('Candidate Qt Network preparation requires Windows or macOS')
         if self.args.install_rust:
             rustup = shutil.which('rustup', path=self.env.get('PATH', ''))
             if rustup is None:
@@ -279,7 +283,16 @@ class Workflow:
         self.doctor('prepare')
         self.prepare_tools_and_qt()
         self.script('ui-fonts.py', 'prepare')
-        self.script('prepare-qt-network.py', '--qt-prefix', self.qt)
+        if candidate_network:
+            env = self.env.copy()
+            if self.args.qt_network_mode == 'auto' and self.qt_network_token:
+                env['GITHUB_TOKEN'] = self.qt_network_token
+            self.script('ci-qt-network.py', 'prepare', '--qt-prefix', self.qt,
+                        '--output', self.output, '--mode', self.args.qt_network_mode, env=env)
+        else:
+            self.script('prepare-qt-network.py', '--qt-prefix', self.qt)
+        if self.args.qt_network_only:
+            return {'qt_network_sha256': qt_network_identity(self.qt)['network_sha256']}
         self.script('qt_image_security.py', '--qt-prefix', self.qt,
                     '--work-dir', self.toolchain/'qt-image-security'/self.system)
         self.doctor('build')
@@ -659,6 +672,9 @@ def parser():
     value.add_argument('--install-qt', action='store_true', help='Prepare only, explicitly download pinned Qt if missing')
     value.add_argument('--install-rust', action='store_true', help='Prepare only, install locked toolchain through existing rustup')
     value.add_argument('--packaging', action='store_true', help='Prepare only, download/cache pinned packaging tools and materials')
+    value.add_argument('--qt-network-mode', choices=['auto', 'cold'], default='cold',
+                       help='Candidate preparation only: restore a verified Qt Network dependency or build from source')
+    value.add_argument('--qt-network-only', action='store_true', help='Stop preparation after Qt Network validation')
     value.add_argument('--skip-rust', action='store_true', help='Test only, record Rust workspace tests as not run')
     value.add_argument('--macos-handler-rank', choices=['None', 'Alternate'], default='None')
     value.add_argument('--kind', choices=['runtime', 'installer', 'msix', 'all'], default='all')
@@ -674,6 +690,8 @@ def main(argv=None):
     args = parser().parse_args(argv)
     if args.jobs < 1:
         raise SystemExit('--jobs must be positive')
+    if args.stage != 'prepare' and (args.qt_network_only or args.qt_network_mode != 'cold'):
+        raise SystemExit('Qt Network preparation options require the prepare stage')
     try:
         workflow = Workflow(args)
         if args.stage == 'doctor':
