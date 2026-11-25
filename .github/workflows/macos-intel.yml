@@ -1,10 +1,16 @@
 name: macOS Intel native CI
 on:
   workflow_dispatch:
+    inputs:
+      native_acceptance_probe:
+        description: Build only the native session and Cocoa fullscreen verification targets
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   native-intel:
+    if: ${{ !inputs.native_acceptance_probe }}
     runs-on: macos-15-intel
     timeout-minutes: 180
     env:
@@ -71,4 +77,60 @@ jobs:
             build/toolchain/qt-network-security/**/*.log
             build/toolchain/qt-image-security/**/*.log
           if-no-files-found: warn
+          retention-days: 14
+
+  native-acceptance:
+    if: ${{ inputs.native_acceptance_probe }}
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+    env:
+      XDZIP_MACOS_INTEL_CI: '1'
+      QT_QUICK_BACKEND: software
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Prepare the native Intel release dependencies
+        env:
+          XDZIP_RELEASE_QT_NETWORK_TOKEN: ${{ github.token }}
+        run: |
+          test "$(uname -m)" = x86_64
+          translated="$(sysctl -n sysctl.proc_translated 2>/dev/null || true)"
+          test "${translated:-0}" = 0
+          python3 scripts/desktop.py prepare --install-qt --install-rust --release-dependencies auto --output-dir build/review
+      - name: Build the browser and shell checks
+        run: |
+          cmake -S . -B build/desktop -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release -DXDZIP_BUILD_DESKTOP_PREVIEW=ON -DBUILD_TESTING=ON \
+            -DCMAKE_PREFIX_PATH="$PWD/build/toolchain/Qt/6.8.2/macos" \
+            -DPython3_EXECUTABLE="$PWD/build/toolchain/desktop-tools/bin/python" \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+            -DXDZIP_MACOS_HANDLER_RANK=Alternate
+          cmake --build build/desktop --parallel 3 --target xdzip-browser-tests xdzip-shell-tests
+          for target in xdzip-browser-tests xdzip-shell-tests; do
+            lipo -verify_arch x86_64 "build/desktop/apps/desktop/$target"
+          done
+      - name: Verify the native sessions and both Cocoa fullscreen sequences
+        run: |
+          export PATH="$PWD/build/toolchain/Qt/6.8.2/macos/bin:$PATH"
+          failed=0
+          for pass in 1 2; do
+            python3 scripts/check-native-sessions.py --tests build/desktop/apps/desktop/xdzip-browser-tests \
+              --shell-tests build/desktop/apps/desktop/xdzip-shell-tests --macos-conflicts \
+              --output "build/review/native-acceptance-$pass/native-sessions.json" || failed=1
+          done
+          exit "$failed"
+      - name: Retain native acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos-intel-native-acceptance-${{ github.run_attempt }}
+          path: |
+            build/review/native-acceptance-*/*.json
+            build/review/native-acceptance-*/*.log
+            build/review/dependencies/dependencies.json
+            build/review/prepare.json
           retention-days: 14

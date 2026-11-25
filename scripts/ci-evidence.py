@@ -75,12 +75,13 @@ def timings(reader, scope, context):
     return {'commands': len(rows), 'phases': sorted(phases)}
 
 
-def text_totals(reader, name):
+def text_totals(reader, name, *, runs=1):
     content = reader.read(name).decode('utf-8', errors='replace')
     totals = re.findall(r'Totals:\s+(\d+) passed,\s+(\d+) failed,\s+(\d+) skipped', content)
-    require(len(totals) == 1 and int(totals[0][0]) > 0 and int(totals[0][1]) == 0
-            and 'Finished testing' in content, 'incomplete-or-failed-qt-log')
-    return {'passed': int(totals[0][0]), 'skipped': int(totals[0][2])}
+    require(len(totals) == runs and all(int(passed) > 0 and int(failed) == 0 for passed, failed, _ in totals)
+            and len(re.findall(r'^\*+ Finished testing|^Finished testing', content, re.M)) == runs,
+            'incomplete-or-failed-qt-log')
+    return {'passed': sum(int(row[0]) for row in totals), 'skipped': sum(int(row[2]) for row in totals)}
 
 
 def browser_evidence(reader, revision, *, expected_suites=1):
@@ -181,7 +182,8 @@ def collect(scope, root, context, role=None):
                 'missing-or-failed-native-sessions')
         native_log = reader.read('build/review/native-sessions.log').decode('utf-8', errors='replace')
         require(all('BrowserTest::' + case + '(' in native_log for case in cases), 'missing-native-session-case-log')
-        facts['native_sessions'] = text_totals(reader, 'build/review/native-sessions.log')
+        native_runs = 2 if platform_key == 'darwin' and context['architecture'] == 'X64' else 1
+        facts['native_sessions'] = text_totals(reader, 'build/review/native-sessions.log', runs=native_runs)
     return dict(schema_version=1, scope=scope, role=role, **context, status='passed', facts=facts,
                 files=sorted(reader.files.values(), key=lambda row: row['file']))
 
