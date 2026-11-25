@@ -59,6 +59,10 @@ def image_modules(prefix):
     return {'libpng': library(prefix, 'Gui'), 'libtiff': plugin(prefix)}
 
 
+def licenses(prefix):
+    return {key: prefix/'licenses'/f'xdzip-{key}-LICENSE.txt' for key in image_modules(prefix)}
+
+
 def identity(prefix, *, required=True):
     receipt = prefix/RECEIPT
     if not receipt.is_file() or receipt.is_symlink():
@@ -118,6 +122,24 @@ def gui_features(header):
     return dict(re.findall(r'^\s*#\s*define\s+QT_FEATURE_(\w+)\s+(-?1)\s*$', header.read_text(), re.M))
 
 
+def sdk_gui_features(prefix, qt_version):
+    include = (prefix/'lib/QtGui.framework/Versions/A/Headers' if sys.platform == 'darwin'
+               else prefix/'include/QtGui')
+    return gui_features(include/'qtgui-config.h') | gui_features(include/f'{qt_version}/QtGui/private/qtgui-config_p.h')
+
+
+def check_modules(prefix, targets, config, work):
+    for key, caption in (('libpng', 'libpng version '), ('libtiff', 'LIBTIFF, Version ')):
+        if (caption+config['components'][key]['version']).encode() not in targets[key].read_bytes():
+            raise ValueError('Qt image module lacks its pinned library version: '+key)
+    before = symbol_names(library(prefix, 'Gui'))
+    if not before:
+        raise ValueError('Cannot inventory the SDK QtGui exports')
+    if missing := before-symbol_names(targets['libpng']):
+        (work/'gui-abi.log').write_text('\n'.join(sorted(missing))+'\n', encoding='utf-8')
+        raise ValueError('QtGui lacks upstream exports: '+', '.join(sorted(missing)[:30]))
+
+
 def build(prefix, work, parallel):
     config, qt = configuration()
     sources = {key: unpack(item, ROOT/'build/source-cache', work) for key, item in qt.items()}
@@ -146,11 +168,7 @@ def build(prefix, work, parallel):
         common += ['-DCMAKE_OSX_ARCHITECTURES='+macos_arch(), '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                    '-DQT_FORCE_WARN_APPLE_SDK_AND_XCODE_CHECK=ON']
 
-    qt_version = config['qt_version']
-    include = (prefix/'lib/QtGui.framework/Versions/A/Headers' if sys.platform == 'darwin'
-               else prefix/'include/QtGui')
-    private = f'{qt_version}/QtGui/private/qtgui-config_p.h'
-    gui = gui_features(include/'qtgui-config.h') | gui_features(include/private)
+    gui = sdk_gui_features(prefix, config['qt_version'])
     core = core_features(prefix)
     gui_flags = ['-DFEATURE_gui=ON', '-DFEATURE_openssl=OFF', '-DFEATURE_network=ON',
                  '-DFEATURE_system_png=OFF', '-DFEATURE_system_jpeg=OFF']
@@ -188,21 +206,15 @@ def build(prefix, work, parallel):
             rpath = run(['patchelf', '--print-rpath', original], work/(key+'-old-rpath.log')).strip()
             options = ['--set-rpath', rpath] if rpath else ['--remove-rpath']
             run(['patchelf', *options, targets[key]], work/(key+'-set-rpath.log'))
-    for key, caption in (('libpng', 'libpng version '), ('libtiff', 'LIBTIFF, Version ')):
-        if (caption+config['components'][key]['version']).encode() not in targets[key].read_bytes():
-            raise ValueError('Rebuilt module lacks its pinned library version: '+key)
-    before = symbol_names(library(prefix, 'Gui'))
-    if missing := before-symbol_names(targets['libpng']):
-        (work/'gui-abi.log').write_text('\n'.join(sorted(missing))+'\n', encoding='utf-8')
-        raise ValueError('Rebuilt QtGui lacks upstream exports: '+', '.join(sorted(missing)[:30]))
+    check_modules(prefix, targets, config, work)
     new_core = symbol_names(library(gui_build, 'Core'))
     gui_imports = symbol_names(targets['libpng'], undefined=True)
     if (gui_imports & new_core)-symbol_names(library(prefix, 'Core')):
         raise ValueError('Rebuilt QtGui imports symbols unavailable in SDK QtCore')
-    return targets, codecs
+    return targets, {key: path/config['components'][key]['license_file'] for key, path in codecs.items()}
 
 
-def prepare(prefix, work, parallel):
+def prepare(prefix, work, parallel, *, build_modules=build):
     config, qt = configuration()
     work.mkdir(parents=True, exist_ok=True)
     lock = work/'prepare.lock'
@@ -221,12 +233,11 @@ def prepare(prefix, work, parallel):
         with tempfile.TemporaryDirectory(prefix='native-', dir=work) as temporary:
             directory = Path(temporary)
             try:
-                replacements, sources = build(prefix, directory, parallel)
+                replacements, source_licenses = build_modules(prefix, directory, parallel)
             finally:
                 for log in directory.glob('*.log'):
                     shutil.copy2(log, work/log.name)
-            outputs = {'libpng': prefix/'licenses/xdzip-libpng-LICENSE.txt',
-                       'libtiff': prefix/'licenses/xdzip-libtiff-LICENSE.txt'}
+            outputs = licenses(prefix)
             receipt = prefix/RECEIPT
             originals = {path: path.read_bytes() if path.is_file() else None
                          for path in [receipt, *outputs.values()]}
@@ -249,7 +260,7 @@ def prepare(prefix, work, parallel):
                     finally:
                         staged.unlink(missing_ok=True)
                     outputs[key].parent.mkdir(exist_ok=True)
-                    shutil.copyfile(sources[key]/config['components'][key]['license_file'], outputs[key])
+                    shutil.copyfile(source_licenses[key], outputs[key])
                 if sys.platform == 'darwin':
                     for name, path in (('gui', framework), ('tiff', paths['libtiff'])):
                         run(['codesign', '--force', '--sign', '-', '--timestamp=none', path], work/(name+'-seal.log'))

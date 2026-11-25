@@ -68,6 +68,14 @@ gh workflow run release.yml --ref BRANCH -f candidate=true -f qt_network_probe=t
 
 The probe runs on Windows x64 and both native Mac architectures. It uses the candidate's SDK preparation and stops after Qt Network validation. `qt-network-prepare.json` records whether the matching dependency was restored or built from source. Windows and Mac candidates default to `dependencies=auto`, which accepts only an exact, verified artifact from the test-key update workflow on `main`. Use `-f dependencies=cold` to force a source build. Probe records cover SDK preparation only. Candidate packages use the independent same-run verification below.
 
+To benchmark Qt ImageFormats reuse on Windows x64 and native macOS Intel, dispatch the image module probe:
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true -f qt_image_probe=true
+```
+
+Each platform builds the patched QtGui and TIFF plugin from source, verifies them with the preview worker, then restores the two modules and their licenses on a fresh runner in the same run. The restore requires matching Qt SDK binaries, image build inputs and toolchain. The worker checks PNG and TIFF pixels and confirms that TIFF loaded from the selected SDK. Compare `image-timing.json` for module preparation and the download step for artifact transfer. This probe ends before desktop and CLI packaging. Reuse is enabled for the probe.
+
 Only when the selection criteria above require a rehearsal, run the dedicated Release workflow from the branch containing the proposed workflow change or other candidate under investigation:
 
 ```sh

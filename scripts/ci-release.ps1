@@ -1,10 +1,24 @@
-param([Parameter(Mandatory)][ValidateSet('Build', 'Verify', 'QtNetwork')][string]$Stage,
-    [ValidateSet('auto', 'cold')][string]$QtNetworkMode = 'cold')
+param([Parameter(Mandatory)][ValidateSet('Build', 'Verify', 'QtNetwork', 'QtImage')][string]$Stage,
+    [ValidateSet('auto', 'cold')][string]$QtNetworkMode = 'cold',
+    [ValidateSet('cold', 'hit')][string]$QtImageMode)
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 $packages = if ($IsMacOS) { 'build/release-package' } else { 'build/review' }
 $networkToken = $env:XDZIP_RELEASE_QT_NETWORK_TOKEN
 Remove-Item Env:XDZIP_RELEASE_QT_NETWORK_TOKEN -ErrorAction SilentlyContinue
+
+if ($Stage -eq 'QtImage') {
+    if (!$QtImageMode -or !($IsWindows -or ($IsMacOS -and $env:XDZIP_MACOS_INTEL_CI -eq '1'))) {
+        throw 'Select cold or hit on Windows or macOS Intel'
+    }
+    & ./scripts/ci-desktop.ps1 -ReleaseBuild -QtNetworkMode $QtNetworkMode -QtNetworkToken $networkToken -QtNetworkOnly
+    $cacheRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { Join-Path (Get-Location) 'build/toolchain' }
+    $qtFolder = if ($IsWindows) { 'msvc2022_64' } else { 'macos' }
+    $qtPrefix = Join-Path $cacheRoot "Qt/6.8.2/$qtFolder"
+    python scripts/probe-qt-imageformats.py --mode $QtImageMode --qt-prefix $qtPrefix `
+        --work-dir build/qt-image-probe/evidence --bundle build/qt-image-probe/qt-image.zip
+    return
+}
 
 if ($Stage -eq 'Build' -or $Stage -eq 'QtNetwork') {
     $env:XDZIP_CLI_RELEASE_BUILD = '1'

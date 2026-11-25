@@ -1,5 +1,5 @@
 name: Release
-run-name: ${{ inputs.qt_network_probe && 'Release candidate Qt Network probe' || 'Release' }}
+run-name: ${{ inputs.qt_image_probe && 'Release candidate Qt ImageFormats probe' || inputs.qt_network_probe && 'Release candidate Qt Network probe' || 'Release' }}
 on:
   workflow_dispatch:
     inputs:
@@ -23,6 +23,10 @@ on:
         description: In candidate mode, stop after preparing Qt Network on Windows and both Mac architectures
         type: boolean
         default: false
+      qt_image_probe:
+        description: In candidate mode, measure cold and reused Qt image modules on Windows and macOS Intel
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -40,11 +44,15 @@ jobs:
           CANDIDATE: ${{ inputs.candidate }}
           RETRY_PROBE: ${{ inputs.retry_probe }}
           QT_NETWORK_PROBE: ${{ inputs.qt_network_probe }}
+          QT_IMAGE_PROBE: ${{ inputs.qt_image_probe }}
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
           if [[ "$QT_NETWORK_PROBE" == true ]]; then
             [[ "$CANDIDATE" == true && "$RETRY_PROBE" == false ]]
+          fi
+          if [[ "$QT_IMAGE_PROBE" == true ]]; then
+            [[ "$CANDIDATE" == true && "$RETRY_PROBE" == false && "$QT_NETWORK_PROBE" == false ]]
           fi
           if [[ "$CANDIDATE" == true ]]; then
             [[ -z "$RELEASE_TAG" ]]
@@ -100,7 +108,7 @@ jobs:
           python3 scripts/publish-release.py --draft-only --notes-file "release-policy/release-notes/${RELEASE_TAG#v}.md" --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
 
   macos-signing-preflight:
-    if: ${{ !inputs.qt_network_probe }}
+    if: ${{ !inputs.qt_network_probe && !inputs.qt_image_probe }}
     needs: resolve
     strategy:
       fail-fast: false
@@ -120,7 +128,7 @@ jobs:
 
   native:
     needs: [resolve, draft, macos-signing-preflight]
-    if: always() && !cancelled() && !inputs.qt_network_probe && needs.resolve.result == 'success' && needs.macos-signing-preflight.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
+    if: always() && !cancelled() && !inputs.qt_network_probe && !inputs.qt_image_probe && needs.resolve.result == 'success' && needs.macos-signing-preflight.result == 'success' && (inputs.candidate || needs.draft.result == 'success')
     permissions:
       contents: read
       actions: read
@@ -229,6 +237,38 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  candidate-qt-image-cold:
+    if: ${{ inputs.candidate && inputs.qt_image_probe }}
+    needs: resolve
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-15-intel]
+    uses: ./.github/workflows/qt-imageformats-probe.yml
+    with:
+      revision: ${{ needs.resolve.outputs.revision }}
+      runner: ${{ matrix.os }}
+      mode: cold
+
+  candidate-qt-image-hit:
+    if: ${{ inputs.candidate && inputs.qt_image_probe }}
+    needs: [resolve, candidate-qt-image-cold]
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-15-intel]
+    uses: ./.github/workflows/qt-imageformats-probe.yml
+    with:
+      revision: ${{ needs.resolve.outputs.revision }}
+      runner: ${{ matrix.os }}
+      mode: hit
+
   verify:
     needs: [resolve, native]
     if: always() && !cancelled() && needs.resolve.result == 'success' && needs.native.result == 'success'
@@ -288,7 +328,7 @@ jobs:
           retention-days: 30
 
   contracts:
-    if: ${{ !inputs.qt_network_probe }}
+    if: ${{ !inputs.qt_network_probe && !inputs.qt_image_probe }}
     needs: resolve
     runs-on: ubuntu-24.04
     timeout-minutes: 30

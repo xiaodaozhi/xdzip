@@ -68,6 +68,14 @@ gh workflow run release.yml --ref BRANCH -f candidate=true -f qt_network_probe=t
 
 探针在 Windows x64 和两种原生 Mac 架构上运行，使用候选构建的 SDK 准备入口，在 Qt Network 验证后结束。`qt-network-prepare.json` 记录命中或源码构建结果。Windows 和 Mac 候选默认使用 `dependencies=auto`，仅接收 `main` 上测试密钥更新工作流生成且验证完全匹配的依赖工件。传入 `-f dependencies=cold` 可强制源码编译。探针记录只覆盖 SDK 准备，候选包仍通过下述本轮独立验包流程验证。
 
+在 Windows x64 和原生 macOS Intel 上测量 Qt ImageFormats 复用时，运行图片模块探针：
+
+```sh
+gh workflow run release.yml --ref BRANCH -f candidate=true -f qt_image_probe=true
+```
+
+每个平台从源码构建补丁版 QtGui 和 TIFF 插件，用预览程序验证后，再在同一轮的新 runner 上恢复两个模块及其许可证。恢复要求 Qt SDK 二进制、图片模块构建输入和工具链一致。预览程序核对 PNG、TIFF 的解码像素，并确认 TIFF 插件来自选定的 SDK。通过 `image-timing.json` 比较模块准备耗时，通过工件下载步骤查看传输耗时。探针在桌面端和 CLI 打包前结束，复用仅在探针中启用。
+
 只有满足上述条件确需演练时，才在包含工作流变更的分支或其他待核查的候选上运行专用 Release 工作流：
 
 ```sh
