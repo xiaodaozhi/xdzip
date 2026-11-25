@@ -5073,6 +5073,7 @@ QtObject {
         QFETCH(QString, intervention);
         WindowActivation::install(qApp);
         QWindow window;
+        window.setProperty("xdzipTraceActivation", true);
         window.resize(480, 320);
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
@@ -5081,6 +5082,7 @@ QtObject {
         QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen) &&
                     !cocoaActivationInFlight(&window));
         window.showMinimized();
+        traceNativeWindowState(&window);
         QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowMinimized));
 
         bool requested = false;

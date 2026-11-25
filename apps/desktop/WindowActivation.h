@@ -10,6 +10,7 @@
 
 #ifdef Q_OS_MACOS
 #include <QPlatformSurfaceEvent>
+#include <QPointer>
 bool watchCocoaActivation(QWindow *window);
 void unwatchCocoaActivation(QWindow *window);
 bool cocoaActivationInFlight(QWindow *window);
@@ -192,7 +193,8 @@ class WindowActivation final : public QObject {
   private:
 #ifdef Q_OS_MACOS
     static void noteCocoaMinimizeIntent(QWindow *window) {
-        if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
+        if (QGuiApplication::platformName() != QStringLiteral("cocoa") ||
+            window->property("xdzipCocoaSendingMinimizeRetry").toBool())
             return;
         const bool entering = window->property("xdzipCocoaFullEntering").toBool();
         const auto generation = window->property("xdzipCocoaSurfaceGeneration").toULongLong();
@@ -200,9 +202,12 @@ class WindowActivation final : public QObject {
             return;
         const bool pending =
             window->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() == generation;
-        if (!entering && !window->property("xdzipCocoaJustEnteredFullscreen").toBool() && !pending)
-            return;
         const auto state = window->windowState();
+        const bool unconfirmed = state == Qt::WindowMinimized && !cocoaActivationInFlight(window) &&
+                                 cocoaFullscreenRetryReady(window);
+        if (!entering && !window->property("xdzipCocoaJustEnteredFullscreen").toBool() &&
+            !pending && !unconfirmed)
+            return;
         if (state == Qt::WindowMinimized) {
             window->setProperty("xdzipCocoaPendingMinimizeGeneration", generation);
             window->setProperty("xdzipCocoaPendingState", int(state));
@@ -227,10 +232,10 @@ class WindowActivation final : public QObject {
             });
         }
     }
-    // AppKit can ignore a minimize during or inside fullscreen entry.
+    // AppKit can ignore a minimize before its fullscreen Space becomes ready.
     static void queueCocoaMinimizeRetry(QWindow *window) {
         if (QGuiApplication::platformName() != QStringLiteral("cocoa") ||
-            !window->property("xdzipCocoaJustEnteredFullscreen").toBool())
+            window->property("xdzipCocoaFullEntering").toBool())
             return;
         const auto generation = window->property("xdzipCocoaSurfaceGeneration").toULongLong();
         if (!generation ||
@@ -273,7 +278,24 @@ class WindowActivation final : public QObject {
                 return;
             }
             window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
+            const QPointer<QWindow> guarded(window);
+            const auto reveal = window->property("xdzipCocoaRevealSerial").toULongLong();
+            window->setProperty("xdzipCocoaSendingMinimizeRetry", true);
             cocoaRetryFullscreenState(window, state);
+            if (!guarded)
+                return;
+            guarded->setProperty("xdzipCocoaSendingMinimizeRetry", false);
+            // A dispatched request may still have been ignored by AppKit.
+            // Retry only if the same surface still shows the same unconfirmed intent.
+            if (remainingChecks > 1 && state == Qt::WindowMinimized &&
+                guarded->windowState() == Qt::WindowMinimized &&
+                guarded->property("xdzipCocoaSurfaceGeneration").toULongLong() == generation &&
+                guarded->property("xdzipCocoaRevealSerial").toULongLong() == reveal &&
+                !cocoaActivationInFlight(guarded) && cocoaFullscreenRetryReady(guarded)) {
+                guarded->setProperty("xdzipCocoaPendingMinimizeGeneration", generation);
+                guarded->setProperty("xdzipCocoaPendingState", int(state));
+                awaitCocoaFullscreenRetry(guarded, generation, remainingChecks - 1);
+            }
         });
     }
 #endif
