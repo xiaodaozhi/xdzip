@@ -1,6 +1,12 @@
 name: Production update acceptance
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: Platforms to verify
+        type: choice
+        default: all
+        options: [all, windows-linux, windows, linux, macos, macos-intel]
 permissions:
   contents: read
 concurrency:
@@ -38,6 +44,7 @@ jobs:
           retention-days: 14
   windows:
     needs: keys
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'windows-linux' || inputs.platform == 'windows' }}
     environment: release-signing
     runs-on: windows-2022
     timeout-minutes: 100
@@ -52,6 +59,14 @@ jobs:
       - name: Prepare native tools and Qt without signing authority
         shell: pwsh
         run: |
+          $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -prerelease -property installationPath
+          if (!$vs) { throw 'Visual Studio build tools not found' }
+          Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          foreach ($tool in @('perl', 'nmake', 'cmake', 'ninja')) {
+            if (!(Get-Command $tool -ErrorAction SilentlyContinue)) { throw "Required Qt build tool missing: $tool" }
+          }
           rustup toolchain install 1.99.0 --profile minimal
           ./scripts/prepare-windows-installer.ps1 -OutputDirectory build/installer-toolchain
           python scripts/prepare-windows-runtime.py --output build/windows-runtime
@@ -96,6 +111,7 @@ jobs:
           retention-days: 14
   macos:
     needs: keys
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'macos' }}
     environment: release-signing
     runs-on: macos-15
     timeout-minutes: 120
@@ -142,6 +158,7 @@ jobs:
           retention-days: 14
   macos_intel:
     needs: keys
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'macos-intel' }}
     environment: release-signing
     runs-on: macos-15-intel
     timeout-minutes: 180
@@ -196,6 +213,7 @@ jobs:
           retention-days: 14
   linux:
     needs: keys
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'windows-linux' || inputs.platform == 'linux' }}
     environment: release-signing
     runs-on: ubuntu-24.04
     timeout-minutes: 100
