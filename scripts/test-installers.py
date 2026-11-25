@@ -25,6 +25,8 @@ from packaging_languages import linux_resources, macos_resources, packaging_cata
 from ui_languages import macos_language
 from association_types import WINDOWS_ICONS, MACOS_ICONS, windows_progid
 from archive_formats_generated import ASSOCIATION_FIXTURES
+from update_fixture import qa_installer_text, insert_installer_code
+from qt_update_fixture import windows_copy_pause
 
 ROOT=Path(__file__).resolve().parents[1]
 def module(name):
@@ -33,6 +35,31 @@ linux=module('build-linux-installer');windows=module('build-windows-installer');
 
 
 class InstallerTests(unittest.TestCase):
+    def test_windows_update_hooks_stay_in_code_section(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);payload,audit=self.payload(base,'windows')
+            for legacy in (False,True):
+                text,_=windows.render(payload,audit,base/'setup.exe',base/'Chinese.isl',legacy=legacy)
+                for outcome in ('upgrade','cancel-license','startup-failure'):
+                    with self.subTest(legacy=legacy,outcome=outcome):
+                        result=qa_installer_text(text,outcome)
+                        code=result.split('[Code]',1)[1].split('[Run]',1)[0]
+                        self.assertIn('procedure CurPageChanged(',code)
+                        if outcome=='cancel-license':
+                            self.assertIn('procedure CancelButtonClick(',code)
+                        if outcome=='startup-failure':
+                            self.assertIn('Owned fixture injected InitializeSetup failure',code)
+                if not legacy:
+                    result=qa_installer_text(windows_copy_pause(text,payload,base/'session'))
+                    code=result.split('[Code]',1)[1].split('[Run]',1)[0]
+                    self.assertIn('procedure OwnedPauseAfterExe(',code)
+                    self.assertIn('procedure OwnedRemainingFiles(',code)
+                    self.assertIn('procedure CurPageChanged(',code)
+                    self.assertNotIn('procedure ',result.split('[UninstallRun]',1)[1])
+            for invalid in ('[Setup]\n', '[Code]\n[Code]\n'):
+                with self.assertRaisesRegex(ValueError,'exactly one'):
+                    insert_installer_code(invalid,'procedure Example();')
+
     def test_windows_traditional_messages_cover_inno_fallbacks(self):
         sections = windows.installer_language_sections(Path('ChineseSimplified.isl'), packaging_catalogs())
         prefix = 'chinesetraditional.'

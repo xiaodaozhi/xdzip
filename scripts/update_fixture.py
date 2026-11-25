@@ -4,6 +4,7 @@
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -108,6 +109,17 @@ def manifest(package, platform, tool, identity=NEW, *, sign=True):
     return path
 
 
+def insert_installer_code(text, code):
+    """Insert private hooks inside the unique Inno Setup Code section."""
+    sections=list(re.finditer(r'^\[([^\]\r\n]+)\][ \t]*\r?$', text, re.MULTILINE))
+    matches=[index for index,section in enumerate(sections) if section.group(1).lower()=='code']
+    if len(matches)!=1:
+        raise ValueError('Expected exactly one installer Code section')
+    index=matches[0]
+    end=sections[index+1].start() if index+1<len(sections) else len(text)
+    return text[:end].rstrip()+'\n'+code.strip()+'\n\n'+text[end:]
+
+
 def qa_installer_text(text, outcome='upgrade'):
     """Drive only owned test installers; retain the real supplier agreement."""
     if outcome not in ('upgrade','cancel-license','startup-failure'):
@@ -118,7 +130,7 @@ def qa_installer_text(text, outcome='upgrade'):
         if text.count(marker)!=1:raise ValueError('Expected the real Setup initialization hook')
         text=text.replace(marker,marker+"  Log('Owned fixture injected InitializeSetup failure');\n  Result := False;\n  exit;\n",1)
     cancel=outcome=='cancel-license'
-    return text+'''
+    code='''
 procedure CurPageChanged(CurPageID: Integer);
 begin
   Log(Format('Owned fixture wizard page: %d', [CurPageID]));
@@ -143,6 +155,7 @@ begin
   end;
 end;
 ''' if cancel else '')
+    return insert_installer_code(text,code)
 
 
 def request(job, parent_pid, install_root, package):

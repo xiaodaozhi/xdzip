@@ -11,7 +11,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-from update_fixture import ROOT, KEYRING, run, dump, digest, manifest, qa_installer_text
+from update_fixture import ROOT, KEYRING, run, dump, digest, manifest, qa_installer_text, insert_installer_code
 from deployment_audit import native
 from association_types import WINDOWS_ICONS
 
@@ -122,13 +122,14 @@ def load(path, name):
 
 def windows_copy_pause(text, payload, session):
     """Pause the owned new installer after its EXE, before the remaining Qt payload."""
+    payload=payload.resolve()
     original='Source: "'+str(payload)+'\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs'
     if text.count(original)!=1:
         raise RuntimeError('Owned installer no longer has the expected root payload entry')
     replacement=('Source: "'+str(payload)+'\\xdzip.exe"; DestDir: "{app}"; Flags: ignoreversion; AfterInstall: OwnedPauseAfterExe\n'
                  +original+'; Excludes: "xdzip.exe"; BeforeInstall: OwnedRemainingFiles')
     def literal(value):return "'"+str(value).replace("'","''")+"'"
-    return text.replace(original,replacement,1)+'''
+    code='''
 function OwnedInstallerPid(): LongWord;
 external 'GetCurrentProcessId@kernel32.dll stdcall';
 
@@ -158,6 +159,7 @@ begin
       RaiseException('Owned remaining-copy marker could not be written');
 end;
 '''
+    return insert_installer_code(text.replace(original,replacement,1),code)
 
 
 def prepare(output, sdk, session, *, production_trust=False):
