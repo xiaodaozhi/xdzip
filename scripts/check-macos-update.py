@@ -329,6 +329,7 @@ def main():
     production_key = ROOT/'resources/sparkle-update-key.json'
     before = digest(production_key)
     source = private_source(output)
+    invoke([sys.executable, source/'scripts/ui-fonts.py', 'prepare'], output/'font-prepare.log')
     # Compile the signer with no signing authority. Its build scripts never see
     # this invocation's ephemeral key, and production trust is unchanged.
     invoke(['cargo', 'build', '--locked', '--manifest-path', source/'Cargo.toml',
@@ -347,9 +348,10 @@ def main():
     invoke([sys.executable, source/'scripts/prepare-sparkle.py', '--output', sdk], output/'sdk.log')
     apps = []
     for label, build_number in [('old', OLD_BUILD), ('new', NEW_BUILD)]:
-        build = output/('build-'+label)
-        invoke(['cmake', '-S', source, '-B', build, '-DCMAKE_BUILD_TYPE=Release',
+        build = source/'build'/('update-probe-'+label)
+        invoke(['cmake', '-S', source, '-B', build, '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release',
                 '-DCMAKE_PREFIX_PATH='+str(qt), '-DCMAKE_OSX_ARCHITECTURES='+macos_arch(),
+                '-DPython3_EXECUTABLE='+sys.executable,
                 '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0', '-DXDZIP_BUILD_QT_PROBE=OFF',
                 '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON', '-DBUILD_TESTING=ON',
                 '-DXDZIP_BUILD_MAC_UPDATE_REGRESSION=ON', '-DXDZIP_MAC_UPDATE_PROBE_BUILD='+str(build_number),

@@ -69,15 +69,22 @@ class NetworkReuseTests(unittest.TestCase):
                 'path': '.github/workflows/update-regression.yml', 'event': 'workflow_dispatch',
                 'status': 'completed', 'conclusion': 'success', 'repository': {'id': 8}, 'head_repository': {'id': 8}}
         with patch.object(ci, 'api', return_value=good) as api:
-            self.assertTrue(ci.trusted_artifact(artifact, 'artifact', 3, 8))
+            self.assertTrue(ci.trusted_artifact(artifact, 'artifact', 3, 8, 'windows'))
             for field, bad in [('path', '.github/workflows/other.yml'), ('head_sha', 'b'*40),
-                               ('workflow_id', 1), ('event', 'pull_request'), ('conclusion', 'failure')]:
+                               ('workflow_id', 1), ('event', 'pull_request'), ('conclusion', 'cancelled')]:
                 api.return_value = dict(good, **{field: bad})
-                self.assertFalse(ci.trusted_artifact(artifact, 'artifact', 3, 8))
+                self.assertFalse(ci.trusted_artifact(artifact, 'artifact', 3, 8, 'windows'))
+        publish = {'name': 'Preserve the verified Qt Network dependency', 'conclusion': 'success'}
+        failure = dict(good, conclusion='failure', run_attempt=1)
+        jobs = {'jobs': [{'name': 'windows', 'conclusion': 'success', 'steps': [publish]},
+                         {'name': 'linux', 'conclusion': 'failure', 'steps': []}]}
+        for name, accepted in [('windows', True), ('linux', False)]:
+            with patch.object(ci, 'api', side_effect=[failure, jobs]):
+                self.assertEqual(ci.trusted_artifact(artifact, 'artifact', 3, 8, name), accepted)
         with patch.object(ci, 'api') as api:
-            self.assertFalse(ci.trusted_artifact(dict(artifact, expired=True), 'artifact', 3, 8))
+            self.assertFalse(ci.trusted_artifact(dict(artifact, expired=True), 'artifact', 3, 8, 'windows'))
             self.assertFalse(ci.trusted_artifact(dict(artifact, workflow_run=dict(producer, head_repository_id=9)),
-                                                 'artifact', 3, 8))
+                                                 'artifact', 3, 8, 'windows'))
             api.assert_not_called()
 
     def test_force_cold_and_download_error_remove_stale_input(self):
