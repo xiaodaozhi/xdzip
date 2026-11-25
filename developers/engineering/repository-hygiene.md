@@ -42,7 +42,17 @@ For bounded source, test, configuration or documentation work, use a short-lived
 
 Complete the relevant local checks, commit the changes and integrate them into `main` under the repository's protection rules. Push `main` and fetch or query the remote to verify it contains the final change. Record the actual merged commit, checks and evidence in the issue. A branch push or PR can provide a recoverable checkpoint during this process.
 
-Continue through integration, remote verification and [artifact cleanup](#研发周期工件收尾) before closing the issue or reporting delivery complete. Pause at an explicit local, branch or PR-only boundary, or when required external acceptance is unavailable. Record the recoverable revision, completed steps, exact blocker and remaining work. Follow [AGENTS.md](../../AGENTS.md) for the delivery agreement.
+Continue through integration, remote verification and [artifact cleanup](#研发周期工件收尾) before closing the issue as completed or reporting delivery complete. Pause at an explicit local, branch or PR-only boundary, or when required external acceptance is unavailable. Record the recoverable revision, completed steps, exact blocker and remaining work, then apply the issue status rules below. Follow [AGENTS.md](../../AGENTS.md) for the delivery agreement.
+
+## Issue closeout
+
+Review the issue status when ending a work cycle. Keep an issue open only when work is in progress or there is a concrete follow-up plan. Record the owner and next action. For an external blocker, also record what will let work resume. If an issue has no concrete follow-up plan, close it before ending the cycle. This includes work the maintainer stops and issues with remaining limitations the maintainer accepts.
+
+- Close the issue as **Completed** once the agreed delivery and acceptance are complete. Record any known limitations accepted for this delivery.
+- Close the issue as **Not planned** when work is stopped or set aside with outstanding requirements. Record the reason, unfinished scope and available evidence.
+- When follow-up moves to an existing issue, link that issue and close the superseded one. Use **Duplicate** when both issues track the same work.
+
+Record unmet requirements and unperformed checks as such. A closed issue can be reopened when follow-up is scheduled.
 
 <a id="研发周期工件收尾"></a>
 
