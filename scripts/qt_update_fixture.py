@@ -16,6 +16,18 @@ from deployment_audit import native
 from association_types import WINDOWS_ICONS
 
 
+def stage_windows_build(build, payload, runtime):
+    """Stage the same native application and helper inputs as desktop packaging."""
+    binaries = build/'apps/desktop'
+    payload.mkdir()
+    for name in ('xdzip.exe', 'xdzip-update-helper.exe', 'xdzip-native-codec.exe',
+                 'xdzip-image-preview.exe', 'xdzip-association.exe', 'xdzip-shell.dll'):
+        shutil.copy2(binaries/name, payload/name)
+    shutil.copytree(binaries/'cli', payload/'cli')
+    for path in runtime.glob('*.dll'):
+        shutil.copy2(path, payload/'cli'/path.name)
+
+
 def require_no_signing_authority():
     if any(name in os.environ for name in
            ('XDZIP_UPDATE_SIGNING_KEY_HEX','XDZIP_SPARKLE_SIGNING_KEY_HEX')):
@@ -236,14 +248,12 @@ def prepare(output, sdk, session, *, production_trust=False):
             notices=folder/'notices'
             checked([sys.executable,source/'scripts/collect-notices.py',notices,'--qt-prefix',sdk])
             if sys.platform=='win32':
-                payload.mkdir()
-                for name in ('xdzip.exe','xdzip-update-helper.exe','xdzip-association.exe'):
-                    shutil.copy2(build/'apps/desktop'/name,payload/name)
+                stage_windows_build(build,payload,ROOT/'build/windows-runtime/runtime')
                 for icon in WINDOWS_ICONS.values():
                     shutil.copy2(source/'design/assets/file-associations'/f'xdzip-{icon}.ico',payload)
                 shutil.copytree(notices,payload/'share/notices')
                 checked([sys.executable,source/'scripts/deploy_windows.py','--root',payload,'--qt-prefix',sdk,
-                         '--qml-dir',source/'apps/desktop/ui','--qml-import',sdk/'qml',
+                         '--qml-dir',source/'apps/desktop/ui','--qml-import',build/'qml',
                          '--runtime',ROOT/'build/windows-runtime/runtime'])
                 app=payload/'xdzip.exe'
             else:
