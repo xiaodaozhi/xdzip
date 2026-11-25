@@ -22,6 +22,8 @@ When working in Partner Center, prefer the browser extension plugin for submissi
 
 For manual publishing, select **Publish now** after certification. Microsoft signs and distributes the package, and the installed Store build can then be checked on Windows.
 
+At closeout, record the published package version, listing verification results and any known limitations in the GitHub issue. If the maintainer decides to end follow-up on a Store discrepancy, record the decision and close the issue during the current cycle according to the [issue closeout rules](../../engineering/repository-hygiene.md#issue-closeout).
+
 ## Bulk listing updates
 
 The [locale map](../../../specs/marketing/windows-store-locales.json) records the 337 observed listings by source language. Reconcile any difference against the draft export and the Partner Center language selector before changing the map. The generator also checks the source languages against the MSIX manifest and the marketing specification.
