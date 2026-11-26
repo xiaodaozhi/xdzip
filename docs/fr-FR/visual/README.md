@@ -102,7 +102,7 @@ La marque utilise quatre bandes entrelacées et un bas ouvert en U ; sa géomét
 
 Le signe actuel conserve un rapport élancé de 2:3 et n’est pas étiré à la largeur de l’ancien. Sa base utilise une courbe à courbure continue et symétrie de rotation aux quatre coins, augmentant doucement la courbure de zéro sur les bords droits jusqu’au milieu diagonal, sans centre biseauté. Éclairage et base partagent un seul tracé ; ne superposez pas de traits de rayons différents ni de lignes de reflet ouvertes. Les badges de document utilisent la même définition de contour.
 
-Les planches originales et les extraits conservés permettent de comparer les designs. Le visuel historique `brand/identity-reference.png` figure dans l’inventaire de design et les outils de marque le vérifient. L’application utilise son master vectoriel.
+Les planches originales et les extraits conservés permettent de comparer les designs. La [planche de référence de la marque](../../../design/assets/brand/identity-reference.png) présente les icônes actuelles de l’application et des documents ZIP à leurs tailles d’exportation.
 
 Les petites icônes d’interface conservent des canevas 24×24. Les icônes de plateforme exportent des PNG transparents de 16/24/32/48/64/128/256/512/1024 pixels. Les tailles 16/24/32 simplifient le texte illisible et l’éclairage des grandes images tout en conservant les bandes entrelacées et la structure reconnaissable en U. Les icônes d’application et de document ZIP fournissent chacune un ICO à sept tailles et un ICNS à onze représentations de densité. N’agrandissez pas indéfiniment une icône d’interface de 24 unités pour le système et ne réduisez pas de grandes ombres jusqu’à créer du bruit aux petites tailles.
 

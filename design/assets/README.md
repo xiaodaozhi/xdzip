@@ -49,7 +49,7 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 
 macOS Dock 实测反馈后的修订：ICNS 与 Qt 运行时 Dock 图标改用 `brand/macos/` 下的独立 PNG，1024 画布主体高度约 832 像素（81.2%），取景框 `-20 -20 1064 1064`。小尺寸仍直接渲染并做像素对齐。此比例按用户提供的同一 Dock 截图校准，避免比相邻图标大一圈；不将它称为 Apple 强制比例。ICNS 的所有表示均取自 macOS PNG，Windows ICO 与 Linux PNG 保留 90%。Qt 的 macOS 分支必须选择 `assets/app-icon-macos.png`，否则 `setWindowIcon` 会在运行时覆盖 bundle 图标，重新出现尺寸不一致。容器、运行时资源映射及两套主体边界同时验证，不能只解码 ICNS 后宣称 Dock 已验收。历史设计参考与界面图标几何不改写。
 
-`brand/identity-reference.png` 记录应用与文档标志早期的设计方向。当前应用图标以 [应用母版](brand/xdzip.svg) 为准。
+[品牌对照图](brand/identity-reference.png) 从当前应用与 ZIP 文档的 ICO 生成。上方展示 256 px，下面从左到右展示 64、48、32、24 px，均使用实际导出的尺寸。当前应用图标以 [应用母版](brand/xdzip.svg) 为准。
 
 应用图标接入 Qt 窗口、macOS app bundle、Windows 可执行资源与 Linux 桌面启动项 / hicolor 目录；文档图标和关联行为见[平台接入说明](../../apps/desktop/packaging/README.md)。默认应用仍由用户选择。
 
@@ -85,6 +85,8 @@ python3 scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-a
 ```
 
 仅更新 QRC 使用映射时可单独执行 `build-design-assets.py --metadata-only`；它核对既有文件的 SHA-256，再刷新清单和画廊，不重新裁图或渲染素材。
+
+仅更新品牌对照图时，运行 `build-brand-assets.py --identity-only`，再运行 `build-design-assets.py --metadata-only` 刷新清单和画廊。`build-brand-assets.py --check` 会将参考图像素与当前 ICO 的合成结果逐一核对。
 
 `asset_definitions.py` 维护界面形状、参考坐标及固定光学边界，`brand_assets.py` 维护共用品牌几何与平台导出规格。构建工具依赖 Pillow；透明导出和联系表依赖 Playwright / Chromium。使用 `XDZIP_CHROMIUM` 指定浏览器，使用 `XDZIP_FONTCONFIG_FILE` 指定画廊字体配置；这套工具不进入产品运行时。`build-brand-assets.py --check` 只校验品牌母版、透明 PNG、来源凭据及 ICO / ICNS 容器，不写回文件。
 

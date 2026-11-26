@@ -6515,17 +6515,21 @@
       "usage": "visual-reference-only",
       "file": "brand/identity-reference.png",
       "kind": "brand-reference",
-      "purpose": "generated-visual-direction",
-      "provenance": "generated high-fidelity application and document design sheet",
-      "sha256": "819a3691034c4274ceba2255768b68095fe90b431f9d7578203b1dadd29d8d61",
+      "purpose": "current-application-and-zip-preview",
+      "provenance": "current ICO representations composited at 256, 64, 48, 32 and 24 pixels",
+      "sha256": "3ec492b8e2fb41a7f55e8057b41fe498a54283a9e3a79e3c6569f61301c9ff0c",
       "size": [
-        1536,
-        1024
+        768,
+        448
       ],
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
-      }
+      },
+      "sources": [
+        "brand/xdzip.ico",
+        "file-associations/xdzip-zip.ico"
+      ]
     },
     {
       "id": "brand/xdzip.svg",
