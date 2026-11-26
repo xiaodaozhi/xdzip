@@ -1,4 +1,4 @@
-"""Run Rust lint, dependency policy and the extraction name check for Rust changes."""
+"""Run Rust lint, dependency policy and targeted extraction regressions."""
 
 import os
 from pathlib import Path
@@ -8,14 +8,14 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 STRICT_CLIPPY = ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings']
-EXTRACTION_NAMES = ['cargo', 'test', '--locked', '-p', 'xdzip-runtime', '--lib', 'special_punctuation']
+EXTRACTION_TESTS = ['cargo', 'test', '--locked', '-p', 'xdzip-runtime', '--lib', 'extraction::']
 RUST_INPUTS = [
     '*.rs', 'Cargo.toml', 'Cargo.lock', ':(glob)**/Cargo.toml', ':(glob)**/Cargo.lock',
     'rust-toolchain.toml', '.cargo', 'crates', 'third_party/brotli-rfc7932/dictionary.bin',
     'VERSION.json', 'resources/update-trust.json', 'resources/ui-languages.json',
     'resources/i18n', 'scripts/build_identity.py',
     '.github/workflows/docs.yml', 'scripts/check-rust-clippy.py',
-    'scripts/check-rust-codec-policy.py', 'scripts/rust-codec-policy.json',
+    'scripts/check-rust-codec-policy.py', 'scripts/rust-codec-policy.json', 'tests/fixtures/extract',
 ]
 
 
@@ -46,7 +46,7 @@ def main():
         result = subprocess.run([sys.executable, 'scripts/check-rust-codec-policy.py'], cwd=ROOT)
         if result.returncode:
             return result.returncode
-        return subprocess.run(EXTRACTION_NAMES, cwd=ROOT).returncode
+        return subprocess.run(EXTRACTION_TESTS, cwd=ROOT).returncode
     print('No Rust inputs changed')
     return 0
 

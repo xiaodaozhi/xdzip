@@ -644,14 +644,23 @@ impl Workspace {
         path: &PortablePath,
         target: &str,
     ) -> Result<CommitReceipt, OutputError> {
+        self.commit_symlink_with_parent(path, target, None)
+    }
+    /// Publish a validated link while checking the identity of its assigned parent.
+    pub fn commit_symlink_with_parent(
+        &mut self,
+        path: &PortablePath,
+        target: &str,
+        parent_identity: Option<FileIdentity>,
+    ) -> Result<CommitReceipt, OutputError> {
         #[cfg(not(unix))]
         {
-            let _ = (path, target);
+            let _ = (path, target, parent_identity);
             Err(OutputError::Unsupported)
         }
         #[cfg(unix)]
         {
-            let parent = self.grant.parent(path, true)?;
+            let parent = self.grant.output_parent(path, parent_identity)?;
             let leaf = path.parts().last().ok_or(OutputError::UnsafeTarget)?;
             self.grant.revalidate_parent(path, &parent)?;
             // symlink itself is an atomic create-if-absent operation, including dangling leaves.
@@ -661,7 +670,10 @@ impl Workspace {
                 change();
             }
             self.grant.revalidate_parent(path, &parent)?;
-            parent.dir.symlink(target, leaf).map_err(failure)?;
+            parent
+                .dir
+                .symlink(target, leaf)
+                .map_err(|error| crate::leaf_failure(error, leaf))?;
             let recorded = self.record(&format!("committed-link {}\n", path.display()));
             Ok(CommitReceipt {
                 cleanup_warning: recorded.is_err(),

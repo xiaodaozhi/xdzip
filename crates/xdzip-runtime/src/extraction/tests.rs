@@ -573,6 +573,7 @@ fn hostile_or_incomplete_link_graphs_are_rejected_before_any_output() {
         "link_absolute.zip",
         "link_parent.zip",
         "link_backslash.zip",
+        "link_ambiguous_name.zip",
         "link_empty.zip",
         "link_nul.zip",
         "link_dangling.zip",
@@ -585,11 +586,12 @@ fn hostile_or_incomplete_link_graphs_are_rejected_before_any_output() {
     ] {
         let target = Target::new();
         let a = archive(name);
-        assert!(
-            a.extraction_job(target.options(), &Cancellation::default())
-                .is_err(),
-            "{name}"
-        );
+        let result = a.extraction_job(target.options(), &Cancellation::default());
+        if cfg!(unix) && name == "link_ambiguous_name.zip" {
+            assert!(matches!(result, Err("ambiguous_name")));
+        } else {
+            assert!(result.is_err(), "{name}");
+        }
         assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 0, "{name}");
     }
 }
@@ -597,24 +599,24 @@ fn hostile_or_incomplete_link_graphs_are_rejected_before_any_output() {
 #[cfg(unix)]
 #[test]
 fn bundle_conflicts_and_partial_selections_do_not_publish_broken_links() {
-    let target = Target::new();
-    let a = archive("unix_bundle.zip");
-    std::fs::create_dir_all(target.0.join("Demo.app/Contents/MacOS")).unwrap();
-    let executable = target.0.join("Demo.app/Contents/MacOS/demo");
-    std::fs::write(&executable, b"preserve").unwrap();
+    let a = archive("link_renames.zip");
     for policy in [
         ConflictPolicy::Ask,
         ConflictPolicy::Skip,
-        ConflictPolicy::Rename,
         ConflictPolicy::Overwrite,
     ] {
+        let target = Target::new();
+        let occupied = target.0.join("primary?.txt");
+        std::fs::write(&occupied, b"preserve").unwrap();
         let mut options = target.options();
         options.conflict = policy;
         let done = execute(&a, options, &Control::default(), |_| {});
         assert_eq!(done.error, "output_conflict");
         assert_eq!(done.committed_files, 0);
-        assert_eq!(std::fs::read(&executable).unwrap(), b"preserve");
+        assert_eq!(std::fs::read(&occupied).unwrap(), b"preserve");
+        assert!(!target.0.join("viewer").exists());
     }
+    let target = Target::new();
     let mut options = target.options();
     options.all = false;
     options.selected = vec![a.rows.iter().find(|e| e.link).unwrap().id.get().to_string()];
@@ -622,6 +624,87 @@ fn bundle_conflicts_and_partial_selections_do_not_publish_broken_links() {
         a.extraction_job(options, &Cancellation::default()),
         Err("unsupported_link")
     ));
+}
+
+#[cfg(unix)]
+#[test]
+fn native_links_reach_the_same_contents_before_and_after_renaming() {
+    use std::fs;
+    let a = archive("link_renames.zip");
+    for conflicts in [false, true] {
+        let target = Target::new();
+        if conflicts {
+            fs::write(target.0.join("primary?.txt"), b"original host file").unwrap();
+            fs::write(target.0.join("entry"), b"original host entry").unwrap();
+            fs::create_dir(target.0.join("assets")).unwrap();
+            fs::write(target.0.join("assets/old.txt"), b"original host directory").unwrap();
+        }
+        let mut options = target.options();
+        options.conflict = ConflictPolicy::Rename;
+        let done = execute(&a, options, &Control::default(), |_| {});
+        assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+        assert_eq!(done.committed_files, 9);
+        assert_eq!(done.skipped_files, 0);
+        let (entry, file, dir) = if conflicts {
+            ("entry (1)", "primary? (1).txt", "assets (1)")
+        } else {
+            ("entry", "primary?.txt", "assets")
+        };
+        for link in [entry, "viewer", "via", "directory-view/pointer"] {
+            assert_eq!(
+                fs::read(target.0.join(link)).unwrap(),
+                b"owned primary",
+                "{link}"
+            );
+        }
+        assert_eq!(
+            fs::read(target.0.join("mount/local")).unwrap(),
+            b"owned asset"
+        );
+        assert_eq!(
+            fs::read_link(target.0.join(entry)).unwrap(),
+            Path::new(file)
+        );
+        assert_eq!(
+            fs::read_link(target.0.join("mount")).unwrap(),
+            Path::new(dir)
+        );
+        assert_eq!(
+            fs::read_link(target.0.join(dir).join("local")).unwrap(),
+            Path::new("data.txt")
+        );
+        if conflicts {
+            assert_eq!(
+                fs::read(target.0.join("primary?.txt")).unwrap(),
+                b"original host file"
+            );
+            assert_eq!(
+                fs::read(target.0.join("entry")).unwrap(),
+                b"original host entry"
+            );
+            assert_eq!(
+                fs::read(target.0.join("assets/old.txt")).unwrap(),
+                b"original host directory"
+            );
+            for (original, output) in [("primary?.txt", file), ("assets", dir), ("entry", entry)] {
+                assert!(
+                    done.details
+                        .iter()
+                        .any(|d| d.original_name.as_deref() == Some(original) && d.name == output)
+                );
+            }
+        } else {
+            assert_eq!(
+                fs::read_link(target.0.join("viewer")).unwrap(),
+                Path::new("entry")
+            );
+            assert_eq!(
+                fs::read_link(target.0.join("via")).unwrap(),
+                Path::new("mount/../primary?.txt")
+            );
+            assert!(done.details.iter().all(|d| d.original_name.is_none()));
+        }
+    }
 }
 
 #[cfg(not(unix))]
