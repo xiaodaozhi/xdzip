@@ -16,7 +16,7 @@ from asset_definitions import (
     REFERENCES, STATE_SHAPES, SUPPLEMENTAL_ROLES, file_shapes, hero_shapes, revised_status_shapes,
     supplemental_shapes,
 )
-from brand_assets import brand_export_specs, brand_shapes
+from brand_assets import WORDMARK_LETTERING, brand_export_specs, brand_shapes
 from association_icon_assets import asset_entries as association_entries
 from directory_tree_assets import TREE_CUTS, TREE_ICON_REFERENCES, component_reference_coverage, tree_shapes
 from operation_reference_assets import OPERATION_CUTS, operation_reference_coverage
@@ -182,8 +182,34 @@ def svg_entries(check: bool = False) -> list[dict]:
     return entries
 
 
-def brand_entries() -> list[dict]:
-    """Admit the separately generated platform exports into the same manifest."""
+def wordmark_vectors(check: bool) -> dict:
+    """Compose approved lettering with the shared application mark for each theme."""
+    spec = json.loads((REPO / 'specs/visual/layout-scale.json').read_text())['brand_wordmark']
+    palette = json.loads((REPO / 'specs/visual/tokens.json').read_text())
+    width, height = spec['canvas']
+    ns = 'http://www.w3.org/2000/svg'
+    viewbox = f'0 0 {width} {height}'
+    master = ET.parse(ROOT / WORDMARK_LETTERING).getroot()
+    if master.get('viewBox') != viewbox or len(master) != 1 or master[0].tag != f'{{{ns}}}g':
+        raise ValueError('Wordmark lettering must use the declared canvas and one outline group')
+    for theme in THEMES:
+        ink = palette[theme]['text']
+        letters = ET.tostring(master[0], encoding='unicode').replace('currentColor', ink)
+        mark = brand_shapes(theme)['app-mark']
+        svg = (f'<svg xmlns="{ns}" width="{width}" height="{height}" viewBox="{viewbox}">\n'
+               f'  {mark}\n  {letters.strip()}\n</svg>\n')
+        target = ROOT / f'brand/wordmark-{theme}.svg'
+        if check:
+            if not target.is_file() or target.read_text(encoding='utf-8') != svg:
+                raise ValueError(f'Stale interface wordmark: {target.name}')
+        else:
+            target.write_text(svg, encoding='utf-8', newline='\n')
+    return spec
+
+
+def brand_entries(check: bool = False) -> list[dict]:
+    """Inventory interface wordmarks and the separately generated platform exports."""
+    wordmark = wordmark_vectors(check)
     entries = []
     for spec in brand_export_specs():
         path = ROOT / spec['file']
@@ -198,6 +224,14 @@ def brand_entries() -> list[dict]:
             with Image.open(path) as picture:
                 entry['size'] = list(picture.size)
         entry['runtime_usage'] = {'qt_aliases': [], 'platform_resources': []}
+        if spec['purpose'] in ('wordmark-lettering', 'interface-wordmark'):
+            entry['size'] = wordmark['canvas']
+            entry['visible_lettering_height'] = wordmark['visible_lettering_height']
+            if spec['purpose'] == 'interface-wordmark':
+                theme = spec['theme']
+                entry['runtime_usage']['qt_aliases'] = [f'assets/brand-wordmark-{theme}.svg']
+                entry['mark_source'] = f'svg/{theme}/app-mark.svg'
+                entry['mark_source_sha256'] = digest(ROOT / entry['mark_source'])
         if spec['file'] == 'brand/xdzip.png':
             entry['runtime_usage']['qt_aliases'] = ['assets/app-icon.png']
             entry['runtime_usage']['platform_resources'] = ['Linux application icon']
@@ -304,10 +338,13 @@ def gallery(entries: list[dict]) -> str:
         # A 16px/24px platform PNG is shown at its real resolution, not enlarged
         # into a misleading, blurry 160px sample. Vector masters remain scalable.
         preview_size = min(160, max(item.get('size', [160]))) if Path(item['file']).suffix == '.png' else 160
+        is_wordmark = item.get('purpose') in ('interface-wordmark', 'wordmark-lettering')
         preview_height = (round(preview_size * item['size'][1] / item['size'][0])
-                          if item['kind'] == 'brand-reference' else preview_size)
+                          if item['kind'] == 'brand-reference' or is_wordmark else preview_size)
         preview = (f'<img width="{preview_size}" height="{preview_height}" src="{item["file"]}" alt="{name}">'
                    if Path(item['file']).suffix in ('.svg', '.png', '.jpg', '.jpeg') else '<span class="format">' + name.rsplit('.', 1)[-1].upper() + '</span>')
+        if item.get('purpose') == 'interface-wordmark' and item['theme'] == 'dark':
+            preview = '<div style="background:#22262f;border-radius:8px;padding:12px">' + preview + '</div>'
         dimensions = f'{item["size"][0]} × {item["size"][1]} px' if 'size' in item else item.get('format', '').upper()
         platform_cards.append(f'<figure class="platform-card"><div>{preview}</div><figcaption><a href="{item["file"]}">{name}</a><small>{html.escape(item["kind"])}，{dimensions}</small></figcaption></figure>')
     operation_section = '<section id="operation-components"><h2>操作窗口组件与插图</h2><p>参考切片保留原稿背景；运行界面由共享控件和已有透明素材绘制。</p><div class="references component-cuts">' + ''.join(f'<figure><a href="{item["reference"]}"><img src="{item["reference"]}" alt="{item["label"]}"></a><figcaption>{item["label"]}</figcaption></figure>' for item in operation_reference_coverage()) + '</div></section>'
@@ -345,7 +382,7 @@ def main() -> None:
         args.check = True  # Build expected descriptors without recropping or drawing.
     for folder in ('reference', 'demo', 'svg/light', 'svg/dark', 'png/light', 'png/dark', 'preview'):
         (ROOT / folder).mkdir(parents=True, exist_ok=True)
-    entries = (crop_entries(args.check) + svg_entries(args.check) + brand_entries() + tray_entries()
+    entries = (crop_entries(args.check) + svg_entries(args.check) + brand_entries(args.check) + tray_entries()
                + menu_shadow_entries(args.check) + window_shadow_entries(args.check) + association_entries())
     manifest = {
         'schema_version': 2, 'status': 'canonical-runtime-and-design-library',
@@ -372,6 +409,12 @@ def main() -> None:
             if item['kind'] == 'brand-reference' and item['file'] in recorded:
                 # The composed preview is refreshed independently of runtime icons.
                 recorded[item['file']].update(item)
+            if item.get('purpose') in ('wordmark-lettering', 'interface-wordmark'):
+                if item['file'] not in recorded:
+                    existing['assets'].append(item)
+                    recorded[item['file']] = item
+                else:
+                    recorded[item['file']].update(item)
             if (args.refresh_association_icons and item['kind'] == 'association-icon-platform'
                     and item['file'] in recorded):
                 recorded[item['file']].update(item)

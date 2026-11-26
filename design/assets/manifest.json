@@ -29277,7 +29277,7 @@
       "inset": 28,
       "usage": "runtime-and-design",
       "source": "../../specs/visual/layout-scale.json",
-      "source_sha256": "b4f58a55662b660349ea0e3ab288ee81b95207b52a55bc99ec800a76406e73da",
+      "source_sha256": "6be3ecfd96b24d81b698ac10b03ace59a6e4d67a95fe7c01bbda3aacbf339936",
       "sha256": "675ac4e86a8a8a2e3cbd66f61db589f7c4ef4eafb75bbeb46723386b85f831dc",
       "id": "linux-window-shadow/light"
     },
@@ -29293,7 +29293,7 @@
       "inset": 28,
       "usage": "runtime-and-design",
       "source": "../../specs/visual/layout-scale.json",
-      "source_sha256": "b4f58a55662b660349ea0e3ab288ee81b95207b52a55bc99ec800a76406e73da",
+      "source_sha256": "6be3ecfd96b24d81b698ac10b03ace59a6e4d67a95fe7c01bbda3aacbf339936",
       "sha256": "9a49269db77e55b1b6c3d09437e7806b413d771921b4ed8e1a20a874b9f8fb20",
       "id": "linux-window-shadow/dark"
     },
@@ -31402,6 +31402,78 @@
       "format": "icns",
       "source": "file-associations/xdzip-msi-master.svg",
       "sha256": "99453712848e6fd75d4e489b160bc425d090f0252cc140aa0af3b8fa3d1a3f75"
+    },
+    {
+      "id": "brand/wordmark-lettering.svg",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/wordmark-lettering.svg",
+      "kind": "brand-master",
+      "purpose": "wordmark-lettering",
+      "provenance": "Bruno Ace Regular lettering, approved 02 stroke and 110% height",
+      "font_reference": "https://github.com/google/fonts/tree/main/ofl/brunoace",
+      "sha256": "0c0045f7e13dfa85a4e48472ed66d0bb1a726efa75b8f670094a056092678620",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      },
+      "size": [
+        79.3488,
+        24
+      ],
+      "visible_lettering_height": 14.63
+    },
+    {
+      "id": "brand/wordmark-light.svg",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/wordmark-light.svg",
+      "kind": "brand-master",
+      "purpose": "interface-wordmark",
+      "source": "brand/wordmark-lettering.svg",
+      "theme": "light",
+      "format": "svg",
+      "sha256": "a79a06d5719933b44a76184387e12dce16808cc0fe9e2c26546a82240214a9c4",
+      "source_sha256": "0c0045f7e13dfa85a4e48472ed66d0bb1a726efa75b8f670094a056092678620",
+      "runtime_usage": {
+        "qt_aliases": [
+          "assets/brand-wordmark-light.svg"
+        ],
+        "platform_resources": []
+      },
+      "size": [
+        79.3488,
+        24
+      ],
+      "visible_lettering_height": 14.63,
+      "mark_source": "svg/light/app-mark.svg",
+      "mark_source_sha256": "cc5ffe12ebccafc760a57b8deae6c43aeb085d745e734916019995553059663a"
+    },
+    {
+      "id": "brand/wordmark-dark.svg",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/wordmark-dark.svg",
+      "kind": "brand-master",
+      "purpose": "interface-wordmark",
+      "source": "brand/wordmark-lettering.svg",
+      "theme": "dark",
+      "format": "svg",
+      "sha256": "6a43aa377e95ccbacb666c1c13a4009917f0ffa534056f1538c2f169ed24a1c9",
+      "source_sha256": "0c0045f7e13dfa85a4e48472ed66d0bb1a726efa75b8f670094a056092678620",
+      "runtime_usage": {
+        "qt_aliases": [
+          "assets/brand-wordmark-dark.svg"
+        ],
+        "platform_resources": []
+      },
+      "size": [
+        79.3488,
+        24
+      ],
+      "visible_lettering_height": 14.63,
+      "mark_source": "svg/dark/app-mark.svg",
+      "mark_source_sha256": "822afc8a556aec6a700be48b8f203121a273c07a8367115d84092707f92945ae"
     }
   ]
 }

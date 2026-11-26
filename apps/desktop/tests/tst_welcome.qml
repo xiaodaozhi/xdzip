@@ -15,6 +15,27 @@ Item {
         name: "WelcomePage"; when: windowShown
         function init() { Ui.Theme.dark = false; Ui.Theme.fontScale = 1; page.message=""; page.canOpen = true; page.busy = false; page.externalOpening = false; openSpy.clear(); createSpy.clear(); }
         function cleanup() { Ui.Theme.fontScale = 1; surface.width = 1024; }
+        function test_brand_wordmark_data() {
+            return [1, 1.25, 1.5].map(scale => ({tag: String(scale), scale}));
+        }
+        function test_brand_wordmark(data) {
+            surface.width = 832;
+            Ui.Theme.fontScale = data.scale;
+            const brand = findChild(page, "welcomeBrandWordmark");
+            const headline = findChild(page, "welcomeHeadline");
+            tryCompare(brand, "status", Image.Ready);
+            verify(brand.source.toString().endsWith("brand-wordmark-light.svg"));
+            // ColumnLayout rounds preferred heights to logical-pixel boundaries.
+            tryVerify(() => Math.abs(brand.height - 26 * data.scale) <= 0.5);
+            verify(waitForPolish(brand.parent));
+            const center = brand.mapToItem(page, brand.width / 2, 0);
+            fuzzyCompare(center.x, page.width / 2, 0.5);
+            compare(center.y, Ui.Theme.welcomeContentTopInset);
+            verify(brand.mapToItem(page, 0, brand.height).y < headline.mapToItem(page, 0, 0).y);
+            Ui.Theme.dark = true;
+            tryCompare(brand, "status", Image.Ready);
+            verify(brand.source.toString().endsWith("brand-wordmark-dark.svg"));
+        }
         function test_actions_and_states_data() { return [{tag:"light", dark:false}, {tag:"dark", dark:true}]; }
         function test_actions_and_states(data) {
             Ui.Theme.dark = data.dark;

@@ -43,7 +43,8 @@ Rectangle {
     readonly property real capsuleHeight: Math.max(Theme.mainTabHeight, Math.ceil(Theme.mainTabSize * 1.6 + 8))
     readonly property real preferredTabWidth: Theme.mainTabWidth * Math.min(1.5, Theme.fontScale)
     readonly property real minimumTabWidth: Theme.mainTabMinimumWidth * Math.min(1.5, Theme.fontScale)
-    readonly property real tabStartX: integratedTitlebar ? Theme.mainTabFirstMacX : Math.max(Theme.mainTabFirstOtherX, brand.x + brand.width + Theme.mainUnits(24))
+    readonly property real tabStartX: Math.max(integratedTitlebar ? Theme.mainTabFirstMacX : Theme.mainTabFirstOtherX,
+                                               brand.x + brand.width + Theme.mainUnits(24))
     readonly property real availableTabWidth: Math.max(0, settingsButton.x - tabStartX - newTab.width - Theme.mainTabGap * 2)
     readonly property bool overflowing: tabCount * minimumTabWidth + (tabCount - 1) * Theme.mainTabGap > availableTabWidth
     readonly property real viewportWidth: Math.max(0, availableTabWidth - (overflowing ? overflowControls.width + Theme.mainTabGap : 0))
@@ -263,23 +264,12 @@ Rectangle {
         onDoubleClicked: if (root.windowsControls)
             root.maximizeRequested()
     }
-    RowLayout {
+    BrandWordmark {
         id: brand
+        objectName: "titlebarBrandWordmark"
         x: root.integratedTitlebar ? Theme.mainBrandMacX : Theme.mainUnits(20)
-        height: root.height
-        spacing: Theme.mainUnits(8)
-        Image {
-            source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "app-mark.png"
-            Layout.preferredWidth: Theme.mainUnits(30)
-            Layout.preferredHeight: Theme.mainUnits(30)
-            fillMode: Image.PreserveAspectFit
-        }
-        Text {
-            text: "xdzip"
-            font.pixelSize: Theme.mainBrandSize
-            font.weight: Font.DemiBold
-            color: Theme.text
-        }
+        anchors.verticalCenter: parent.verticalCenter
+        iconHeight: Theme.titlebarWordmarkHeight
     }
     Rectangle {
         anchors.bottom: parent.bottom
