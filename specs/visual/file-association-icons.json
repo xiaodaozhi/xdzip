@@ -5,40 +5,615 @@
   "brand_source": "scripts/brand_assets.py",
   "canvas": 1024,
   "platforms": {
-    "default": {"viewbox": [32, 32, 960, 960], "body_height_ratio": 0.9},
-    "macos": {"viewbox": [-20, -20, 1064, 1064], "body_height_ratio": 0.8120300751879699}
+    "default": {
+      "viewbox": [
+        32,
+        32,
+        960,
+        960
+      ],
+      "body_height_ratio": 0.9
+    },
+    "macos": {
+      "viewbox": [
+        -20,
+        -20,
+        1064,
+        1064
+      ],
+      "body_height_ratio": 0.8120300751879699
+    }
   },
-  "png_sizes": [16, 24, 32, 48, 64, 128, 256, 512, 1024],
+  "png_sizes": [
+    16,
+    24,
+    32,
+    48,
+    64,
+    128,
+    256,
+    512,
+    1024
+  ],
   "profiles": {
-    "tiny": {"sizes": [16, 24], "label": false, "brand_profile": "tiny"},
-    "small": {"sizes": [32], "label": false, "brand_profile": "small"},
-    "master": {"sizes": [48, 64, 128, 256, 512, 1024], "label": true}
+    "tiny": {
+      "sizes": [
+        16,
+        24
+      ],
+      "label": false,
+      "brand_profile": "tiny"
+    },
+    "small": {
+      "sizes": [
+        32
+      ],
+      "label": false,
+      "brand_profile": "small"
+    },
+    "master": {
+      "sizes": [
+        48,
+        64,
+        128,
+        256,
+        512,
+        1024
+      ],
+      "label": true
+    }
   },
-  "label": {"x_center": 512.5, "y": 817, "height": 61, "maximum_width": 504, "stroke_width": 14, "letter_gap": 34, "narrow_letter_gap": 38, "linecap": "square", "color": "#39465d"},
+  "label": {
+    "x_center": 512.5,
+    "y": 817,
+    "height": 61,
+    "maximum_width": 504,
+    "stroke_width": 14,
+    "letter_gap": 34,
+    "narrow_letter_gap": 38,
+    "linecap": "square",
+    "color": "#39465d"
+  },
   "families": {
-    "zip": ["#00beef", "#0068ff", "#153de2"],
-    "sevenzip": ["#8895ff", "#5855dd", "#3730a3"],
-    "rar": ["#ce83eb", "#a447bf", "#70268f"],
-    "tar": ["#f4b44e", "#d58a21", "#a65d13"],
-    "gzip": ["#4dd9be", "#159f8c", "#087568"],
-    "cab": ["#a6b6ca", "#6d819b", "#465c78"],
-    "iso": ["#6db9f4", "#3983cc", "#225c9c"],
-    "udf": ["#54d0df", "#199bad", "#126b83"],
-    "generic": ["#a8b3c7", "#78869e", "#52617a"]
+    "zip": [
+      "#3c84ed",
+      "#4269e2",
+      "#474fd6"
+    ],
+    "sevenzip": [
+      "#8895ff",
+      "#5855dd",
+      "#3730a3"
+    ],
+    "rar": [
+      "#ce83eb",
+      "#a447bf",
+      "#70268f"
+    ],
+    "tar": [
+      "#f4b44e",
+      "#d58a21",
+      "#a65d13"
+    ],
+    "gzip": [
+      "#4dd9be",
+      "#159f8c",
+      "#087568"
+    ],
+    "cab": [
+      "#a6b6ca",
+      "#6d819b",
+      "#465c78"
+    ],
+    "iso": [
+      "#6db9f4",
+      "#3983cc",
+      "#225c9c"
+    ],
+    "udf": [
+      "#54d0df",
+      "#199bad",
+      "#126b83"
+    ],
+    "generic": [
+      "#a8b3c7",
+      "#78869e",
+      "#52617a"
+    ],
+    "compressed": [
+      "#58b9e8",
+      "#347cba",
+      "#245492"
+    ],
+    "text-envelope": [
+      "#7ec6c6",
+      "#3c999a",
+      "#22696d"
+    ],
+    "protected": [
+      "#ab95e2",
+      "#7759b6",
+      "#523880"
+    ],
+    "legacy": [
+      "#c6a1d5",
+      "#916aa8",
+      "#624774"
+    ],
+    "package": [
+      "#8ba6e3",
+      "#576fac",
+      "#364a7c"
+    ]
   },
   "icons": [
-    {"id": "zip", "label": "ZIP", "family": "zip", "extensions": [".zip"], "name": "ZIP 压缩包"},
-    {"id": "7z", "label": "7Z", "family": "sevenzip", "extensions": [".7z"], "name": "7z 压缩包"},
-    {"id": "rar", "label": "RAR", "family": "rar", "extensions": [".rar"], "name": "RAR 压缩包"},
-    {"id": "tar", "label": "TAR", "family": "tar", "extensions": [".tar"], "name": "TAR 归档"},
-    {"id": "tar-gz", "label": "TAR.GZ", "family": "gzip", "extensions": [".tar.gz"], "name": "TAR.GZ 压缩归档"},
-    {"id": "tgz", "label": "TGZ", "family": "gzip", "extensions": [".tgz"], "name": "TGZ 压缩归档"},
-    {"id": "gz", "label": "GZ", "family": "gzip", "extensions": [".gz"], "name": "GZIP 压缩流或 TAR.GZ 外层"},
-    {"id": "cab", "label": "CAB", "family": "cab", "extensions": [".cab"], "name": "CAB 安装归档"},
-    {"id": "iso", "label": "ISO", "family": "iso", "extensions": [".iso"], "name": "ISO 光盘映像"},
-    {"id": "udf", "label": "UDF", "family": "udf", "extensions": [".udf"], "name": "UDF 光盘映像"},
-    {"id": "archive", "label": "", "family": "generic", "extensions": [".bz2", ".bz", ".tar.bz2", ".tar.bz", ".tbz", ".tbz2", ".lzma", ".tar.lzma", ".tlz", ".lz", ".tar.lz", ".xz", ".tar.xz", ".txz"], "name": "通用归档后备"}
+    {
+      "id": "zip",
+      "label": "ZIP",
+      "family": "zip",
+      "extensions": [
+        ".zip",
+        ".zipx",
+        ".xpi",
+        ".apk",
+        ".ipa",
+        ".cbz"
+      ],
+      "name": "ZIP 压缩包"
+    },
+    {
+      "id": "7z",
+      "label": "7Z",
+      "family": "sevenzip",
+      "extensions": [
+        ".7z"
+      ],
+      "name": "7z 压缩包"
+    },
+    {
+      "id": "rar",
+      "label": "RAR",
+      "family": "rar",
+      "extensions": [
+        ".rar"
+      ],
+      "name": "RAR 压缩包"
+    },
+    {
+      "id": "tar",
+      "label": "TAR",
+      "family": "tar",
+      "extensions": [
+        ".tar"
+      ],
+      "name": "TAR 归档"
+    },
+    {
+      "id": "tar-gz",
+      "label": "TAR.GZ",
+      "family": "gzip",
+      "extensions": [
+        ".tar.gz"
+      ],
+      "name": "TAR.GZ 压缩归档"
+    },
+    {
+      "id": "tgz",
+      "label": "TGZ",
+      "family": "gzip",
+      "extensions": [
+        ".tgz"
+      ],
+      "name": "TGZ 压缩归档"
+    },
+    {
+      "id": "gz",
+      "label": "GZ",
+      "family": "gzip",
+      "extensions": [
+        ".gz"
+      ],
+      "name": "GZIP 压缩流或 TAR.GZ 外层"
+    },
+    {
+      "id": "cab",
+      "label": "CAB",
+      "family": "cab",
+      "extensions": [
+        ".cab"
+      ],
+      "name": "CAB 安装归档"
+    },
+    {
+      "id": "iso",
+      "label": "ISO",
+      "family": "iso",
+      "extensions": [
+        ".iso"
+      ],
+      "name": "ISO 光盘映像"
+    },
+    {
+      "id": "udf",
+      "label": "UDF",
+      "family": "udf",
+      "extensions": [
+        ".udf"
+      ],
+      "name": "UDF 光盘映像"
+    },
+    {
+      "id": "archive",
+      "label": "",
+      "family": "generic",
+      "extensions": [],
+      "name": "通用归档后备"
+    },
+    {
+      "id": "bz2",
+      "label": "BZ2",
+      "family": "compressed",
+      "extensions": [
+        ".bz2",
+        ".bz"
+      ],
+      "name": "BZip2"
+    },
+    {
+      "id": "tar-bz2",
+      "label": "TAR.BZ2",
+      "family": "tar",
+      "extensions": [
+        ".tar.bz2",
+        ".tar.bz",
+        ".tbz",
+        ".tbz2"
+      ],
+      "name": "TAR.BZ2"
+    },
+    {
+      "id": "lzma",
+      "label": "LZMA",
+      "family": "compressed",
+      "extensions": [
+        ".lzma"
+      ],
+      "name": "LZMA"
+    },
+    {
+      "id": "tar-lzma",
+      "label": "TAR.LZMA",
+      "family": "tar",
+      "extensions": [
+        ".tar.lzma",
+        ".tlz"
+      ],
+      "name": "TAR.LZMA"
+    },
+    {
+      "id": "lz",
+      "label": "LZ",
+      "family": "compressed",
+      "extensions": [
+        ".lz"
+      ],
+      "name": "Lzip"
+    },
+    {
+      "id": "tar-lz",
+      "label": "TAR.LZ",
+      "family": "tar",
+      "extensions": [
+        ".tar.lz"
+      ],
+      "name": "TAR.LZ"
+    },
+    {
+      "id": "xz",
+      "label": "XZ",
+      "family": "compressed",
+      "extensions": [
+        ".xz"
+      ],
+      "name": "XZ"
+    },
+    {
+      "id": "tar-xz",
+      "label": "TAR.XZ",
+      "family": "tar",
+      "extensions": [
+        ".tar.xz",
+        ".txz"
+      ],
+      "name": "TAR.XZ"
+    },
+    {
+      "id": "lz4",
+      "label": "LZ4",
+      "family": "compressed",
+      "extensions": [
+        ".lz4"
+      ],
+      "name": "LZ4"
+    },
+    {
+      "id": "tar-lz4",
+      "label": "TAR.LZ4",
+      "family": "tar",
+      "extensions": [
+        ".tar.lz4"
+      ],
+      "name": "TAR.LZ4"
+    },
+    {
+      "id": "zst",
+      "label": "ZST",
+      "family": "compressed",
+      "extensions": [
+        ".zst"
+      ],
+      "name": "ZSTD"
+    },
+    {
+      "id": "tar-zst",
+      "label": "TAR.ZST",
+      "family": "tar",
+      "extensions": [
+        ".tar.zst",
+        ".tzst"
+      ],
+      "name": "TAR.ZST"
+    },
+    {
+      "id": "z",
+      "label": "Z",
+      "family": "compressed",
+      "extensions": [
+        ".z"
+      ],
+      "name": "Z"
+    },
+    {
+      "id": "tar-z",
+      "label": "TAR.Z",
+      "family": "tar",
+      "extensions": [
+        ".tar.z",
+        ".taz"
+      ],
+      "name": "TAR.Z"
+    },
+    {
+      "id": "uu",
+      "label": "UU",
+      "family": "text-envelope",
+      "extensions": [
+        ".uu",
+        ".uue"
+      ],
+      "name": "UU"
+    },
+    {
+      "id": "xxe",
+      "label": "XXE",
+      "family": "text-envelope",
+      "extensions": [
+        ".xxe"
+      ],
+      "name": "XXE"
+    },
+    {
+      "id": "br",
+      "label": "BR",
+      "family": "compressed",
+      "extensions": [
+        ".br"
+      ],
+      "name": "Brotli"
+    },
+    {
+      "id": "tar-br",
+      "label": "TAR.BR",
+      "family": "tar",
+      "extensions": [
+        ".tar.br"
+      ],
+      "name": "TAR.BR"
+    },
+    {
+      "id": "aes",
+      "label": "AES",
+      "family": "protected",
+      "extensions": [
+        ".aes"
+      ],
+      "name": "AES Crypt"
+    },
+    {
+      "id": "lzh",
+      "label": "LZH",
+      "family": "legacy",
+      "extensions": [
+        ".lha",
+        ".lzh"
+      ],
+      "name": "LZH"
+    },
+    {
+      "id": "pma",
+      "label": "PMA",
+      "family": "legacy",
+      "extensions": [
+        ".pma"
+      ],
+      "name": "PMA"
+    },
+    {
+      "id": "arj",
+      "label": "ARJ",
+      "family": "legacy",
+      "extensions": [
+        ".arj"
+      ],
+      "name": "ARJ"
+    },
+    {
+      "id": "arc",
+      "label": "ARC",
+      "family": "legacy",
+      "extensions": [
+        ".arc"
+      ],
+      "name": "ARC"
+    },
+    {
+      "id": "bh",
+      "label": "BH",
+      "family": "legacy",
+      "extensions": [
+        ".bh"
+      ],
+      "name": "BH"
+    },
+    {
+      "id": "alz",
+      "label": "ALZ",
+      "family": "legacy",
+      "extensions": [
+        ".alz"
+      ],
+      "name": "ALZ"
+    },
+    {
+      "id": "egg",
+      "label": "EGG",
+      "family": "legacy",
+      "extensions": [
+        ".egg"
+      ],
+      "name": "EGG"
+    },
+    {
+      "id": "pea",
+      "label": "PEA",
+      "family": "legacy",
+      "extensions": [
+        ".pea"
+      ],
+      "name": "PEA"
+    },
+    {
+      "id": "nsis",
+      "label": "NSIS",
+      "family": "package",
+      "extensions": [
+        ".exe"
+      ],
+      "name": "NSIS"
+    },
+    {
+      "id": "asar",
+      "label": "ASAR",
+      "family": "package",
+      "extensions": [
+        ".asar"
+      ],
+      "name": "ASAR"
+    },
+    {
+      "id": "deb",
+      "label": "DEB",
+      "family": "package",
+      "extensions": [
+        ".deb"
+      ],
+      "name": "DEB"
+    },
+    {
+      "id": "msi",
+      "label": "MSI",
+      "family": "package",
+      "extensions": [
+        ".msi"
+      ],
+      "name": "Compound"
+    },
+    {
+      "id": "zip-sfx",
+      "label": "ZIP.SFX",
+      "family": "zip",
+      "extensions": [
+        ".sfx.exe"
+      ],
+      "name": "ZIP SFX"
+    }
   ],
-  "excluded_associations": [".img", ".001", ".rNN", ".zNN"],
-  "review": {"backgrounds": ["#f5f5f3", "#20242d", "#e6eeff"], "sizes": [16, 24, 32, 48, 64, 128, 256], "native_acceptance": "separate"}
+  "excluded_associations": [
+    ".img",
+    ".001",
+    ".rNN",
+    ".zNN",
+    ".exe",
+    ".sfx.exe"
+  ],
+  "review": {
+    "backgrounds": [
+      "#f5f5f3",
+      "#20242d",
+      "#e6eeff"
+    ],
+    "sizes": [
+      16,
+      24,
+      32,
+      48,
+      64,
+      128,
+      256
+    ],
+    "native_acceptance": "separate"
+  },
+  "format_icons": {
+    "zip": "zip",
+    "tar": "tar",
+    "tar-gzip": "tar-gz",
+    "7z": "7z",
+    "gzip": "gz",
+    "bzip2": "bz2",
+    "tar-bzip2": "tar-bz2",
+    "lzma": "lzma",
+    "tar-lzma": "tar-lzma",
+    "lzip": "lz",
+    "tar-lzip": "tar-lz",
+    "xz": "xz",
+    "tar-xz": "tar-xz",
+    "lz4": "lz4",
+    "tar-lz4": "tar-lz4",
+    "zstd": "zst",
+    "tar-zstd": "tar-zst",
+    "compress": "z",
+    "tar-compress": "tar-z",
+    "uu": "uu",
+    "xxe": "xxe",
+    "brotli": "br",
+    "tar-brotli": "tar-br",
+    "aes-crypt": "aes",
+    "lzh": "lzh",
+    "pma": "pma",
+    "arj": "arj",
+    "arc": "arc",
+    "bh": "bh",
+    "alz": "alz",
+    "egg": "egg",
+    "pea": "pea",
+    "nsis": "nsis",
+    "asar": "asar",
+    "deb": "deb",
+    "rar": "rar",
+    "cab": "cab",
+    "compound": "msi",
+    "iso": "iso",
+    "udf": "udf",
+    "zip-sfx": "zip-sfx"
+  }
 }

@@ -16,13 +16,24 @@ from pathlib import Path
 import struct
 import xml.etree.ElementTree as ET
 
-from association_icon_assets import ASSETS, ROOT, SPEC, icon_svg, source_specs
+from association_icon_assets import (ASSETS, ROOT, SPEC, icon_svg, platform_icons,
+                                     source_specs, validate_coverage)
 from brand_assets import ICO_SIZES, ICNS_CHUNKS, master_svg, png_name
-from association_types import WINDOWS_ICONS, MACOS_ICONS
 
 
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def verify_paper_surface(image, size: int, platform: str, name: str) -> None:
+    if size < 128:
+        return
+    x, y, width, height = SPEC['platforms'][platform]['viewbox']
+    column = (680 - x) * size // width
+    paper = image.getpixel((column, (904 - y) * size // height))[0]
+    first, last = ((row - y) * size // height for row in (918, 926))
+    if any(image.getpixel((column, row))[0] > paper + 3 for row in range(first, last + 1)):
+        raise ValueError(f'Unexpected highlight below the format label: {name} {size}px')
 
 
 def write_sources(check: bool) -> None:
@@ -101,6 +112,7 @@ def validate_exports(output: Path) -> dict:
                         raise ValueError(f'Wrong canvas: {path.name}')
                     if image.info.get('xdzip-render-sha256') != digest(icon_svg(icon, size, platform).encode()):
                         raise ValueError(f'Stale raster source: {path.name}')
+                    verify_paper_surface(image, size, platform, path.name)
                     alpha = image.getchannel('A')
                     bounds = alpha.point(lambda value: 255 if value >= 128 else 0).getbbox()
                     canvas = SPEC['platforms'][platform]['viewbox'][2]
@@ -144,15 +156,12 @@ def validate_exports(output: Path) -> dict:
 
 def validate_runtime_assets() -> None:
     """Validate each tracked platform representation and its vector receipt."""
-    import importlib.util
     from PIL import Image
-    legacy_spec = importlib.util.spec_from_file_location('brand_export', ROOT / 'scripts/build-brand-assets.py')
-    legacy = importlib.util.module_from_spec(legacy_spec)
-    legacy_spec.loader.exec_module(legacy)
     icons = {icon['id']: icon for icon in SPEC['icons']}
     total = 0
-    for suffix, ids, platform in [('ico', WINDOWS_ICONS.values(), 'default'), ('icns', MACOS_ICONS, 'macos')]:
-        for icon_id in dict.fromkeys(ids):
+    for suffix, ids in platform_icons().items():
+        platform = 'default' if suffix == 'ico' else 'macos'
+        for icon_id in ids:
             path = ASSETS / f'xdzip-{icon_id}.{suffix}'
             with Image.open(path) as container:
                 if suffix == 'ico':
@@ -165,15 +174,13 @@ def validate_runtime_assets() -> None:
                         raise ValueError(f'Missing ICNS sizes: {path.name}')
                     representations = [(r[0] * r[2], container.icns.getimage(r)) for r in container.info['sizes']]
                 for size, image in representations:
-                    svg = legacy.source_svg('xdzip-zip', size, platform) if icon_id == 'zip' else icon_svg(icons[icon_id], size, platform)
+                    svg = icon_svg(icons[icon_id], size, platform)
                     if image.info.get('xdzip-render-sha256') != digest(svg.encode()):
                         raise ValueError(f'Stale icon source: {path.name} {size}')
-                    if icon_id == 'zip':
-                        if image.info.get('xdzip-source-sha256') != digest(master_svg('archive').encode()):
-                            raise ValueError(f'Stale legacy ZIP master: {path.name}')
-                    elif image.info.get('xdzip-format-id') != icon_id or image.info.get('xdzip-platform') != platform:
+                    if image.info.get('xdzip-format-id') != icon_id or image.info.get('xdzip-platform') != platform:
                         raise ValueError(f'Wrong icon identity: {path.name}')
                     rgba = image.convert('RGBA')
+                    verify_paper_surface(rgba, size, platform, path.name)
                     alpha = rgba.getchannel('A')
                     if rgba.size != (size, size) or alpha.getextrema() != (0, 255) or not alpha.getbbox():
                         raise ValueError(f'Invalid icon image: {path.name} {size}')
@@ -198,10 +205,13 @@ def main() -> None:
     output = args.export.resolve() if args.export else None
     if output and not any(output.is_relative_to(ROOT / folder) and output != ROOT / folder for folder in ['build', 'dist']):
         parser.error('--export must be a child of repository build/ or dist/')
+    validate_coverage()
     for icon, _, size, _ in source_specs():
         root = ET.fromstring(icon_svg(icon, size))
         if any(node.tag.rsplit('}', 1)[-1] in ['text', 'image', 'script', 'foreignObject'] for node in root.iter()):
             raise ValueError('Icon must contain self-contained vectors, without fonts or embedded images')
+        if any(node.get('d', '').startswith('M212 162V878') for node in root):
+            raise ValueError('The obsolete inset paper highlight reappeared')
     legacy_zip = ET.fromstring(master_svg('archive'))
     current_zip = ET.fromstring(icon_svg(next(icon for icon in SPEC['icons'] if icon['id'] == 'zip')))
     if ET.tostring(list(legacy_zip)[-1]) != ET.tostring(list(current_zip)[-1]):

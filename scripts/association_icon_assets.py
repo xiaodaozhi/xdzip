@@ -19,6 +19,26 @@ ASSETS = ROOT / 'design/assets/file-associations'
 NS = 'http://www.w3.org/2000/svg'
 ET.register_namespace('', NS)
 
+
+def platform_icons():
+    return {
+        'ico': tuple(dict.fromkeys((*WINDOWS_ICONS.values(), 'archive'))),
+        'icns': tuple(dict.fromkeys((*MACOS_ICONS, 'archive'))),
+    }
+
+
+def validate_coverage():
+    registry = json.loads((ROOT / 'specs/engineering/archive-formats.json').read_text(encoding='utf-8'))
+    icons = {icon['id']: icon for icon in SPEC['icons']}
+    formats = {item['id'] for item in registry['formats'] + registry['creation_wrappers']}
+    suffixes = {item['suffix'] for fmt in registry['formats'] for item in fmt['extensions']}
+    documented = [suffix for icon in icons.values() for suffix in icon['extensions']]
+    if (len(icons) != len(SPEC['icons']) or set(SPEC['format_icons']) != formats
+            or len(documented) != len(suffixes) or set(documented) != suffixes
+            or (set(SPEC['format_icons'].values()) | set(WINDOWS_ICONS.values()) | set(MACOS_ICONS))
+            - icons.keys()):
+        raise ValueError('Document artwork must cover the format registry, wrappers and platform mappings')
+
 # The legacy ZIP fixes a 61-unit cap height, 14-unit stroke and square endpoints.
 # Other letters extend those metrics, not a different font.
 GLYPHS = {
@@ -26,16 +46,28 @@ GLYPHS = {
     'B': (58, 'M0 61V0H29C63 0 63 29 29 29H0M29 29C68 29 68 61 29 61H0'),
     'C': (56, 'M56 6C40 -5 0 -4 0 30.5S40 66 56 55'),
     'D': (56, 'M0 0V61H24C67 61 67 0 24 0Z'),
+    'E': (52, 'M52 0H0V61H52M0 29H43'),
     'F': (52, 'M0 61V0H52M0 29H43'),
     'G': (58, 'M56 6C40 -5 0 -4 0 30.5S40 66 58 55V33H34'),
+    'H': (56, 'M0 0V61M56 0V61M0 30.5H56'),
     'I': (0, 'M0 0V61'),
+    'J': (47, 'M47 0V38C47 65 12 67 0 51'),
+    'K': (55, 'M0 0V61M55 0L0 35M22 21L55 61'),
+    'L': (49, 'M0 0V61H49'),
+    'M': (62, 'M0 61V0L31 34L62 0V61'),
+    'N': (56, 'M0 61V0L56 61V0'),
     'O': (58, 'M29 0C-9.666667 0 -9.666667 61 29 61S67.666667 0 29 0Z'),
     'P': (63, 'M0 61V0H33C73 0 73 35 33 35H0'),
     'R': (63, 'M0 61V0H33C73 0 73 35 33 35H0M30 35L63 61'),
     'S': (54, 'M53 5C28 -7 0 0 0 16C0 33 54 25 54 45C54 64 24 66 0 56'),
     'T': (56, 'M0 0H56M28 0V61'),
     'U': (58, 'M0 0V37C0 69 58 69 58 37V0'),
+    'W': (69, 'M0 0L14 61L34.5 29L55 61L69 0'),
+    'X': (56, 'M0 0L56 61M56 0L0 61'),
+    'Y': (56, 'M0 0L28 32L56 0M28 32V61'),
     'Z': (56, 'M0 0H56L0 61H56'),
+    '2': (55, 'M3 11C12 -5 55 -6 55 16C55 31 20 39 0 61H55'),
+    '4': (55, 'M43 61V0L0 42H55'),
     '7': (56, 'M0 0H56L16 61'),
     '.': (0, 'M0 60V61'),
 }
@@ -126,5 +158,4 @@ def asset_entries() -> list[dict]:
         'format_id': icon_id, 'format': suffix,
         'source': f'file-associations/xdzip-{icon_id}-master.svg',
         'sha256': hashlib.sha256((ASSETS / f'xdzip-{icon_id}.{suffix}').read_bytes()).hexdigest(),
-    } for suffix, ids in [('ico', WINDOWS_ICONS.values()), ('icns', MACOS_ICONS)]
-      for icon_id in dict.fromkeys(ids)]
+    } for suffix, ids in platform_icons().items() for icon_id in ids]

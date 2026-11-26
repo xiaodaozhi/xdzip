@@ -110,7 +110,7 @@ windows-install-lifecycle.json, linux-install-lifecycle.json, and package hashes
 
 The Windows no-task probe for busy replacement protection uses isolated settings with the tray disabled so `CloseMainWindow` performs normal exit under that configuration. Other association-open probes retain default tray settings and end through the explicit shutdown barrier. Installation-protection probes must not mistake a hidden window for process exit failure or bypass exit verification by forcibly terminating the normal path.
 
-Windows update-protocol fixtures and real Qt update fixtures both include the association launcher and all nine document ICOs; installers cannot pass checks with missing required payload. The protocol fixture's small C main program and association command verify update handoff only. Embedded application resources, native candidates, and real windows are separately checked through the complete Qt product; conclusions are not mixed.
+Windows update-protocol fixtures and real Qt update fixtures both include the association launcher and all document ICOs required by the format registry; installers cannot pass checks with missing required payload. The protocol fixture's small C main program and association command verify update handoff only. Embedded application resources, native candidates, and real windows are separately checked through the complete Qt product; conclusions are not mixed.
 
 <a id="兼容基线的长期输入"></a>
 

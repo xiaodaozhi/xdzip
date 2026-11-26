@@ -87,13 +87,7 @@ Les fenêtres de création, ajout, extraction, tâche ou résultat, conflit et p
 
 [operation.header](../../../specs/visual/layout-scale.json) est l'unique source de paramètres ; les correspondances de fenêtres dans [window-registry.json](../../../specs/visual/window-registry.json). Cela remplace les zones d'icônes par fenêtre, la marque À propos centrée de 24 unités et les hauteurs d'en-tête propres aux fenêtres ; les images, hachages et mesures historiques restent inchangés. Les en-têtes textuels de mot de passe, de contrôle préalable et de sortie ou redémarrage ne reçoivent pas d'icônes décoratives inventées et conservent les interactions de sécurité. Les densités de la fenêtre principale et du menu sont mesurées séparément.
 
-Les illustrations de fermeture éclair des fenêtres d'opération partagent la géométrie et l'inventaire de scripts/zipper_assets.py : 2 rangées de dents arrondies imbriquées, ruban peu contrasté, curseur séparé et tirette ouverte. Les dents et le métal utilisent des reflets discrets ; les mettre à l'échelle proportionnellement dans les ressources et choisir les couleurs selon les fonds sans changer les silhouettes de document, zones d'icône ou densité UI. Les nouveaux utilisateurs doivent être enregistrés dans ZIPPER_ICONS ; les contrôles de ressources vérifient la complétude clair/sombre et la compatibilité des identifiants de dégradés intégrés.
-
-| Icône actuelle | Couleurs de la fermeture et disposition interne |
-| --- | --- |
-| archive-add | Blanc argenté ; conserver le document bleu et le badge d'ajout |
-| existing-archive | Blanc argenté ; agrandir proportionnellement et centrer pour la silhouette de document plus haute |
-| archive-warning | Métal blanc chaud et ruban brun avec document d'avertissement ambré |
+Les illustrations d’opération reprennent le papier au coin plié et le badge XD de l’icône d’archive. De petits badges indiquent les actions et les résultats. Les PDF reprennent le même papier avec un badge rouge. Le canevas de 24 unités et les emplacements existants déterminent la mise à l’échelle.
 
 file-archive conserve son symbole plat simple de catégorie de fichier, avec dents horizontales ocre et tirette rectangulaire, de la même couleur dans les 2 thèmes ; sa source et ses exports SVG et PNG conservent ce style.
 

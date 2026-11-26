@@ -67,7 +67,7 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 
 `XDZIP_CHROMIUM` pode indicar um caminho existente de Chromium/Edge. Originais SVG, fontes pequenas, e especificação são versionados; as fontes estão registradas no [manifest.json](../../../design/assets/manifest.json) principal. A entrada de geração é [build-association-icons.py](../../../scripts/build-association-icons.py), com composições em [association_icon_assets.py](../../../scripts/association_icon_assets.py).
 
-Os artefatos exportados contêm PNGs genéricos e macOS de 16 a 1024 pixels por formato, além de ICO e ICNS. ICO e ICNS do produto, inventariados pelo registro de formatos, ficam junto às fontes vetoriais em `file-associations/`; contêineres ZIP preservam os bytes originais anteriores à migração e os demais vêm das exportações correspondentes. Compilações comuns leem esses contêineres diretamente sem navegador. PNGs temporários, exportações completas, folhas de contato e comprovantes permanecem em `build/` ou `dist/`.
+O registro associa cada formato e extensão compatível a um gráfico. Os aliases podem compartilhar um ícone com rótulo. O papel é liso abaixo do rótulo. É possível exportar PNGs de 16 a 1024 pixels, ICO e ICNS. A compilação lê diretamente os contêineres de plataforma versionados. O Linux usa os ícones MIME do sistema.
 
 <a name="xdzip-verification-and-acceptance"></a>
 

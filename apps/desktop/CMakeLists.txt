@@ -3,7 +3,9 @@ set_property(CACHE XDZIP_MACOS_HANDLER_RANK PROPERTY STRINGS None Alternate)
 if(NOT XDZIP_MACOS_HANDLER_RANK MATCHES "^(None|Alternate)$")
     message(FATAL_ERROR "XDZIP_MACOS_HANDLER_RANK must be None or Alternate")
 endif()
-set(XDZIP_MACOS_DOCUMENT_ICONS zip tar tar-gz gz 7z rar cab archive iso udf)
+set(XDZIP_MACOS_DOCUMENT_ICONS
+    zip tar tar-gz 7z gz bz2 tar-bz2 lzma tar-lzma lz xz tar-xz lz4
+    zst tar-zst z tar-z uu xxe br aes lzh pma arj arc bh alz egg pea asar deb rar cab msi iso udf)
 
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
@@ -505,6 +507,8 @@ if(WIN32)
     add_library(xdzip-shell-extension SHARED shell/WindowsContextMenu.cpp shell/WindowsContextMenu.def)
     configure_file(shell/WindowsMenuIcons.rc.in "${CMAKE_CURRENT_BINARY_DIR}/xdzip-shell-icons.rc" @ONLY)
     target_sources(xdzip-shell-extension PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/xdzip-shell-icons.rc")
+    set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/xdzip-shell-icons.rc"
+        PROPERTIES OBJECT_DEPENDS "${XDZIP_APP_ICON_ICO};${PROJECT_SOURCE_DIR}/design/assets/file-associations/xdzip-zip.ico;${PROJECT_SOURCE_DIR}/design/assets/file-associations/xdzip-7z.ico")
     set_target_properties(xdzip-shell-extension PROPERTIES OUTPUT_NAME xdzip-shell)
     target_link_libraries(xdzip-shell-extension PRIVATE shell32 ole32 uuid advapi32 bcrypt version gdi32 user32 windowsapp)
     if(MSVC)
