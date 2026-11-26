@@ -256,6 +256,7 @@ impl Fixture {
     }
     fn job(&self, method: u16) -> Job {
         Job {
+            target_identity: None,
             options: Options {
                 inputs: vec![self.0.join("输入").to_string_lossy().into_owned()],
                 target: self.0.join("output").to_string_lossy().into_owned(),
@@ -279,6 +280,29 @@ impl Drop for Fixture {
         let _ = std::fs::remove_dir_all(&self.0);
     }
 }
+
+#[test]
+fn creation_requires_the_checked_directory_identity() {
+    let fixture = Fixture::new();
+    let other = Fixture::new();
+    for (checked, status) in [
+        (other.0.join("output"), Status::Failed),
+        (fixture.0.join("output"), Status::Succeeded),
+    ] {
+        let mut job = fixture.job(8);
+        job.target_identity = Some(Grant::for_creation(&checked).unwrap().identity());
+        let result = execute(job, &Control::default(), |_| {});
+        assert_eq!(result.status, status, "{}", result.error);
+        if status == Status::Failed {
+            assert_eq!(result.error, "target_changed");
+            assert_eq!(
+                std::fs::read_dir(fixture.0.join("output")).unwrap().count(),
+                0
+            );
+        }
+    }
+}
+
 fn archive_contents(bytes: Vec<u8>, format: Format) -> std::collections::BTreeMap<String, Vec<u8>> {
     struct Bytes(Vec<u8>);
     impl DecodedSink for Bytes {
@@ -1431,7 +1455,15 @@ fn tar_and_gzip_use_the_same_safe_creation_extraction_rename_and_cancel_barriers
         let mut renamed = options.clone();
         renamed.conflict = ConflictPolicy::Rename;
         assert_eq!(
-            execute(Job { options: renamed }, &Control::default(), |_| {}).status,
+            execute(
+                Job {
+                    target_identity: None,
+                    options: renamed
+                },
+                &Control::default(),
+                |_| {}
+            )
+            .status,
             Status::Succeeded
         );
         assert!(
@@ -1442,11 +1474,18 @@ fn tar_and_gzip_use_the_same_safe_creation_extraction_rename_and_cancel_barriers
         let mut overwrite = options;
         overwrite.conflict = ConflictPolicy::Overwrite;
         let cancel = Control::default();
-        let stopped = execute(Job { options: overwrite }, &cancel, |s| {
-            if s.status == Status::Verifying {
-                cancel.cancel();
-            }
-        });
+        let stopped = execute(
+            Job {
+                target_identity: None,
+                options: overwrite,
+            },
+            &cancel,
+            |s| {
+                if s.status == Status::Verifying {
+                    cancel.cancel();
+                }
+            },
+        );
         assert_eq!(stopped.status, Status::Cancelled);
         assert_eq!(std::fs::read(path).unwrap(), original);
         assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 2);

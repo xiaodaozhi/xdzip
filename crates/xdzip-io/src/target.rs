@@ -75,7 +75,7 @@ impl ArchiveUpdate {
     }
     /// Create a same-volume private workspace under this authorized parent.
     pub fn workspace(&self, task: u64) -> Result<Workspace, OutputError> {
-        self.grant.workspace(task)
+        self.grant.allocate_workspace(task, cfg!(windows))
     }
     /// The one source version that this edit is authorized to replace.
     pub fn version(&self) -> &FileVersion {
@@ -95,6 +95,19 @@ impl ArchiveUpdate {
     }
 }
 impl Grant {
+    /// The identity bound to this target after opening and checking its actual object.
+    pub fn identity(&self) -> FileIdentity {
+        self.identity
+    }
+
+    /// Verify that the grant still denotes the previously selected directory.
+    pub fn require_identity(&self, expected: Option<FileIdentity>) -> Result<(), OutputError> {
+        if expected.is_some_and(|identity| identity != self.identity) {
+            return Err(OutputError::TargetChanged);
+        }
+        Ok(())
+    }
+
     /// Authorize an existing directory chosen by the host. Broadly writable or linked roots fail.
     pub fn open(path: &Path, source: FileIdentity) -> Result<Arc<Self>, OutputError> {
         Self::open_sources(path, &[source])
@@ -115,7 +128,7 @@ impl Grant {
         if m.file_type().is_symlink() || !m.is_dir() {
             return Err(OutputError::UnsafeTarget);
         }
-        let dir = Dir::open_ambient_dir(path, cap_std::ambient_authority()).map_err(failure)?;
+        let dir = open_selected_directory(path).map_err(failure)?;
         let file = directory_file(&dir)?;
         private::check(&file, true)?;
         let identity = FileIdentity::read(&file).map_err(failure)?;
@@ -144,8 +157,8 @@ impl Grant {
         if m.file_type().is_symlink() || !m.is_dir() {
             return Err(OutputError::TargetChanged);
         }
-        let current = Dir::open_ambient_dir(&self.path, cap_std::ambient_authority())
-            .map_err(|_| OutputError::TargetChanged)?;
+        let current =
+            open_selected_directory(&self.path).map_err(|_| OutputError::TargetChanged)?;
         let file = directory_file(&current).map_err(|_| OutputError::TargetChanged)?;
         if FileIdentity::read(&file).map_err(|_| OutputError::TargetChanged)? != self.identity {
             return Err(OutputError::TargetChanged);
@@ -370,6 +383,14 @@ impl Grant {
     }
     /// Create a cryptographically random, exclusively created private workspace under this grant.
     pub fn workspace(self: &Arc<Self>, task: u64) -> Result<Workspace, OutputError> {
+        self.allocate_workspace(task, false)
+    }
+
+    fn allocate_workspace(
+        self: &Arc<Self>,
+        task: u64,
+        confidential: bool,
+    ) -> Result<Workspace, OutputError> {
         self.validate()?;
         let mut random = [0u8; 16];
         getrandom::fill(&mut random).map_err(|_| OutputError::Io)?;
@@ -394,9 +415,15 @@ impl Grant {
             journal: None,
             journal_identity: None,
             ordinal: 0,
+            confidential,
             #[cfg(test)]
             before_publish: None,
         };
+        if confidential {
+            #[cfg(windows)]
+            secure_workspace(workspace.dir())?;
+            private::check_confidential(&directory_file(workspace.dir())?, true)?;
+        }
         let mut options = private_options();
         options.write(true).create_new(true);
         let journal = workspace
@@ -559,6 +586,20 @@ impl Grant {
     }
 }
 
+fn open_selected_directory(path: &Path) -> io::Result<Dir> {
+    if let (Some(parent), Some(leaf)) = (path.parent(), path.file_name()) {
+        let parent = if parent.as_os_str().is_empty() {
+            Path::new(".")
+        } else {
+            parent
+        };
+        return Dir::open_ambient_dir(parent, cap_std::ambient_authority())?
+            .open_dir_nofollow(leaf);
+    }
+    // Filesystem roots and the current-directory spelling have no final named child.
+    Dir::open_ambient_dir(path, cap_std::ambient_authority())
+}
+
 fn workspace_prefix(path: &Path) -> &'static str {
     #[cfg(target_os = "linux")]
     {
@@ -608,6 +649,19 @@ fn private_options() -> OpenOptions {
     options
 }
 
+#[cfg(windows)]
+fn secure_workspace(dir: &Dir) -> Result<(), OutputError> {
+    use cap_std::fs::OpenOptionsExt;
+    use windows_sys::Win32::Storage::FileSystem::{FILE_GENERIC_READ, WRITE_DAC};
+    let mut options = private_options();
+    options
+        .read(true)
+        .maybe_dir(true)
+        .access_mode(FILE_GENERIC_READ | WRITE_DAC);
+    let handle = dir.open_with(".", &options).map_err(failure)?.into_std();
+    private::secure_temporary_directory(&handle)
+}
+
 /// Private transaction owner. Cleanup targets only known objects with matching identities.
 pub struct Workspace {
     grant: Arc<Grant>,
@@ -617,6 +671,7 @@ pub struct Workspace {
     journal: Option<File>,
     journal_identity: Option<FileIdentity>,
     ordinal: u64,
+    confidential: bool,
     #[cfg(test)]
     before_publish: Option<Box<dyn FnOnce()>>,
 }
@@ -704,7 +759,7 @@ impl Workspace {
             .map_err(failure)?
             .into_std();
         let identity = FileIdentity::read(&file).map_err(failure)?;
-        Ok(Stage {
+        let stage = Stage {
             file: Some(file),
             // Closed volume stages share one held directory instead of each
             // retaining a separate directory descriptor (macOS limits are low).
@@ -713,7 +768,48 @@ impl Workspace {
             name,
             published: false,
             sealed: None,
-        })
+        };
+        if self.confidential {
+            private::check_confidential(stage.file.as_ref().expect("new stage has a file"), false)?;
+        }
+        Ok(stage)
+    }
+    #[cfg(windows)]
+    fn preserve_archive_access(
+        &self,
+        stage: &Stage,
+        parent: &Parent,
+        leaf: &str,
+        expected: &ExistingFile,
+    ) -> Result<(), OutputError> {
+        use cap_std::fs::OpenOptionsExt;
+        use windows_sys::Win32::Storage::FileSystem::{FILE_GENERIC_READ, WRITE_DAC};
+
+        if !self.confidential || !Arc::ptr_eq(&stage.dir, self.dir.as_ref().ok_or(OutputError::Io)?)
+        {
+            return Err(OutputError::UnsafeTarget);
+        }
+        let mut options = private_options();
+        options.read(true);
+        let source = parent
+            .dir
+            .open_with(leaf, &options)
+            .map_err(failure)?
+            .into_std();
+        private::check(&source, false)?;
+        if FileVersion::read(&source).map_err(failure)? != expected.version {
+            return Err(OutputError::TargetChanged);
+        }
+        options.access_mode(FILE_GENERIC_READ | WRITE_DAC);
+        let destination = self
+            .dir()
+            .open_with(&stage.name, &options)
+            .map_err(failure)?
+            .into_std();
+        if FileIdentity::read(&destination).map_err(failure)? != stage.identity {
+            return Err(OutputError::TargetChanged);
+        }
+        private::preserve_archive_access(&source, &destination)
     }
     /// Publish verified data. Caller owns the task's commit permit. No-overwrite uses
     /// atomic hard-link creation; replacement uses same-volume rename, never truncation.
@@ -758,7 +854,7 @@ impl Workspace {
         }
         self.grant.revalidate_parent(path, &parent)?;
         self.validate_stage(stage)?;
-        if overwrite.is_some() {
+        if let Some(expected) = overwrite {
             // Identity check is best effort; ordinary rename has no content-CAS
             // guarantee against a same-account editor between this check and commit.
             if self
@@ -766,9 +862,14 @@ impl Workspace {
                 .existing_at(&parent, leaf)?
                 .as_ref()
                 .map(|f| &f.version)
-                != overwrite.map(|f| &f.version)
+                != Some(&expected.version)
             {
                 return Err(OutputError::TargetChanged);
+            }
+            #[cfg(windows)]
+            if self.confidential {
+                self.preserve_archive_access(stage, &parent, leaf, expected)?;
+                self.grant.revalidate_parent(path, &parent)?;
             }
             self.dir()
                 .rename(&stage.name, &parent.dir, leaf)

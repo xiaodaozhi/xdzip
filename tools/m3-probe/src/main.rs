@@ -135,6 +135,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let open_ms = total_start.elapsed().as_secs_f64() * 1000.0;
     let start = Instant::now();
     submit(&client, || service::Command::Extract {
+        target_identity: None,
         session,
         options: Options {
             target: target.to_string_lossy().into(),

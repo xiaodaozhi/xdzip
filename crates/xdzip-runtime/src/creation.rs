@@ -111,6 +111,7 @@ impl Options {
 }
 pub(crate) struct Job {
     pub options: Options,
+    pub target_identity: Option<xdzip_io::FileIdentity>,
 }
 impl Job {
     pub fn retained_bytes(&self) -> usize {
@@ -351,6 +352,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         stats.status = Status::Preparing;
         emit(&mut stats, start, publish);
         let root = Grant::for_creation(Path::new(&job.options.target)).map_err(output_code)?;
+        root.require_identity(job.target_identity)
+            .map_err(output_code)?;
         stats.leftovers = root.leftover_count().map_err(output_code)? as u64;
         workspace = Some(root.workspace(id).map_err(output_code)?);
         let w = workspace.as_mut().expect("workspace created");

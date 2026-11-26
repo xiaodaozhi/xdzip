@@ -9,6 +9,7 @@ use std::thread::{self, JoinHandle};
 use xdzip_codec_api::Cancellation;
 use xdzip_domain::identity::{EntryId, QueryGeneration, QueryId, SnapshotRevision};
 use xdzip_domain::query::QueryKey;
+pub use xdzip_io::FileIdentity as TargetIdentity;
 
 /// Maximum accepted normal requests not yet delivered to the receiver as finished.
 pub const MAX_OUTSTANDING: usize = 128;
@@ -147,6 +148,8 @@ pub enum Command {
         session: u64,
         /// Explicit selected output intent.
         options: crate::extraction::Options,
+        /// Previously checked output object, when supplied by the selecting host.
+        target_identity: Option<TargetIdentity>,
     },
     /// Queue a whole-archive read-only integrity check of the frozen source.
     Check {
@@ -159,9 +162,11 @@ pub enum Command {
         session: u64,
         /// Explicit selected existing directory.
         path: String,
+        /// Previously confirmed object through a shell handoff, when applicable.
+        target_identity: Option<TargetIdentity>,
     },
     /// Queue a whole-archive creation independent of an open archive session.
-    Create(crate::creation::Options),
+    Create(crate::creation::Options, Option<TargetIdentity>),
     /// Read nonrecursive selection sizes for display, never creation authority.
     InspectInputs(Vec<String>),
     /// Return the current session identity without filesystem work.
@@ -197,7 +202,7 @@ impl Command {
             } => directory.len() + text.len(),
             Self::Preflight { selected, .. } => selected.len() * 8,
             Self::Extract { options, .. } => options.bytes(),
-            Self::Create(options) => options.bytes(),
+            Self::Create(options, _) => options.bytes(),
             Self::InspectInputs(paths) => paths
                 .iter()
                 .map(|p| p.len() + std::mem::size_of::<String>())
@@ -259,7 +264,7 @@ impl Command {
             } => directory.len() <= 21 && text.len() <= 1024 && *sort <= 12,
             Self::Preflight { selected, .. } => !selected.is_empty() && selected.len() <= 128,
             Self::Extract { options, .. } => options.bounded(),
-            Self::Create(options) => options.bounded(),
+            Self::Create(options, _) => options.bounded(),
             Self::InspectInputs(paths) => {
                 !paths.is_empty()
                     && paths.len() <= 256
@@ -374,8 +379,8 @@ pub enum Payload {
     ShutdownReady,
     /// One accepted heavy task identity, returned before its request terminal.
     TaskAccepted(u64),
-    /// Target staging check succeeded; number of untouched possible recovery workspaces.
-    TargetChecked(u64),
+    /// Target staging check succeeded, with untouched workspace count and selected identity.
+    TargetChecked(u64, TargetIdentity),
     /// Latest coalesced task state; Event.request retains its originating request.
     /// This is not another ordinary payload or request terminal.
     Task(Box<crate::extraction::Snapshot>),
@@ -1013,7 +1018,11 @@ fn execute(
                 }
                 return Ok(Payload::Inputs(rows));
             }
-            Command::CheckTarget { session, path } => {
+            Command::CheckTarget {
+                session,
+                path,
+                target_identity,
+            } => {
                 let grant = if session == 0 {
                     xdzip_io::Grant::for_creation(Path::new(&path))
                 } else {
@@ -1029,26 +1038,37 @@ fn execute(
                     xdzip_io::OutputError::UnsafeTarget => "unsafe_target",
                     _ => "output_io",
                 })?;
+                grant
+                    .require_identity(target_identity)
+                    .map_err(|_| "target_changed")?;
                 let leftovers = grant.leftover_count().map_err(|_| "output_io")?;
                 let workspace = grant.workspace(0).map_err(|_| "output_io")?;
                 workspace.cleanup().map_err(|_| "cleanup_error")?;
-                return Ok(Payload::TargetChecked(leftovers as u64));
+                return Ok(Payload::TargetChecked(leftovers as u64, grant.identity()));
             }
-            Command::Extract { session, options } => {
+            Command::Extract {
+                session,
+                options,
+                target_identity,
+            } => {
                 let archive = archive
                     .as_ref()
                     .filter(|a| a.key().session.get() == session)
                     .ok_or("stale_session")?;
-                let job = archive.extraction_job(options, control)?;
+                let mut job = archive.extraction_job(options, control)?;
+                job.target_identity = target_identity;
                 return shared
                     .enqueue_task(request, tasks::Job::Extract(job))
                     .map(Payload::TaskAccepted);
             }
-            Command::Create(options) => {
+            Command::Create(options, target_identity) => {
                 return shared
                     .enqueue_task(
                         request,
-                        tasks::Job::Create(crate::creation::Job { options }),
+                        tasks::Job::Create(crate::creation::Job {
+                            options,
+                            target_identity,
+                        }),
                     )
                     .map(Payload::TaskAccepted);
             }

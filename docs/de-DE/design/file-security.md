@@ -16,6 +16,8 @@ Der Host kontrolliert, welche Dateien geöffnet und wo geprüfte Ausgaben veröf
 
 <a name="xdzip-name-mapping-platform-protection-and-links"></a>
 
+Wenn eine Erstellung oder Extraktion ein geprüftes Ziel verwendet, vergleicht der Schreibvorgang die Verzeichnisidentität mit dem vom Aufrufer bestätigten Objekt. Archiveingaben behalten die bei der Auswahl geprüfte Identität. Beim Öffnen automatisch erkannter Teilarchive werden Verknüpfungen in der letzten Pfadkomponente nicht verfolgt. Unter Windows bleiben bei einer direkten Archivbearbeitung der ursprüngliche Eigentümer, die Leseberechtigungen und die Herkunftszone erhalten. Können diese Schutzmerkmale nicht beibehalten werden, bleibt das Originalarchiv bestehen.
+
 ## Namenszuordnung, Plattformschutz und Links
 
 1. **Archivrelative Schreibweise prüfen.** Die Laufzeit löst die eingefrorene Auswahl auf, entfernt gegebenenfalls das Präfix des ausgewählten Teilbaums und akzeptiert über `PortablePath` relative UTF-8-Komponenten. Absolute Pfade oder Laufwerkspfade, Steuerzeichen, mehrdeutige Trenner, Elternkomponenten, reservierte Gerätenamen sowie abschließende Leerzeichen oder Punkte werden abgelehnt. Eine validierte Schreibweise ist nur eine Eingabe für die Zielberechtigung.

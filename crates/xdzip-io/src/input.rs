@@ -207,24 +207,40 @@ impl InputTree {
                     return Err(InputError::Unsafe);
                 }
             }
-            if m.is_dir() && !excluded.is_empty() {
-                let parent = Dir::open_ambient_dir(
-                    p.parent().ok_or(InputError::Unsafe)?,
-                    cap_std::ambient_authority(),
-                )
-                .map_err(|_| InputError::Changed)?;
-                let directory = parent
-                    .open_dir_nofollow(p.file_name().ok_or(InputError::Unsafe)?)
-                    .map_err(|_| InputError::Changed)?;
-                let identity = id(&directory)?;
-                if excluded.iter().any(|(_, expected)| *expected == identity) {
-                    return Err(InputError::Unsafe);
-                }
-            }
             if excluded.iter().any(|(e, _)| e == &p) {
                 return Err(InputError::Unsafe);
             }
-            selected.insert(p, m.is_dir());
+            let name = p.file_name().ok_or(InputError::Unsafe)?;
+            if Self::ignores_metadata(policy, name, m.is_dir()) {
+                // Retain it for overlapping input selection without opening an ignored object.
+                selected.insert(p, (m.is_dir(), None));
+                continue;
+            }
+            let parent = Dir::open_ambient_dir(
+                p.parent().ok_or(InputError::Unsafe)?,
+                cap_std::ambient_authority(),
+            )
+            .map_err(|_| InputError::Changed)?;
+            // Bind the first admitted object, before the sorted traversal can reopen it.
+            let identity = if m.is_dir() {
+                let dir = parent
+                    .open_dir_nofollow(name)
+                    .map_err(|_| InputError::Changed)?;
+                let identity = id(&dir)?;
+                if excluded.iter().any(|(_, expected)| *expected == identity) {
+                    return Err(InputError::Unsafe);
+                }
+                identity
+            } else {
+                FileIdentity::read(&file(&parent, Path::new(name))?).map_err(|_| InputError::Io)?
+            };
+            let admitted = (m.is_dir(), Some(identity));
+            if selected
+                .insert(p, admitted)
+                .is_some_and(|old| old != admitted)
+            {
+                return Err(InputError::Changed);
+            }
         }
         let mut tree = Self {
             roots: vec![],
@@ -239,18 +255,18 @@ impl InputTree {
             policy,
         };
         let mut root_ids = BTreeMap::new();
-        for (path, directory) in &selected {
+        for (path, &(directory, identity)) in &selected {
             check(stop)?;
-            if path
-                .ancestors()
-                .skip(1)
-                .any(|ancestor| selected.get(ancestor) == Some(&true))
-            {
+            if path.ancestors().skip(1).any(|ancestor| {
+                selected
+                    .get(ancestor)
+                    .is_some_and(|&(directory, _)| directory)
+            }) {
                 continue;
             }
-            if tree.ignores_metadata(path.file_name().ok_or(InputError::Name)?, *directory) {
+            let Some(identity) = identity else {
                 continue;
-            }
+            };
             let parent = path.parent().ok_or(InputError::Unsafe)?;
             let root = if let Some(index) = root_ids.get(parent) {
                 *index
@@ -276,7 +292,7 @@ impl InputTree {
                 .ok_or(InputError::Name)?
                 .to_owned();
             let relative = PathBuf::from(&name);
-            tree.visit(root, relative, name, *directory, stop)?;
+            tree.visit(root, relative, name, directory, identity, stop)?;
         }
         if tree.entries.is_empty() {
             return Err(InputError::Empty);
@@ -315,8 +331,8 @@ impl InputTree {
         }
         Ok(dir)
     }
-    fn ignores_metadata(&self, name: &std::ffi::OsStr, directory: bool) -> bool {
-        self.policy != ScanPolicy::Portable
+    fn ignores_metadata(policy: ScanPolicy, name: &std::ffi::OsStr, directory: bool) -> bool {
+        policy != ScanPolicy::Portable
             && ((!directory && name == ".DS_Store")
                 || (directory && (name == "__MACOSX" || name == "_MACOSX")))
     }
@@ -369,7 +385,7 @@ impl InputTree {
                     return Err(InputError::Unsafe);
                 }
             }
-            if self.ignores_metadata(std::ffi::OsStr::new(&name), m.is_dir()) {
+            if Self::ignores_metadata(self.policy, std::ffi::OsStr::new(&name), m.is_dir()) {
                 filtered_metadata = true;
                 continue;
             }
@@ -395,6 +411,7 @@ impl InputTree {
         relative: PathBuf,
         name: String,
         directory: bool,
+        expected: FileIdentity,
         stop: &dyn Fn() -> bool,
     ) -> Result<bool, InputError> {
         check(stop)?;
@@ -435,6 +452,9 @@ impl InputTree {
             file(&parent, Path::new(leaf))?
         };
         let version = FileVersion::read(&f).map_err(|_| InputError::Io)?;
+        if version.identity != expected {
+            return Err(InputError::Changed);
+        }
         let size = if directory { 0 } else { version.length };
         self.total_bytes = self
             .total_bytes
@@ -456,6 +476,9 @@ impl InputTree {
         if directory {
             let dir = self.open_dir(root, &relative)?;
             let identity = id(&dir)?;
+            if identity != expected {
+                return Err(InputError::Changed);
+            }
             let (children, filtered_metadata) = self.children(root, &relative, &dir, stop)?;
             self.directory_index
                 .insert((root, relative.clone()), self.directories.len());
@@ -474,6 +497,7 @@ impl InputTree {
                     relative.join(&child.name),
                     format!("{name}/{}", child.name),
                     child.directory,
+                    child.identity,
                     stop,
                 )?;
             }

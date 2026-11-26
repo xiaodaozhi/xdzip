@@ -106,18 +106,7 @@ fn header(file: &mut File, control: &Cancellation) -> Result<Header, ScanError> 
 }
 fn load(path: &Path, control: &Cancellation) -> Result<(Header, SourceVersion), ScanError> {
     control.check()?;
-    let metadata = std::fs::symlink_metadata(path).map_err(|_| ScanError::MissingVolume)?;
-    if !metadata.is_file() || metadata.file_type().is_symlink() {
-        return Err(ScanError::Io);
-    }
-    #[cfg(windows)]
-    {
-        use std::os::windows::fs::MetadataExt;
-        if metadata.file_attributes() & 0x400 != 0 {
-            return Err(ScanError::Io);
-        }
-    }
-    let mut file = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
+    let mut file = crate::source::open_companion(path)?;
     let before = SourceVersion::read(&file)?;
     let header = header(&mut file, control)?;
     if SourceVersion::read(&file)? != before {

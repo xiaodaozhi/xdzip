@@ -25,6 +25,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
     let target = Path::new(&job.target);
     let mut s = creation::initial(
         &creation::Job {
+            target_identity: None,
             options: creation::Options {
                 inputs: vec![],
                 target: target.parent().unwrap_or(target).to_string_lossy().into(),

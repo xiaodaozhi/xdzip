@@ -12,6 +12,7 @@ ARCHIVE_NAME_TESTS = [
     'cargo', 'test', '--locked', '-p', 'xdzip-runtime', '--lib', '--',
     'extraction::', 'creation::tests::native_archive_names_',
     'creation::tests::duplicate_archive_names_', 'creation::tests::iso_creation_refuses_',
+    'creation::tests::creation_requires_the_checked_directory_identity', 'source_cab::tests::',
     'updating::tests::', 'legacy_names_tests::',
 ]
 RUST_INPUTS = [

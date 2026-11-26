@@ -57,6 +57,28 @@ pub(super) fn execute(
     });
     last.unwrap()
 }
+
+#[test]
+fn extraction_requires_the_checked_directory_identity() {
+    let target = Target::new();
+    let other = Target::new();
+    let archive = archive("stored.zip");
+    for (checked, status) in [(&other.0, Status::Failed), (&target.0, Status::Succeeded)] {
+        let identity = xdzip_io::Grant::for_creation(checked).unwrap().identity();
+        let mut job = archive
+            .extraction_job(target.options(), &Cancellation::default())
+            .unwrap();
+        job.target_identity = Some(identity);
+        let mut last = None;
+        run(job, 1, &Control::default(), &mut |s| last = Some(s));
+        let result = last.unwrap();
+        assert_eq!(result.status, status, "{}", result.error);
+        if status == Status::Failed {
+            assert_eq!(result.error, "target_changed");
+            assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 0);
+        }
+    }
+}
 #[test]
 fn actual_store_deflate_and_both_descriptor_widths_match_independent_fixture_bytes() {
     for name in [

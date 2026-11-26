@@ -1,7 +1,7 @@
 //! Best-effort source version checks, never an atomic filesystem snapshot claim.
 use std::fs::File;
 use std::io::{self, Read, Seek, SeekFrom};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use xdzip_codec_api::ScanError;
 
@@ -59,7 +59,26 @@ struct Part {
     version: SourceVersion,
     start: u64,
 }
+
+pub(crate) fn open_companion(path: &Path) -> Result<File, ScanError> {
+    xdzip_io::open_regular_nofollow(path).map_err(|error| {
+        if error.kind() == io::ErrorKind::NotFound {
+            ScanError::MissingVolume
+        } else {
+            ScanError::Io
+        }
+    })
+}
+
 impl Source {
+    fn reopen_part(&self, path: &Path) -> io::Result<File> {
+        if self.split || self.cab_names.is_some() {
+            xdzip_io::open_regular_nofollow(path)
+        } else {
+            xdzip_io::open_regular_readonly(path)
+        }
+    }
+
     pub fn new(file: File, path: PathBuf, version: SourceVersion) -> Self {
         Self {
             lengths: vec![version.length],
@@ -204,19 +223,7 @@ impl Source {
         let mut start = 0u64;
         for path in paths {
             control.check()?;
-            let metadata =
-                std::fs::symlink_metadata(&path).map_err(|_| ScanError::MissingVolume)?;
-            if metadata.file_type().is_symlink() || !metadata.is_file() {
-                return Err(ScanError::Io);
-            }
-            #[cfg(windows)]
-            {
-                use std::os::windows::fs::MetadataExt;
-                if metadata.file_attributes() & 0x400 != 0 {
-                    return Err(ScanError::Io);
-                }
-            }
-            let file = xdzip_io::open_regular_readonly(&path).map_err(|_| ScanError::Io)?;
+            let file = open_companion(&path)?;
             let version = SourceVersion::read(&file)?;
             if version.length == 0 {
                 return Err(ScanError::Invalid);
@@ -265,18 +272,7 @@ impl Source {
         let mut start = 0u64;
         for path in paths {
             control.check()?;
-            let m = std::fs::symlink_metadata(&path).map_err(|_| ScanError::MissingVolume)?;
-            if !m.is_file() || m.file_type().is_symlink() {
-                return Err(ScanError::Io);
-            }
-            #[cfg(windows)]
-            {
-                use std::os::windows::fs::MetadataExt;
-                if m.file_attributes() & 0x400 != 0 {
-                    return Err(ScanError::Io);
-                }
-            }
-            let file = xdzip_io::open_regular_readonly(&path).map_err(|_| ScanError::Io)?;
+            let file = open_companion(&path)?;
             let version = SourceVersion::read(&file)?;
             if version.length == 0 {
                 return Err(ScanError::Invalid);
@@ -312,21 +308,8 @@ impl Source {
             return Err(ScanError::SourceChanged);
         }
         for part in &self.parts {
-            if self.split || self.cab_names.is_some() {
-                let m =
-                    std::fs::symlink_metadata(&part.path).map_err(|_| ScanError::SourceChanged)?;
-                if m.file_type().is_symlink() {
-                    return Err(ScanError::SourceChanged);
-                }
-                #[cfg(windows)]
-                {
-                    use std::os::windows::fs::MetadataExt;
-                    if m.file_attributes() & 0x400 != 0 {
-                        return Err(ScanError::SourceChanged);
-                    }
-                }
-            }
-            let current = xdzip_io::open_regular_readonly(&part.path)
+            let current = self
+                .reopen_part(&part.path)
                 .map_err(|_| ScanError::SourceChanged)?;
             if version(&current)? != part.version {
                 return Err(ScanError::SourceChanged);
@@ -364,7 +347,8 @@ impl Source {
     pub fn origin_zone(&self) -> Result<Option<xdzip_io::OriginZone>, ScanError> {
         let mut zone = None;
         for part in &self.parts {
-            let file = xdzip_io::open_regular_readonly(&part.path)
+            let file = self
+                .reopen_part(&part.path)
                 .map_err(|_| ScanError::SourceChanged)?;
             if SourceVersion::read(&file)? != part.version {
                 return Err(ScanError::SourceChanged);
@@ -525,7 +509,7 @@ impl Read for Source {
             .saturating_sub(1);
         if self.cached.as_ref().is_none_or(|(index, _)| *index != at) {
             self.cached = None;
-            let file = xdzip_io::open_regular_readonly(&self.parts[at].path)?;
+            let file = self.reopen_part(&self.parts[at].path)?;
             if SourceVersion::read(&file).map_err(io::Error::other)? != self.parts[at].version {
                 return Err(io::Error::other("source_changed"));
             }

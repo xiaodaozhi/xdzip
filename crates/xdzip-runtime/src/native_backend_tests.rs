@@ -50,7 +50,15 @@ impl Fixture {
         };
         assert!(options.bounded());
         task(false, |control, publish| {
-            creation::run(creation::Job { options }, 1, control, publish)
+            creation::run(
+                creation::Job {
+                    target_identity: None,
+                    options,
+                },
+                1,
+                control,
+                publish,
+            )
         })
     }
     fn extract(&self, archive: &Archive, label: &str, mixed: bool) -> Snapshot {

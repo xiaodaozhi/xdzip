@@ -112,17 +112,19 @@ void ShellBatchController::configuringCreation() {
     }
 }
 void ShellBatchController::configureExtraction(const QString &target, int layout, int conflict,
-                                               bool highRatio, bool openAfter) {
+                                               bool highRatio, bool openAfter,
+                                               const QString &identity) {
     if (m_stage != Configuring || layout < 0 || layout > 2)
         return;
     m_target = target;
+    m_targetIdentity = identity;
     m_layout = layout;
     m_conflict = conflict;
     m_highRatio = highRatio;
     m_openAfter = openAfter;
     m_chooseTarget = false;
     m_stage = Target;
-    m_reader.checkTarget(target);
+    m_reader.checkTarget(target, m_targetIdentity);
     emit changed();
     schedule();
 }
@@ -233,7 +235,8 @@ void ShellBatchController::step() {
         }
         m_stage = Target;
         m_reader.checkTarget(
-            m_target.isEmpty() ? QFileInfo(m_jobs.at(m_index).first()).absolutePath() : m_target);
+            m_target.isEmpty() ? QFileInfo(m_jobs.at(m_index).first()).absolutePath() : m_target,
+            m_targetIdentity);
         schedule();
         return;
     }

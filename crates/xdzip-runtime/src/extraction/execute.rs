@@ -172,6 +172,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         } else {
             Grant::open_sources(Path::new(&job.options.target), &source_ids).map_err(output)?
         };
+        root.require_identity(job.target_identity).map_err(output)?;
         grant = Some(root.clone());
         stats.leftovers = root.leftover_count().map_err(output)? as u64;
         let smart_wrapper = job.options.shell_layout == 1 && !single_top_directory(&job);

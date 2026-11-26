@@ -357,7 +357,7 @@ class BrowserController : public QObject {
                                    const QString &name, int method, int level,
                                    qulonglong volumeBytes = 0, const QString &password = QString(),
                                    bool solid = false, bool encryptHeaders = false);
-    Q_INVOKABLE void checkTarget(const QString &path);
+    Q_INVOKABLE void checkTarget(const QString &path, const QString &identity = {});
     Q_INVOKABLE void checkCreationTarget(const QString &path);
     Q_INVOKABLE bool targetMatches(const QString &path) const;
     Q_INVOKABLE bool creationTargetMatches(const QString &path) const;
@@ -460,6 +460,7 @@ class BrowserController : public QObject {
         quint64 observedTask = 0;
         quint64 taskSession = 0;
         quint64 leftovers = 0;
+        QString targetIdentity;
         QVariantMap report;
         QList<BrowserRow> rows;
         QList<DirectoryRow> directories;
@@ -481,6 +482,7 @@ class BrowserController : public QObject {
         QString path, session;
         quint64 revision = 0, sequence = 0;
         bool creation = false;
+        QString identity;
     };
     std::optional<DeferredQuery> m_deferredQuery;
     quint64 m_generation = 0;
@@ -607,8 +609,9 @@ class BrowserController : public QObject {
     bool m_creationPreviewPending = false;
     quint64 m_creationTargetRevision = 0, m_targetRevision = 0, m_targetSequence = 0;
     std::optional<TargetRequest> m_pendingCreationTarget, m_pendingTarget, m_activeTarget;
-    void queueTargetCheck(const QString &path, bool creation);
-    void finishTargetCheck(const QString &error, quint64 leftovers = 0);
+    void queueTargetCheck(const QString &path, bool creation, const QString &identity = {});
+    void finishTargetCheck(const QString &error, quint64 leftovers = 0,
+                           const QString &identity = {});
     void deferActiveTarget();
     QStringList m_createdArchivesToOpen;
     void drainCreationUiWhenIdle();

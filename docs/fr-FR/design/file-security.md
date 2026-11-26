@@ -16,6 +16,8 @@ L’hôte contrôle les fichiers pouvant être ouverts et les emplacements où u
 
 <a name="xdzip-name-mapping-platform-protection-and-links"></a>
 
+Quand une création ou une extraction utilise une destination vérifiée, la tâche d’écriture compare l’identité du répertoire avec celle validée par l’appelant. Les entrées à archiver conservent l’identité vérifiée lors de la sélection. L’ouverture des volumes détectés automatiquement ne suit pas le lien du dernier composant du chemin. Sous Windows, la modification sur place préserve le propriétaire, les droits de lecture et la zone d’origine de l’archive. Si ces protections ne peuvent être conservées, l’archive d’origine reste en place.
+
 ## Correspondance des noms, protection par plateforme et liens
 
 1. **Valider l’écriture relative à l’archive.** Le runtime résout la sélection figée, retire le préfixe du sous-arbre sélectionné si nécessaire et utilise `PortablePath` pour accepter des composants UTF-8 relatifs. Chemins absolus ou de lecteur, caractères de contrôle, séparateurs ambigus, composants parents, noms de périphériques réservés et espaces ou points finaux sont refusés. Une écriture validée n’est qu’une entrée pour la capacité de destination.

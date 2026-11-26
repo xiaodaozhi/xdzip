@@ -16,6 +16,8 @@ O host controla quais arquivos podem ser abertos e onde a saída verificada pode
 
 <a name="xdzip-name-mapping-platform-protection-and-links"></a>
 
+Quando a criação ou extração usa um destino verificado, a tarefa de gravação compara a identidade do diretório com a do objeto aprovado por quem iniciou a operação. As entradas do arquivo compactado mantêm a identidade aceita na seleção. Ao abrir volumes detectados automaticamente, o link do último componente do caminho não é seguido. No Windows, a edição de um arquivo existente preserva o proprietário, as permissões de leitura e a zona de origem. Se essas proteções não puderem ser preservadas, o arquivo original permanece no lugar.
+
 ## Mapeamento de nomes, proteção por plataforma e links
 
 1. **Validar a grafia relativa ao arquivo compactado.** O runtime resolve a seleção congelada, remove o prefixo da subárvore escolhida quando aplicável e usa `PortablePath` para aceitar componentes UTF-8 relativos. Caminhos absolutos ou de unidade, caracteres de controle, separadores ambíguos, componentes pai, nomes reservados de dispositivo e espaços ou pontos finais são rejeitados. Uma grafia validada é apenas entrada para a capacidade de destino.

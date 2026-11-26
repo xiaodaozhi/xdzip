@@ -85,6 +85,11 @@ fn extract(
         let command = if let Some(target) = target {
             Command::Extract {
                 session,
+                target_identity: Some(
+                    xdzip_io::Grant::for_creation(target)
+                        .map_err(|_| "unsafe_target")?
+                        .identity(),
+                ),
                 options: Options {
                     target: target.to_str().ok_or("unsafe_name")?.into(),
                     all: true,

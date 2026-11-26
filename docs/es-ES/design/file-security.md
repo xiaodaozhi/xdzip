@@ -16,6 +16,8 @@ El host controla qué archivos pueden abrirse y dónde puede publicarse la salid
 
 <a name="xdzip-name-mapping-platform-protection-and-links"></a>
 
+Cuando la creación o extracción usa un destino comprobado, la tarea de escritura compara la identidad del directorio con la del objeto aprobado por quien inicia la operación. Los archivos de entrada conservan la identidad aceptada al seleccionarlos. Al abrir volúmenes detectados automáticamente no se sigue el enlace del último componente de la ruta. En Windows, la edición de un archivo existente preserva el propietario, los permisos de lectura y la zona de origen. Si estas protecciones no pueden conservarse, el archivo original permanece en su lugar.
+
 ## Asignación de nombres, protección por plataforma y enlaces
 
 1. **Validar la escritura relativa al archivo comprimido.** El entorno resuelve la selección congelada, elimina el prefijo del subárbol seleccionado cuando corresponda y usa `PortablePath` para aceptar componentes UTF-8 relativos. Se rechazan rutas absolutas o de unidad, caracteres de control, separadores ambiguos, componentes padres, nombres de dispositivo reservados y espacios o puntos finales. Una escritura validada es solo una entrada para la capacidad de destino.

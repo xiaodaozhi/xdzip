@@ -82,8 +82,9 @@ Item {
         shellMode: true
         shellArchiveCount: batch.archiveCount
         shellSubmit: (target, layout, conflict, highRatio, openAfter) => {
+            const identity = batch.reader.targetCheck.identity;
             extractWindow.close();
-            batch.configureExtraction(target, layout, conflict, highRatio, openAfter);
+            batch.configureExtraction(target, layout, conflict, highRatio, openAfter, identity);
         }
         onClosing: Qt.callLater(() => root.dismissed())
     }
