@@ -272,7 +272,7 @@ Rectangle {
                                 radius: formatsSettingsButton.cornerRadius
                                 color: !formatsSettingsButton.enabled ? "transparent"
                                     : formatsSettingsButton.down ? Theme.controlPressed
-                                    : formatsSettingsButton.hovered ? Theme.controlHover : "transparent"
+                                    : formatsSettingsButton.hovered ? Qt.rgba(Theme.controlHover.r, Theme.controlHover.g, Theme.controlHover.b, 0.5) : "transparent"
                             }
                             onClicked: root.formatsRequested()
                             onActiveFocusChanged: if (activeFocus)
