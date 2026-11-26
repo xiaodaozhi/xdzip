@@ -21,7 +21,7 @@ Le précontrôle passe par le service de commandes et événements avec admissio
 ## Règles appliquées
 
 - Les noms doivent être résolus en UTF-8, avec au plus 4 KiB, 64 composants et 255 octets par composant ; les noms d’origine ne sont ni réparés ni réécrits.
-- Refuser chemins absolus, composants vides, `.`, `..`, barres obliques inverses, deux-points, caractères de contrôle ou de contrôle bidirectionnel, caractères interdits par Windows et espaces ou points finaux des composants.
+- Refuser chemins absolus, composants vides, `.`, `..`, barres obliques inverses, deux-points, caractères de contrôle ou de contrôle bidirectionnel et espaces ou points finaux des composants.
 - Refuser les noms courants de périphériques Windows, y compris avec extension et chiffres COM/LPT en exposant, en appliquant prudemment un sous-ensemble portable multiplateforme.
 - Signaler les avertissements de métadonnées existants et utiliser les indicateurs de capacité de contenu et de mot de passe de l’enregistrement. Un enregistrement chiffré peut signaler un besoin de mot de passe pris en charge ou un chiffrement non pris en charge. Un enregistrement de taille connue dont le contenu n’est pas pris en charge signale aussi un problème de méthode. Le précontrôle utilise les métadonnées et capacités projetées par le lecteur ; il ne déchiffre, n’authentifie ni ne décode le contenu.
 - Vérifier les noms exactement identiques, collisions par comparaison Unicode en minuscules, alias de répertoires parents différant par la casse et conflits fichier/répertoire dans les deux ordres d’insertion. Un répertoire parent implicite peut être complété par un répertoire explicite de même nom ; des enregistrements explicites de répertoire en double restent en conflit.

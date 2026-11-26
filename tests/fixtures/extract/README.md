@@ -4,6 +4,8 @@
 
 `native_names.zip` 使用不同内容验证普通文件和目录的大小写、Unicode 规范等价及自动编号冲突。同一份样本可用于采用不同名称等价规则的实际目录。
 
+`special_names.zip` 验证普通标点的原名保留、替换和编号避让。样本同时包含会占用替换名的普通文件和目录，用不同内容核对每份输出。
+
 `password-retry.zip` 是固定的 186 字节 WinZip AE-2 AES-256 Deflate 输入，唯一条目 `owned.txt` 为 18 字节，内容为 `owned AES payload` 加换行。SHA-256 为 `cdb1a34b259be86e1670c58d26fb328e3e2dfe6b71defaa6f333393bb4156d41`。
 
 生成源码为 [generate-password-fixture.rs](../../../crates/xdzip-codec-zip/examples/generate-password-fixture.rs)，通过锁定 zip-rs 9.0.3 写入器创建，不实现密码学原语。日期、权限、级别及 16 字节测试盐固定，公开的正确／错误测试字符串位于源码常量中，仅用于这个合成输入，不能作为真实密码或生产盐策略。产品创建仍使用随机盐。

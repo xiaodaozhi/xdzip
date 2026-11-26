@@ -275,6 +275,82 @@ fn assert_native_filename_output(target: &Target) {
 }
 
 #[test]
+fn special_punctuation_preserves_or_renames_files_and_directory_trees() {
+    let a = archive("special_names.zip");
+    let target = Target::new();
+    let existing = target.0.join("rating_ (1).txt");
+    std::fs::write(&existing, b"keep existing").unwrap();
+    let win32 = cfg!(windows);
+    let mut options = target.options();
+    // A forced replacement must not inherit permission to overwrite its fallback name.
+    options.conflict = ConflictPolicy::Overwrite;
+    let done = execute(&a, options, &Control::default(), |_| {});
+    assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+    assert_eq!(done.committed_files, 5);
+    assert_eq!(done.skipped_files, 0);
+    assert_eq!(std::fs::read(existing).unwrap(), b"keep existing");
+    let expected: [(&str, &str, &[u8]); 5] = [
+        ("rating?.txt", "rating_ (2).txt", b"question"),
+        ("rating*.txt", "rating_ (3).txt", b"asterisk"),
+        ("rating_.txt", "rating_.txt", b"original underscore"),
+        (
+            "Album?|/photo<1>.txt",
+            "Album__ (1)/photo_1_.txt",
+            b"angle brackets",
+        ),
+        ("Album__/\"label\".txt", "Album__/_label_.txt", b"quotes"),
+    ];
+    for (original, replacement, bytes) in expected {
+        let output = if win32 { replacement } else { original };
+        assert_eq!(
+            std::fs::read(target.0.join(output)).unwrap(),
+            bytes,
+            "{output}"
+        );
+        assert_eq!(
+            done.details
+                .iter()
+                .any(|row| row.original_name.as_deref() == Some(original) && row.name == output),
+            original != output,
+            "{original}"
+        );
+    }
+    let branch = if win32 { "Album__ (1)" } else { "Album?|" };
+    assert_eq!(std::fs::read_dir(target.0.join(branch)).unwrap().count(), 1);
+    assert_eq!(
+        std::fs::read_dir(target.0.join("Album__")).unwrap().count(),
+        1
+    );
+    assert_eq!(
+        done.details
+            .iter()
+            .any(|row| row.original_name.as_deref() == Some("Album?|") && row.name == branch),
+        win32,
+    );
+    let cancel = Cancellation::default();
+    assert!(a.export_manifest(&target.options(), &cancel).is_err());
+    let names = a
+        .resolve_members(&["Album?|".into()], &[], &cancel)
+        .unwrap();
+    assert_eq!(names.len(), 1);
+    let target = Target::new();
+    let mut opts = target.options();
+    opts.all = false;
+    opts.selected = names;
+    let done = execute(&a, opts, &Control::default(), |_| {});
+    assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+    let path = if win32 {
+        "Album__/photo_1_.txt"
+    } else {
+        "Album?|/photo<1>.txt"
+    };
+    assert_eq!(
+        std::fs::read(target.0.join(path)).unwrap(),
+        b"angle brackets"
+    );
+}
+
+#[test]
 fn unsafe_plans_create_nothing() {
     let target = Target::new();
     let a = archive("unsafe.zip");

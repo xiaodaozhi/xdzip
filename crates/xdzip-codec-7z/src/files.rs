@@ -172,7 +172,7 @@ pub(crate) fn parse<'a>(
         let modified = mtime.as_ref().and_then(|v| v[record]);
         let warning = is_anti
             || special
-            || xdzip_domain::path::components(name.as_bytes(), directory).is_none();
+            || xdzip_domain::path::extraction_components(name.as_bytes(), directory).is_none();
         index.rows.push(Entry {
             format: Format::SevenZip,
             id: EntryId::try_from(record as u64 + 1).map_err(|_| ScanError::Limit)?,

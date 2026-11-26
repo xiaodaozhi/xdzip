@@ -1,7 +1,7 @@
 use crate::json::{self, Value};
 use std::io::SeekFrom;
 use xdzip_codec_api::{Cancellation, ReadSource, ScanError, ScanLimits, names};
-use xdzip_domain::path::components;
+use xdzip_domain::path::extraction_components as components;
 const HEADER_LIMIT: u64 = 8 * 1024 * 1024;
 const SOURCE_LIMIT: u64 = 24 * 1024 * 1024 * 1024;
 const SAFE_INTEGER: u64 = 9_007_199_254_740_991;

@@ -4,7 +4,7 @@ use xdzip_codec_api::{
     names::NameEncoding,
     time::{self, Timestamp},
 };
-use xdzip_domain::{identity::EntryId, path::components};
+use xdzip_domain::{identity::EntryId, path::extraction_components as components};
 pub(crate) enum Origin {
     Member(usize),
     Inner(usize, usize),

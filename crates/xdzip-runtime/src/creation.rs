@@ -339,6 +339,7 @@ fn output_code(e: OutputError) -> &'static str {
         OutputError::Conflict => "output_conflict",
         OutputError::Unsupported => "unsupported_filesystem",
         OutputError::Limit => "resource_limit",
+        OutputError::NameRejected => "unsafe_name",
     }
 }
 pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(Snapshot)) {

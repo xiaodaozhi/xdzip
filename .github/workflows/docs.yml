@@ -65,7 +65,7 @@ jobs:
         run: |
           cargo fmt --all -- --check
           python3 scripts/check-native-format.py --clang-format build/ci-check-tools/bin/clang-format
-      - name: Run strict Clippy and dependency checks for Rust changes
+      - name: Check Rust lint, dependencies and extraction names
         env:
           XDZIP_EVENT_NAME: ${{ github.event_name }}
           XDZIP_PUSH_BEFORE: ${{ github.event.before }}

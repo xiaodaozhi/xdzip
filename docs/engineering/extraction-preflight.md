@@ -15,7 +15,7 @@ Preflight runs through the command/event service with bounded admission and inde
 ## Rules performed
 
 - Names must resolve to UTF-8, at most 4 KiB, 64 components, and 255 bytes per component; original names are not repaired or rewritten.
-- Reject absolute paths, empty components, `.`, `..`, backslashes, colons, control/bidirectional controls, Windows-invalid characters, and trailing spaces/dots in components.
+- Reject absolute paths, empty components, `.`, `..`, backslashes, colons, control/bidirectional controls, and trailing spaces/dots in components.
 - Reject common Windows device names, including extension forms and superscript COM/LPT digits, conservatively applying a cross-platform portable-name subset.
 - Report existing metadata warnings and use the record's payload and password capability flags. An encrypted record can report either a supported password requirement or unsupported encryption. A record with known size and an unsupported payload also reports a method finding. Preflight uses the metadata and capabilities projected by the reader. It does not decrypt, authenticate or decode the payload.
 - Check exact duplicate names, collisions from Unicode lowercase comparison, parent-directory aliases differing in case, and file/directory conflicts in both insertion orders. An implicit parent directory may be supplemented by an explicit directory of the same name; duplicate explicit directory records still conflict.

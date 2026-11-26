@@ -80,6 +80,18 @@ with zipfile.ZipFile(ROOT / 'native_names.zip', 'w') as archive:
     ]:
         archive.writestr(zipfile.ZipInfo(name, (2026, 11, 26, 0, 0, 0)), data)
 
+with zipfile.ZipFile(ROOT / 'special_names.zip', 'w') as archive:
+    for name, contents in [
+        ('rating?.txt', b'question'),
+        ('rating*.txt', b'asterisk'),
+        ('rating_.txt', b'original underscore'),
+        ('Album?|/', b''),
+        ('Album?|/photo<1>.txt', b'angle brackets'),
+        ('Album__/"label".txt', b'quotes'),
+    ]:
+        archive.writestr(zipfile.ZipInfo(name, (2026, 11, 26, 0, 0, 0)), contents)
+
+
 def partial_result_fixture():
     """Two valid files followed by a bad CRC, for actual result-window outcomes."""
     stream = io.BytesIO()
