@@ -110,7 +110,7 @@ windows-install-lifecycle.json, linux-install-lifecycle.json und Pakethashes sin
 
 Die Windows-Sonde ohne Aufgabe für Schutz gegen belegten Ersatz verwendet isolierte Einstellungen mit deaktiviertem Tray, damit `CloseMainWindow` in dieser Konfiguration normal beendet. Andere Zuordnungsöffnungssonden behalten die Standard-Trayeinstellungen und enden über die ausdrückliche Shutdown-Schranke. Installationsschutzsonden dürfen ein verborgenes Fenster nicht mit fehlgeschlagener Prozessbeendigung verwechseln oder die Beendigungsprüfung durch erzwungenes Stoppen des normalen Pfads umgehen.
 
-Windows-Updateprotokoll-Fixtures und echte Qt-Updatefixtures enthalten Zuordnungslauncher und alle neun Dokument-ICOs; Installer können Prüfungen mit fehlender erforderlicher Nutzlast nicht bestehen. Das kleine C-Hauptprogramm des Protokollfixtures und der Zuordnungsbefehl prüfen nur Updateübergabe. Eingebettete Anwendungsressourcen, native Kandidaten und echte Fenster werden separat über das vollständige Qt-Produkt geprüft; Schlussfolgerungen werden nicht vermischt.
+Windows-Updateprotokoll-Fixtures und echte Qt-Updatefixtures enthalten Zuordnungslauncher und alle vom Formatregister benötigten Dokument-ICOs; Installer können Prüfungen mit fehlender erforderlicher Nutzlast nicht bestehen. Das kleine C-Hauptprogramm des Protokollfixtures und der Zuordnungsbefehl prüfen nur Updateübergabe. Eingebettete Anwendungsressourcen, native Kandidaten und echte Fenster werden separat über das vollständige Qt-Produkt geprüft; Schlussfolgerungen werden nicht vermischt.
 
 <a id="兼容基线的长期输入"></a>
 
