@@ -443,9 +443,11 @@ fn encode_preflight_limits_and_unsupported_settings_touch_no_input_or_output() {
                 &Cancellation::default(),
                 &mut |_| {}
             ),
-            Err(EncodeError::Invalid)
+            Err(EncodeError::Name),
+            "{name:?}"
         );
         assert!(output.is_empty());
+        assert_eq!(input.opens.get(), 0);
     }
 }
 #[test]
