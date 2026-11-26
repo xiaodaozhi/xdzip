@@ -14795,8 +14795,15 @@ QtObject {
         QVERIFY(controller->decideTask(taskId, prompt, 1, true));
         QVERIFY(!controller->decideTask(taskId, prompt, 3, false));
         QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
-        QCOMPARE(controller->tasks().first().toMap().value("skippedFiles").toString(), "3");
-        QCOMPARE(controller->tasks().first().toMap().value("committedFiles").toString(), "0");
+        const auto finished = controller->tasks().first().toMap();
+        QCOMPARE(finished.value("status").toString(), "succeeded");
+        QCOMPARE(finished.value("skippedFiles").toString(), "2");
+        QCOMPARE(finished.value("committedFiles").toString(), "1");
+        QFile originalPhoto(target.filePath(QStringLiteral("照片/说明.txt")));
+        QFile renamedPhoto(target.filePath(QStringLiteral("照片 (1)/说明.txt")));
+        QVERIFY(originalPhoto.open(QIODevice::ReadOnly));
+        QVERIFY(renamedPhoto.open(QIODevice::ReadOnly));
+        QCOMPARE(renamedPhoto.readAll(), originalPhoto.readAll());
         controller->requestClose();
     }
     void partialResultUsesActualOutcomes() {
