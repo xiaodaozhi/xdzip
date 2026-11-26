@@ -30,6 +30,28 @@ Item {
         }
         function init() { surface.savedWindowColor=surface.Window.window.color; Ui.Theme.fontScale=1; Ui.Theme.dark=false; bar.width=1024; bar.windowsControls=false; bar.linuxControls=false; bar.integratedTitlebar=false; bar.idleWelcome=false; bar.frameCornerRadius=0; moves.clear(); windowDrags.clear(); populate(3,0); }
         function cleanup() { surface.Window.window.color=surface.savedWindowColor; bar.cancelReorder(); Ui.Theme.fontScale=1; }
+        function test_brand_wordmark_data() {
+            const rows = [];
+            for (const integrated of [false, true])
+                for (const scale of [1, 1.25, 1.5])
+                    rows.push({tag: (integrated ? "integrated-" : "standard-") + scale, integrated, scale});
+            return rows;
+        }
+        function test_brand_wordmark(data) {
+            bar.width = 832;
+            bar.integratedTitlebar = data.integrated;
+            Ui.Theme.fontScale = data.scale;
+            const brand = findChild(bar, "titlebarBrandWordmark");
+            const strip = findChild(bar, "archiveTabStrip");
+            tryCompare(brand, "status", Image.Ready);
+            verify(brand.source.toString().endsWith("brand-wordmark-light.svg"));
+            compare(brand.height, 24 * data.scale);
+            fuzzyCompare(brand.y + brand.height / 2, bar.height / 2, 0.01);
+            verify(strip.x >= brand.x + brand.width + Ui.Theme.mainUnits(24) - 0.01);
+            Ui.Theme.dark = true;
+            tryCompare(brand, "status", Image.Ready);
+            verify(brand.source.toString().endsWith("brand-wordmark-dark.svg"));
+        }
         function test_linux_rounded_corner_alpha() {
             surface.Window.window.color="#ff00ff";
             bar.width=400;

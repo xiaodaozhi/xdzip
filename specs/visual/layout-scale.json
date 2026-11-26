@@ -1,6 +1,12 @@
 {
   "schema_version": 1,
   "units": "CSS pixels / Qt device-independent pixels; physical screenshot pixels are divided by DPR",
+  "brand_wordmark": {
+    "canvas": [79.3488, 24],
+    "titlebar_height": 24,
+    "welcome_height": 26,
+    "visible_lettering_height": 14.63
+  },
   "main": {
     "previous_logical_width": 1280,
     "density": 0.8,

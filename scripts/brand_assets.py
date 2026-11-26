@@ -177,6 +177,7 @@ def png_name(stem: str, size: int) -> str:
 
 IDENTITY_REFERENCE_FILE = 'brand/identity-reference.png'
 IDENTITY_REFERENCE_SOURCES = ('brand/xdzip.ico', 'file-associations/xdzip-zip.ico')
+WORDMARK_LETTERING = 'brand/wordmark-lettering.svg'
 
 
 def brand_export_specs() -> list[dict]:
@@ -188,7 +189,14 @@ def brand_export_specs() -> list[dict]:
          'purpose': 'current-application-and-zip-preview', 'usage': 'visual-reference-only',
          'sources': list(IDENTITY_REFERENCE_SOURCES),
          'provenance': 'current ICO representations composited at 256, 64, 48, 32 and 24 pixels'},
+        {'file': WORDMARK_LETTERING, 'kind': 'brand-master', 'purpose': 'wordmark-lettering',
+         'provenance': 'Bruno Ace Regular lettering, approved 02 stroke and 110% height',
+         'font_reference': 'https://github.com/google/fonts/tree/main/ofl/brunoace'},
     ]
+    for theme in ('light', 'dark'):
+        entries.append({'file': f'brand/wordmark-{theme}.svg', 'kind': 'brand-master',
+                        'purpose': 'interface-wordmark', 'source': WORDMARK_LETTERING,
+                        'theme': theme, 'format': 'svg'})
     for stem, purpose in [('xdzip', 'application-icon')]:
         source = f'brand/{stem}.svg'
         entries.append({'file': source, 'kind': 'brand-master', 'purpose': purpose,

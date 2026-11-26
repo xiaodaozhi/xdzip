@@ -424,6 +424,9 @@ QtObject {
     readonly property real mainLinuxCaptionWidth: 36
     readonly property real mainLinuxCaptionSize: 28
     readonly property real mainLinuxCaptionRightInset: 6
+    readonly property real brandWordmarkAspect: 79.3488 / 24
+    readonly property real titlebarWordmarkHeight: 24
+    readonly property real welcomeWordmarkHeight: 26
     readonly property real mainTabMinimumWidth: 112
     readonly property real mainTabGap: 6.4
     readonly property real mainTabControlSize: 28
