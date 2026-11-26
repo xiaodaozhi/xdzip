@@ -267,6 +267,16 @@ Rectangle {
                             objectName: "welcomeFormatsSettings"
                             text: qsTrId("welcome.formatsOpenSettings")
                             labelSize: Theme.welcomeFormatFontSize * Theme.fontScale
+                            horizontalInset: Theme.welcomeFormatChipInset
+                            leftPadding: Theme.welcomeFormatChipInset
+                            rightPadding: Theme.welcomeFormatChipInset
+                            background: Rectangle {
+                                objectName: "welcomeFormatsSettingsBackground"
+                                radius: formatsSettingsButton.cornerRadius
+                                color: !formatsSettingsButton.enabled ? "transparent"
+                                    : formatsSettingsButton.down ? Theme.controlPressed
+                                    : formatsSettingsButton.hovered ? Qt.rgba(Theme.controlHover.r, Theme.controlHover.g, Theme.controlHover.b, 0.5) : "transparent"
+                            }
                             onClicked: root.formatsRequested()
                             onActiveFocusChanged: if (activeFocus)
                                 root.revealAction(formatsSettingsButton)

@@ -97,6 +97,34 @@ Item {
             tryVerify(() => open.height > 124 && create.height === open.height);
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
         }
+        function test_formats_settings_hover_data() {
+            return [{tag: "light", dark: false}, {tag: "dark", dark: true}];
+        }
+        function test_formats_settings_hover(data) {
+            Ui.Theme.dark = data.dark;
+            formatsSpy.clear();
+            const button = findChild(page, "welcomeFormatsSettings");
+            verify(waitForRendering(page));
+            page.revealAction(button);
+            verify(waitForRendering(page));
+            mouseMove(page, 0, 0);
+            compare(button.background.color, "#00000000");
+            mouseMove(button, button.width / 2, button.height / 2);
+            tryCompare(button, "hovered", true);
+            compare(button.leftPadding, Ui.Theme.welcomeFormatChipInset);
+            compare(button.rightPadding, Ui.Theme.welcomeFormatChipInset);
+            verify(Math.abs(button.contentItem.x - button.leftPadding) <= 0.5);
+            verify(Math.abs(button.width - button.contentItem.x - button.contentItem.width - button.rightPadding) <= 0.5);
+            compare(button.background.color, Qt.rgba(Ui.Theme.controlHover.r, Ui.Theme.controlHover.g, Ui.Theme.controlHover.b, 0.5));
+            mousePress(button, button.width / 2, button.height / 2);
+            compare(button.background.color, Ui.Theme.controlPressed);
+            mouseRelease(button, button.width / 2, button.height / 2);
+            compare(formatsSpy.count, 1);
+            compare(button.background.color, Qt.rgba(Ui.Theme.controlHover.r, Ui.Theme.controlHover.g, Ui.Theme.controlHover.b, 0.5));
+            mouseMove(page, 0, 0);
+            tryCompare(button, "hovered", false);
+            compare(button.background.color, "#00000000");
+        }
         function test_format_group_summary_data() {
             return [1, 1.25, 1.5].map(scale => ({tag: String(scale), scale: scale}));
         }
