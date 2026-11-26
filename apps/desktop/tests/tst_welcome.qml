@@ -111,6 +111,10 @@ Item {
             compare(button.background.color, "#00000000");
             mouseMove(button, button.width / 2, button.height / 2);
             tryCompare(button, "hovered", true);
+            compare(button.leftPadding, Ui.Theme.welcomeFormatChipInset);
+            compare(button.rightPadding, Ui.Theme.welcomeFormatChipInset);
+            verify(Math.abs(button.contentItem.x - button.leftPadding) <= 0.5);
+            verify(Math.abs(button.width - button.contentItem.x - button.contentItem.width - button.rightPadding) <= 0.5);
             compare(button.background.color, Qt.rgba(Ui.Theme.controlHover.r, Ui.Theme.controlHover.g, Ui.Theme.controlHover.b, 0.5));
             mousePress(button, button.width / 2, button.height / 2);
             compare(button.background.color, Ui.Theme.controlPressed);

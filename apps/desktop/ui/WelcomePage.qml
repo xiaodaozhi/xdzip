@@ -267,6 +267,9 @@ Rectangle {
                             objectName: "welcomeFormatsSettings"
                             text: qsTrId("welcome.formatsOpenSettings")
                             labelSize: Theme.welcomeFormatFontSize * Theme.fontScale
+                            horizontalInset: Theme.welcomeFormatChipInset
+                            leftPadding: Theme.welcomeFormatChipInset
+                            rightPadding: Theme.welcomeFormatChipInset
                             background: Rectangle {
                                 objectName: "welcomeFormatsSettingsBackground"
                                 radius: formatsSettingsButton.cornerRadius
