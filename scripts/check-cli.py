@@ -574,11 +574,14 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         record('literal_paths_physical_ids_and_zero_write_selection_failure')
         archive = work/'literal.zip';target = work/'conflict';target.mkdir()
         (target/'--input.txt').write_bytes(b'keep')
-        conflict = invoke('extract',archive,'-C',target,code=3)
+        conflict = invoke('extract',archive,'-C',target,'--conflict','ask',code=3)
         assert conflict['error_code'] == 'interaction_required'
         assert (target/'--input.txt').read_bytes() == b'keep'
         skipped = invoke('extract',archive,'-C',target,'--conflict','skip')
         assert skipped['summary']['skipped_files'] == 1
+        renamed = invoke('extract',archive,'-C',target)
+        assert renamed['summary']['renamed'] == [{'original':'--input.txt','output':'--input (1).txt'}]
+        assert (target/'--input (1).txt').read_bytes() == b'literal file'
         invoke('extract',archive,'-C',target,'--conflict','rename')
         assert (target/'--input.txt').read_bytes() == b'keep'
         invoke('extract',archive,'-C',target,'--conflict','overwrite')

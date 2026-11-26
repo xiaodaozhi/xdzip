@@ -125,9 +125,14 @@ Item {
             Ui.Theme.dark = data.dark;
             formatsSpy.clear();
             const button = findChild(page, "welcomeFormatsSettings");
-            verify(waitForRendering(page));
+            verify(waitForPolish(button.parent));
             page.revealAction(button);
-            verify(waitForRendering(page));
+            tryVerify(() => {
+                const center = button.mapToItem(page, button.width / 2, button.height / 2);
+                return button.width > 0 && button.height > 0
+                    && center.x >= 0 && center.x < page.width
+                    && center.y >= 0 && center.y < page.height;
+            });
             mouseMove(page, 0, 0);
             compare(button.background.color, "#00000000");
             mouseMove(button, button.width / 2, button.height / 2);

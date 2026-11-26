@@ -279,16 +279,24 @@ fn seven_zip_solid_add_replace_move_and_cancel_preserve_transactions() {
             publish,
         )
     });
+    let after_add = std::fs::read(&path).unwrap();
     std::fs::write(f.0.join("new.txt"), b"replacement bytes").unwrap();
     let archive = Archive::open(&path, &Default::default()).unwrap();
-    task(false, |control, publish| {
-        updating::run(
-            archive.update_job(options, &Default::default()).unwrap(),
-            6,
-            control,
-            publish,
-        )
-    });
+    let mut duplicate = None;
+    updating::run(
+        archive.update_job(options, &Default::default()).unwrap(),
+        6,
+        &Control::default(),
+        &mut |snapshot| {
+            if snapshot.status.terminal() {
+                duplicate = Some(snapshot);
+            }
+        },
+    );
+    let duplicate = duplicate.unwrap();
+    assert_eq!(duplicate.status, Status::Failed);
+    assert_eq!(duplicate.error, "name_collision");
+    assert_eq!(std::fs::read(&path).unwrap(), after_add);
     let archive = Archive::open(&path, &Default::default()).unwrap();
     let selected = archive
         .rows
@@ -322,7 +330,7 @@ fn seven_zip_solid_add_replace_move_and_cancel_preserve_transactions() {
     });
     let archive = Archive::open(&path, &Default::default()).unwrap();
     let contents = known_contents(&archive);
-    assert_eq!(contents["input/new.txt"], b"replacement bytes");
+    assert_eq!(contents["input/new.txt"], b"new file");
     assert_eq!(contents["input/first.txt"], b"first known bytes");
     assert!(!contents.contains_key("new.txt"));
     check(&archive, false);
