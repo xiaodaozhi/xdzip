@@ -13,8 +13,8 @@ from pathlib import Path
 from PIL import Image
 from directory_tree_assets import TREE_CUTS, component_reference_coverage, tree_shapes
 from operation_reference_assets import OPERATION_CUTS, operation_reference_coverage
+from document_assets import document_illustrations
 from association_icon_assets import asset_entries as association_entries
-from zipper_assets import ZIPPER_ICONS
 from asset_definitions import (
     CONTROL_PATHS, EXTRA_CONTROL_PATHS, FILE_OPTICAL_SPECS, MAIN_SHAPES,
     STATE_SHAPES, file_shapes, hero_shapes, revised_status_shapes, supplemental_shapes,
@@ -32,28 +32,25 @@ SUPPLEMENTAL_NAMES = {
 # Semantic correspondence is checked independently of the generator's ledger.
 # A generic skipped/stopped/file symbol cannot silently cover a distinct source.
 REFERENCE_ICONS = {
-    'brand-titlebar': 'app-mark', 'brand-extract': 'archive', 'folder': 'folder',
+    'brand-titlebar': 'app-mark', 'folder': 'folder',
     'file-pdf': 'file-pdf', 'file-text': 'file-text', 'file-code': 'file-code',
     'file-markdown': 'file-markdown', 'open': 'open', 'new': 'new',
     'archive-test': 'archive-test', 'more': 'more', 'search': 'search',
     'settings': 'settings', 'view-list': 'view-list', 'view-grid': 'view-grid',
     'sort': 'sort', 'close': 'close', 'check-selected': 'check-selected',
     'success': 'success', 'radio-selected': 'radio-selected',
-    'radio-unselected': 'radio-unselected', 'create-archive': 'archive-add',
+    'radio-unselected': 'radio-unselected',
     'image-blue': 'image-file', 'image-amber': 'image-amber', 'remove-row': 'remove',
-    'conflict-document': 'document-conflict', 'conflict-pdf': 'conflict-pdf',
-    'conflict-warning': 'conflict-warning', 'progress-document': 'document-download',
-    'progress-image': 'progress-image', 'partial-document': 'document-warning',
+    'conflict-warning': 'conflict-warning',
+    'progress-image': 'progress-image',
     'partial-success': 'status-partial-success', 'partial-skipped': 'status-skipped',
     'partial-warning': 'status-warning', 'settings-gear': 'settings-tile',
     'theme-system': 'theme-system', 'theme-light': 'theme-light', 'theme-dark': 'theme-dark',
     'success-large': 'status-success', 'stopping-spinner': 'spinner',
-    'cancelled-large': 'cancelled-large', 'overwrite-archive': 'archive-warning',
-    'existing-archive': 'existing-archive', 'windows-document': 'windows-document',
-    'linux-document': 'linux-document',
+    'cancelled-large': 'cancelled-large', 'windows-document': 'windows-document',
 }
 CONTROL_REFERENCES = {'check-selected', 'radio-selected', 'radio-unselected'}
-HISTORICAL_BRAND_REFERENCES = {'brand-titlebar', 'brand-extract'}
+HISTORICAL_BRAND_REFERENCES = {'brand-titlebar'}
 NON_REFERENCE_NAMES = {
     'task-create', 'task-extract', 'task-check', 'task-add', 'task-move', 'task-export',
     'activity', 'archive-grey', 'arrow-right', 'check', 'chevron-down',
@@ -61,6 +58,7 @@ NON_REFERENCE_NAMES = {
     'extract', 'info', 'maximize', 'minimize', 'moon', 'panel', 'plus',
     'shield', 'sort-ascending', 'status-stopped', 'sun', 'task-list', 'warning',
 }
+NON_REFERENCE_NAMES.update(['archive', 'archive-add', 'archive-warning', 'conflict-pdf', 'document-check', 'document-conflict', 'document-download', 'document-warning', 'existing-archive', 'file-pdf', 'linux-document', 'windows-document'])
 NON_REFERENCE_NAMES.update({'file-document', 'file-spreadsheet', 'file-presentation',
                             'file-audio', 'file-video', 'file-archive', 'file-installer',
                             'file-font', 'file-disk'})
@@ -88,7 +86,7 @@ def check_reference_coverage(manifest: dict, by_file: dict) -> list[dict]:
     """
     coverage = manifest.get('reference_coverage', [])
     references = {f'reference/{name}.png' for name in REFERENCE_ICONS}
-    assert len(coverage) == len(references) == 45, 'Incomplete reference coverage'
+    assert len(coverage) == len(references) == 36, 'Incomplete reference coverage'
     assert {item['reference'] for item in coverage} == references, 'Untracked reference coverage'
     assert {entry['file'] for entry in manifest['assets']
             if entry['kind'] == 'original-pixel-crop' and entry['usage'] == 'visual-reference-only'} == (
@@ -152,7 +150,8 @@ def main() -> None:
     definitions = {theme: set(CONTROL_PATHS) | set(EXTRA_CONTROL_PATHS) | set(MAIN_SHAPES)
                    | set(STATE_SHAPES) | set(file_shapes(theme)) | set(hero_shapes())
                    | set(revised_status_shapes(theme)) | set(supplemental_shapes(theme))
-                   | set(brand_shapes(theme)) | set(tree_shapes(theme)) for theme in THEMES}
+                   | set(brand_shapes(theme)) | set(tree_shapes(theme))
+                   | set(document_illustrations(theme)) for theme in THEMES}
     assert definitions['light'] == definitions['dark'], 'Theme semantic names differ'
     names = definitions['light']
     assert SUPPLEMENTAL_NAMES | {'app-mark', 'archive', 'archive-grey'} <= names, 'Missing new semantic/brand icons'
@@ -162,8 +161,6 @@ def main() -> None:
     assert len(by_file) == len(manifest['assets']), 'Duplicate asset paths'
     assert len({entry['id'] for entry in manifest['assets']}) == len(manifest['assets']), 'Duplicate asset IDs'
     optical_checks = []
-    zipper_icons = {theme: set() for theme in THEMES}
-    zipper_paints = {}
     for entry in manifest['assets']:
         path = ROOT / entry['file']
         assert path.resolve().is_relative_to(ROOT.resolve()), f'Asset escapes library: {entry["file"]}'
@@ -186,16 +183,6 @@ def main() -> None:
             assert svg.attrib['width'] == svg.attrib['height'] == '24'
             identifiers = [node.attrib['id'] for node in svg.iter() if 'id' in node.attrib]
             assert len(identifiers) == len(set(identifiers)), f'Duplicate SVG IDs: {entry["file"]}'
-            has_zipper = any(re.fullmatch(r'zip(?:-[a-z-]+)?-teeth', name) for name in identifiers)
-            assert has_zipper == (path.stem in ZIPPER_ICONS), f'Zipper family missing or unregistered: {entry["file"]}'
-            if has_zipper:
-                zipper_icons[entry['theme']].add(path.stem)
-                assert entry.get('visual_revision') == 'interlocking-zipper', entry['file']
-                for node in svg.iter():
-                    paint_id = node.attrib.get('id', '')
-                    if paint_id.startswith('zip-'):
-                        definition = ET.tostring(node, encoding='unicode')
-                        assert zipper_paints.setdefault(paint_id, definition) == definition, f'Conflicting inline zipper paint: {paint_id}'
             for node in svg.iter():
                 assert node.tag.rsplit('}', 1)[-1] not in ('script', 'image', 'text', 'filter')
                 assert not any('href' in attr for attr in node.attrib)
@@ -280,7 +267,7 @@ def main() -> None:
             raise AssertionError(f'Unknown asset kind: {kind}')
     counts = {kind: sum(item['kind'] == kind for item in manifest['assets'])
               for kind in ('original-pixel-crop', 'vector-reconstruction', 'vector-rasterization')}
-    assert counts == {'original-pixel-crop': 48 + len(TREE_CUTS) + len(OPERATION_CUTS), 'vector-reconstruction': len(names) * 2,
+    assert counts == {'original-pixel-crop': len(REFERENCE_ICONS) + 3 + len(TREE_CUTS) + len(OPERATION_CUTS), 'vector-reconstruction': len(names) * 2,
                       'vector-rasterization': len(names) * 6 + len(HIGH_RES_ICONS) * 2}, counts
     assert {entry['file'] for entry in manifest['assets'] if entry['kind'] in BRAND_KINDS} == set(brand_specs)
     for theme in THEMES:
@@ -293,7 +280,6 @@ def main() -> None:
                 if entry['kind'] == 'vector-reconstruction' and entry['theme'] == theme} == vector_files
         assert {entry['file'] for entry in manifest['assets']
                 if entry['kind'] == 'vector-rasterization' and entry['theme'] == theme} == raster_files
-    assert all(icons == ZIPPER_ICONS for icons in zipper_icons.values()), 'Incomplete themed zipper family'
     coverage = check_reference_coverage(manifest, by_file)
     components = manifest.get('component_reference_coverage', [])
     assert components == component_reference_coverage(), 'Incomplete component reference coverage'
@@ -313,7 +299,6 @@ def main() -> None:
         'status': 'passed', 'asset_entries': len(manifest['assets']), 'source_crops': counts['original-pixel-crop'],
         'svg_files': counts['vector-reconstruction'], 'vector_png_files': counts['vector-rasterization'],
         'shared_icon_names': len(names), 'brand_exports': len(brand_specs),
-        'zipper_icons': sorted(ZIPPER_ICONS),
         'reference_checks': len(coverage), 'optical_checks': optical_checks, 'reference_coverage': coverage,
         'component_reference_checks': len(components),
         'checks': ['Unique assets exist and match SHA-256', f'{counts["original-pixel-crop"]} source crops match recorded original pixels',
@@ -323,7 +308,6 @@ def main() -> None:
                    f'{len(components)} component cuts declare shared icons or dynamic native geometry',
                    f'{len(brand_specs)} brand exports pass their platform-format validator and source hashes',
                    'SVG paint references resolve to unique local definitions',
-                   'Every zipper family member uses shared geometry and compatible inline paint IDs',
                    f'{len(optical_checks)} file/folder theme-and-scale exports satisfy fixed optical bounds and center',
                    'Generated SVGs, asset metadata and gallery match canonical definitions'],
         'limits': ['Independent visual comparison remains necessary', 'No native Qt renderer validation in this script',

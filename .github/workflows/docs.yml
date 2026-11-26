@@ -57,6 +57,7 @@ jobs:
           python3 scripts/generate-qml-theme.py --check
           python3 scripts/generate-format-registry.py --check
           python3 scripts/test-format-registry.py
+          python3 scripts/build-association-icons.py --check
           python3 scripts/test-runtime-worker-tests.py
           build/ci-check-tools/bin/python scripts/test-ui-fonts.py
           python3 scripts/check-window-contracts.py --self-test

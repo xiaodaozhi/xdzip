@@ -87,13 +87,7 @@ Las ventanas de creación, adición, extracción, tarea o resultado, conflicto y
 
 [operation.header](../../../specs/visual/layout-scale.json) es la única fuente de parámetros; mapeos de ventana en [window-registry.json](../../../specs/visual/window-registry.json). Esto sustituye los espacios de icono por ventana, la marca centrada de Acerca de de 24 unidades y las alturas de cabecera específicas; imágenes, hashes y medidas históricos permanecen iguales. Las cabeceras de solo texto para contraseña, comprobación previa y salida o reinicio no reciben iconos decorativos inventados y conservan las interacciones de seguridad. La densidad de ventana principal y menú se mide por separado.
 
-Las ilustraciones de cremallera de las ventanas de operación comparten la geometría e inventario de scripts/zipper_assets.py: 2 filas de dientes redondeados encajados, cinta de bajo contraste, cursor separado y tirador abierto. Los dientes y el metal usan reflejos discretos; escalar proporcionalmente dentro de los recursos y elegir colores según el fondo sin cambiar siluetas de documento, espacios de icono ni densidad de interfaz. Los nuevos consumidores deben registrarse en ZIPPER_ICONS; las comprobaciones de recursos verifican integridad claro/oscuro e identificadores compatibles de gradientes integrados.
-
-| Icono actual | Colores de cremallera y disposición interna |
-| --- | --- |
-| archive-add | Blanco plateado; conservar el documento azul y la insignia de adición |
-| existing-archive | Blanco plateado; ampliar proporcionalmente y centrar para la silueta de documento más alta |
-| archive-warning | Metal blanco cálido y cinta marrón con documento de advertencia ámbar |
+Las ilustraciones de operación usan el papel con esquina doblada y la insignia XD del icono de archivo. Las insignias pequeñas indican las acciones y los resultados. Los PDF usan el mismo papel con una insignia roja. El lienzo de 24 unidades y los espacios existentes determinan la escala.
 
 file-archive conserva su símbolo plano sencillo de categoría de archivo con dientes horizontales ocres y tirador rectangular, usando el mismo color de símbolo en ambos temas; su fuente y exportaciones SVG y PNG conservan ese estilo.
 

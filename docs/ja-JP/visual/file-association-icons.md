@@ -67,7 +67,7 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 
 `XDZIP_CHROMIUM` には既存の Chromium/Edge のパスを指定できます。SVG マスター、小サイズのソース、仕様はバージョン管理し、素材ソースはメインの [manifest.json](../../../design/assets/manifest.json) に登録します。生成入口は [build-association-icons.py](../../../scripts/build-association-icons.py)、構成定義は [association_icon_assets.py](../../../scripts/association_icon_assets.py) にあります。
 
-出力成果物は形式ごとに 16〜1024 ピクセルの汎用と macOS 用 PNG、および ICO と ICNS を含みます。形式レジストリーで管理する製品 ICO と ICNS は `file-associations/` のベクターソースの隣に置きます。ZIP コンテナーは移行前の元バイトを保持し、他は対応する出力から生成します。通常のビルドはこれらを直接読み取り、ブラウザーを必要としません。一時 PNG、完全な出力、コンタクトシート、記録は `build/` または `dist/` に保持します。
+形式レジストリーにある各形式と対応拡張子に図柄を用意し、別名は同じラベル付きアイコンを共有できます。ラベルの下は平らな紙面です。16〜1024 ピクセルの PNG、ICO、ICNS を出力できます。製品ビルドは管理対象のプラットフォーム用アイコンを直接読み取ります。Linux ではシステムの MIME アイコンを使います。
 
 <a name="xdzip-verification-and-acceptance"></a>
 

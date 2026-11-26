@@ -8,13 +8,12 @@ These definitions describe reconstructed assets, never recovered alpha layers.
 import math
 from directory_tree_assets import TREE_CUTS
 from file_type_assets import FILE_CATEGORY_GLYPHS, desktop_file_shapes
-from zipper_assets import archive_zipper
 
 # These bounds include the outer stroke. Canvas alignment belongs to the asset,
 # so consumers can use one 24-unit viewBox and never stretch individual types.
 FILE_OPTICAL_SPECS = {
     'folder': {'bounds': [1, 2.571429, 23, 21.428571], 'center': [12, 12]},
-    'file-pdf': {'bounds': [2.5, 1, 21.5, 23], 'center': [12, 12]},
+    'file-pdf': {'bounds': [3.64, 1, 20.36, 23], 'center': [12, 12]},
     'file-text': {'bounds': [3.75, 1, 20.25, 23], 'center': [12, 12]},
     'file-code': {'bounds': [2, 1, 22, 23], 'center': [12, 12]},
     'file-markdown': {'bounds': [2, 1, 22, 23], 'center': [12, 12]},
@@ -63,7 +62,6 @@ def file_shapes(theme):
     symbol = '#343b4c' if theme == 'light' else '#e4ebf5'
     return {
         'folder': folder_shape(),
-        'file-pdf': '''<defs><linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ff4c50"/><stop offset=".55" stop-color="#fb2d34"/><stop offset="1" stop-color="#e91623"/></linearGradient></defs><path fill="url(#p)" stroke="#ed2430" stroke-width=".7" d="M4.55 1.35h9.4l7.2 7.1v12.2a2 2 0 0 1-2 2H4.55a1.7 1.7 0 0 1-1.7-1.7V3.05a1.7 1.7 0 0 1 1.7-1.7Z"/><path fill="#fff9fa" stroke="#e82c38" stroke-width=".6" d="M14 1.65v5.2a1.65 1.65 0 0 0 1.65 1.65h5.15Z"/><path d="M4.1 3.3v17a.9.9 0 0 0 .9.9h14.2" stroke="#ffb6b9" stroke-opacity=".5" stroke-width=".55"/><g stroke="#fff" stroke-width=".92"><path d="M5.8 18.8v-5.3h1.55a1.45 1.45 0 0 1 0 2.9H5.8 M10.7 13.5h1.2a1.8 1.8 0 0 1 1.8 1.8V17a1.8 1.8 0 0 1-1.8 1.8h-1.2Z M16.1 18.8v-5.3h2.55 M16.1 16h2.05"/></g>''',
         'file-text': f'''<path fill="{paper}" stroke="{border}" stroke-width="1" d="M5.8 1.5h8.55l5.4 5.4v14a1.6 1.6 0 0 1-1.6 1.6H5.8a1.55 1.55 0 0 1-1.55-1.55V3.05A1.55 1.55 0 0 1 5.8 1.5Z"/><path stroke="{border}" stroke-width="1" d="M14.35 1.75v4.1a1.05 1.05 0 0 0 1.05 1.05h4.1"/><path stroke="{rule}" stroke-width="1" d="M7.25 7.9h4.7 M7.25 10.85h9 M7.25 13.8h9 M7.25 16.75h9"/>''',
         'file-code': f'''<rect x="2.5" y="1.5" width="19" height="21" rx="2.15" fill="{paper}" stroke="{border}" stroke-width="1"/><path d="m8.45 9.1-2.9 2.9 2.9 2.9m7.1-5.8 2.9 2.9-2.9 2.9m-2.35-6.5-2.4 7.2" stroke="{symbol}" stroke-width="1.15"/>''',
         'file-markdown': f'''<rect x="2.5" y="1.5" width="19" height="21" rx="2.15" fill="{paper}" stroke="{border}" stroke-width="1"/><path d="M6.582 15.5V10l2.666 3.7 2.666-3.7v5.5 M16.386 10.35v5.1m-1.849-2.15 1.849 2.15 1.849-2.15" stroke="{symbol}" stroke-width="1.2"/>''',
@@ -107,23 +105,11 @@ def hero_shapes():
                 '<path d="M5 5v14.8A1.2 1.2 0 0 0 6.2 21h11.6" stroke="white" stroke-opacity=".16" stroke-width=".3"/>'
                 '<path d="M6 3h7.1" stroke="white" stroke-opacity=".28" stroke-width=".35"/>')
 
-    # Colored paper folds are darker than the body in the approved source cuts;
-    # the white PDF fold intentionally follows a different document convention.
-    blue = paper('blue', '#1655e4')
-    amber = paper('amber-warning', '#eea015')
-    pale_amber = paper('amber-conflict', '#eea015')
-    amber_archive = paper('amber-archive', '#eea015')
     amber_image = paper('amber-image', '#ffbe39')
     sky = paper('sky', '#69c1f2')
     mountain_blue = '<circle cx="8.1" cy="10.2" r="1.4" fill="#fff9d8" stroke="none"/><path fill="#3099e6" stroke="none" d="m4.5 17.2 4.8-4.8 4 3.7 3.1-3.2 3.1 3.6v3.3a1.7 1.7 0 0 1-1.7 1.7H6.2a1.7 1.7 0 0 1-1.7-1.7Z"/><path d="m7.4 14.3 1.9-1.9 2.3 2.1" stroke="#e7faff" stroke-width=".7"/>'
     mountain_amber = mountain_blue.replace('#3099e6', '#ee971e').replace('#e7faff', '#fff2c1')
     return {
-        'archive-add': blue + archive_zipper() + '<circle cx="18.4" cy="18.4" r="4.45" fill="#2874ff" stroke="white" stroke-width="1.1"/><path stroke="white" stroke-width="1.3" d="M18.4 16.1v4.6 M16.1 18.4h4.6"/>',
-        'archive-warning': amber_archive + archive_zipper('warm'),
-        'document-download': blue + '<path stroke="white" stroke-width="1.8" d="M12 10.6v6.4m-2.8-2.7 2.8 2.7 2.8-2.7"/>',
-        'document-check': blue + '<path stroke="white" stroke-width="1.8" fill="none" d="m8.5 14 2.4 2.4 4.6-5.2"/>',
-        'document-warning': amber + '<circle cx="12" cy="15.2" r="4.6" fill="#fff7dc" stroke="none"/><path stroke="#db860e" stroke-width="1.4" d="M12 12.6v2.9m0 2h.01"/>',
-        'document-conflict': pale_amber + '<path fill="#f39318" stroke="#ffe5a4" stroke-width=".4" d="m10.9 10.8-4 7a1.3 1.3 0 0 0 1.1 2h8a1.3 1.3 0 0 0 1.1-2l-4-7a1.25 1.25 0 0 0-2.2 0Z"/><path stroke="white" stroke-width="1.2" d="M12 13.2v2.65m0 1.85h.01"/>',
         # Image documents appear in the same file slots as PDF/TXT/CODE/MD.
         # This authored group expands around the common center, never the DOM.
         'image-file': '<g transform="translate(-1.2 -1.2) scale(1.1)">' + sky + mountain_blue + '</g>',
@@ -205,36 +191,6 @@ def supplemental_shapes(theme):
             f'stroke="url(#{name}-seam)" stroke-width=".65"/>'
         )
 
-    def platform_document(name, dark):
-        # The source Linux illustration sits on a dark panel; only the blue
-        # paper is rebuilt, never the baked dark rectangle around the source.
-        top, bottom, fold = ('#47a6ff', '#0758ee', '#164cd6') if dark else ('#4da8ff', '#0867ff', '#1257ef')
-        return (
-            gradient(f'{name}-paper', top, bottom)
-            + f'<path fill="url(#{name}-paper)" stroke="none" d="M5.1 1h9.1L21 7.8v13.1a2.1 2.1 0 0 1-2.1 2.1H5.1A2.1 2.1 0 0 1 3 20.9V3.1A2.1 2.1 0 0 1 5.1 1Z"/>'
-            + f'<path fill="{fold}" stroke="none" d="M14.2 1v5.05a1.75 1.75 0 0 0 1.75 1.75H21Z"/>'
-            + paper_seam(name, '#092e8e')
-            + '<path d="M4 4.3v16.2a1.4 1.4 0 0 0 1.4 1.4h12.9" stroke="#bde5ff" stroke-opacity=".16" stroke-width=".3"/>'
-            + '<path d="M12 10.25v7.1m-3.05-2.9L12 17.35l3.05-2.9" stroke="white" stroke-width="2.05"/>'
-        )
-
-    existing_archive = (
-        gradient('existing-archive-paper', '#49a6ff', '#1455fa')
-        + '<path fill="url(#existing-archive-paper)" stroke="none" d="M5.2 1h9L21 7.8v12.9a2.3 2.3 0 0 1-2.3 2.3H5.3A2.3 2.3 0 0 1 3 20.7V3.2A2.2 2.2 0 0 1 5.2 1Z"/>'
-        + '<path fill="#1450ed" stroke="none" d="M14.2 1v4.8a2 2 0 0 0 2 2H21Z"/>'
-        + paper_seam('existing-archive', '#09287c')
-        + '<g transform="translate(-.6 -1.7) scale(1.2)">' + archive_zipper() + '</g>'
-    )
-    conflict_pdf = (
-        gradient('conflict-pdf-paper', '#ff5754', '#f22323')
-        + '<path fill="url(#conflict-pdf-paper)" stroke="#ee292c" stroke-width=".45" d="M4.5 1.225h10L21.275 8v13.025a1.75 1.75 0 0 1-1.75 1.75H4.5a1.775 1.775 0 0 1-1.775-1.775V3A1.775 1.775 0 0 1 4.5 1.225Z"/>'
-        + '<path fill="#e5272a" fill-opacity=".5" stroke="none" d="M14.2 1.9v5.65a1.6 1.6 0 0 0 1.6 1.6h5.2V8L14.2 1.9Z"/>'
-        + '<path fill="#fffafa" stroke="#e93235" stroke-width=".42" d="M14.6 1.6v4.8a1.6 1.6 0 0 0 1.6 1.6H21Z"/>'
-        + paper_seam('conflict-pdf', '#8f1421', left=14.6, top=1.6, bottom=8)
-        + '<g fill="white" stroke="none" fill-rule="evenodd"><path d="M5.15 13.8h2.6a2 2 0 0 1 0 4H6.3v1.65H5.15Z M6.3 14.9v1.8h1.3a.9.9 0 0 0 0-1.8Z"/>'
-        + '<path d="M10.4 13.8h1.75a2.65 2.65 0 0 1 2.65 2.65v.35a2.65 2.65 0 0 1-2.65 2.65H10.4Z M11.55 14.9v3.45h.55a1.5 1.5 0 0 0 1.5-1.5v-.45a1.5 1.5 0 0 0-1.5-1.5Z"/>'
-        + '<path d="M15.9 13.8h3.2v1.1h-2.05v1.15h1.7v1.1h-1.7v2.3H15.9Z"/></g>'
-    )
     progress_image = (
         gradient('progress-image-paper', '#b9e7ff', '#87d0fe')
         + '<path fill="url(#progress-image-paper)" stroke="none" d="M5 1h9.2L21 7.8V21a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2Z"/>'
@@ -249,9 +205,6 @@ def supplemental_shapes(theme):
         'theme-light': window_preview('theme-light', False),
         'theme-dark': window_preview('theme-dark', True),
         'theme-system': window_preview('theme-system', False, system=True),
-        'existing-archive': existing_archive,
-        'windows-document': platform_document('windows-document', False),
-        'linux-document': platform_document('linux-document', True),
         'cancelled-large': status_disc('#7c899e' if theme == 'light' else '#93a6c2',
                                       '<rect x="8.1" y="8.1" width="7.8" height="7.8" rx=".85" fill="#ffffff" stroke="none"/>'),
         'check-selected': gradient('check-selected-box', '#2b7aff', '#1751ff')
@@ -262,7 +215,6 @@ def supplemental_shapes(theme):
         'radio-selected': '<circle cx="12" cy="12" r="9.2" stroke="#1d63ff" stroke-width="1.45"/>'
                           '<circle cx="12" cy="12" r="5.4" fill="#1d63ff" stroke="none"/>',
         'radio-unselected': f'<circle cx="12" cy="12" r="9.2" stroke="{gray}" stroke-width="1.45"/>',
-        'conflict-pdf': conflict_pdf,
         'conflict-warning': gradient('conflict-warning-disc', '#ffc229', '#efa000')
                             + '<circle cx="12" cy="12" r="10" fill="url(#conflict-warning-disc)" stroke="none"/>'
                             + warning_mark(),
@@ -304,7 +256,7 @@ def revised_status_shapes(theme):
     }
 
 CROPS = {'brand-titlebar': ('main-light', [136, 44, 31, 37]),
- 'brand-extract': ('extract-macos', [125, 136, 104, 122]),
+
  'folder': ('main-light', [397, 302, 42, 41]),
  'file-pdf': ('main-light', [397, 626, 44, 50]),
  'file-text': ('main-light', [398, 694, 43, 49]),
@@ -327,16 +279,16 @@ CROPS = {'brand-titlebar': ('main-light', [136, 44, 31, 37]),
  'success': ('extract-macos', [141, 501, 43, 43]),
  'radio-selected': ('extract-macos', [142, 654, 42, 42]),
  'radio-unselected': ('extract-macos', [142, 934, 42, 43]),
- 'create-archive': ('create', [110, 130, 115, 125]),
+
  'image-blue': ('create', [144, 415, 54, 59]),
  'image-amber': ('create', [144, 485, 54, 60]),
  'remove-row': ('create', [886, 422, 49, 49]),
- 'conflict-document': ('conflict', [130, 193, 116, 142]),
- 'conflict-pdf': ('conflict', [156, 458, 109, 119]),
+
+
  'conflict-warning': ('conflict', [140, 681, 53, 53]),
- 'progress-document': ('progress', [133, 140, 104, 119]),
+
  'progress-image': ('progress', [169, 794, 51, 61]),
- 'partial-document': ('partial-result', [115, 143, 113, 130]),
+
  'partial-success': ('partial-result', [242, 306, 57, 57]),
  'partial-skipped': ('partial-result', [645, 307, 56, 56]),
  'partial-warning': ('partial-result', [1035, 306, 59, 58]),
@@ -347,10 +299,10 @@ CROPS = {'brand-titlebar': ('main-light', [136, 44, 31, 37]),
  'success-large': ('task-states', [122, 107, 101, 99]),
  'stopping-spinner': ('task-states', [122, 634, 101, 100]),
  'cancelled-large': ('task-states', [122, 1077, 101, 98]),
- 'overwrite-archive': ('create-overwrite', [122, 214, 138, 163]),
- 'existing-archive': ('create-overwrite', [165, 504, 117, 138]),
+
+
  'windows-document': ('platforms', [139, 123, 77, 88]),
- 'linux-document': ('platforms', [136, 852, 80, 89])}
+}
 
 CROPS.update({name: (source, rect) for name, (source, rect, _, _, _) in TREE_CUTS.items()})
 
@@ -403,7 +355,6 @@ STATE_SHAPES = {'info': '<g stroke="{muted}"><circle cx="12" cy="12" r="9"/><pat
  'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v7l4 2"/>'}
 
 REFERENCES = {'app-mark': 'brand-titlebar',
- 'archive': 'brand-extract',
  'folder': 'folder',
  'file-pdf': 'file-pdf',
  'file-text': 'file-text',
@@ -419,14 +370,8 @@ REFERENCES = {'app-mark': 'brand-titlebar',
  'view-grid': 'view-grid',
  'sort': 'sort',
  'close': 'close',
- 'document-conflict': 'conflict-document',
  'image-amber': 'image-amber',
  'status-partial-success': 'partial-success',
- 'archive-warning': 'overwrite-archive',
- 'archive-add': 'create-archive',
- 'document-download': 'progress-document',
- 'document-check': 'integrity-progress-hero',
- 'document-warning': 'partial-document',
  'image-file': 'image-blue',
  'status-warning': 'partial-warning',
  'status-success': 'success-large',
@@ -438,5 +383,5 @@ REFERENCES = {'app-mark': 'brand-titlebar',
  'settings-tile': 'settings-gear'}
 
 # Every previously unmapped source has its own named reconstruction.
-REFERENCES.update({name: name for name in SUPPLEMENTAL_ROLES})
+REFERENCES.update({name: name for name in SUPPLEMENTAL_ROLES if name in CROPS})
 REFERENCES.update({'view-list-selected': 'view-list', 'view-grid-selected': 'view-grid'})

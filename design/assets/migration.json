@@ -1461,12 +1461,6 @@
       "preserved_bytes": true
     },
     {
-      "previous": "design/assets/v1/slices/brand-extract.png",
-      "current": "design/assets/reference/brand-extract.png",
-      "previous_sha256": "acb5f29c9d728a15d26412612718c966e660a1417f5fe763080e3260e9b728d9",
-      "preserved_bytes": true
-    },
-    {
       "previous": "design/assets/v1/slices/brand-titlebar.png",
       "current": "design/assets/reference/brand-titlebar.png",
       "previous_sha256": "5e5ce42d82b22461f2f18a3cd6654f036beab876fd4eafbda737978e1f9fbaba",
@@ -2469,33 +2463,9 @@
       "preserved_bytes": true
     },
     {
-      "previous": "design/hifi/v2/slices/conflict-document.png",
-      "current": "design/assets/reference/conflict-document.png",
-      "previous_sha256": "b2f9e444963358ad29511207d32ca999ca5d2beca86b813e30e56b2ac5231bbc",
-      "preserved_bytes": true
-    },
-    {
-      "previous": "design/hifi/v2/slices/conflict-pdf.png",
-      "current": "design/assets/reference/conflict-pdf.png",
-      "previous_sha256": "c3c5ff0f472eaa37d920ace33a65e883ec50c8e54abbb204de16474ae5093525",
-      "preserved_bytes": true
-    },
-    {
       "previous": "design/hifi/v2/slices/conflict-warning.png",
       "current": "design/assets/reference/conflict-warning.png",
       "previous_sha256": "e39d7330ef9aa3299215c4cda60c6b2725376c338e60b26056feee7994ff73ad",
-      "preserved_bytes": true
-    },
-    {
-      "previous": "design/hifi/v2/slices/create-archive.png",
-      "current": "design/assets/reference/create-archive.png",
-      "previous_sha256": "e81ccbd3990edc0cd3754056ea9f8092bc42c4600f807a2853986d837ff2882f",
-      "preserved_bytes": true
-    },
-    {
-      "previous": "design/hifi/v2/slices/existing-archive.png",
-      "current": "design/assets/reference/existing-archive.png",
-      "previous_sha256": "8cb25a2a7b46b246c7f50029fdcba5443e8c6fd98ff8ba2648d7532e44698f72",
       "preserved_bytes": true
     },
     {
@@ -2508,24 +2478,6 @@
       "previous": "design/hifi/v2/slices/image-blue.png",
       "current": "design/assets/reference/image-blue.png",
       "previous_sha256": "96fea759fd9497f249acafe4fd2650a0a77f2616f0592b224038f5692d07fc63",
-      "preserved_bytes": true
-    },
-    {
-      "previous": "design/hifi/v2/slices/linux-document.png",
-      "current": "design/assets/reference/linux-document.png",
-      "previous_sha256": "1f88eea038664bb4e17fa1065953957df36b1f38d106dc65f74fed58634d8da1",
-      "preserved_bytes": true
-    },
-    {
-      "previous": "design/hifi/v2/slices/overwrite-archive.png",
-      "current": "design/assets/reference/overwrite-archive.png",
-      "previous_sha256": "5517e1f051d1f0de6a5303f0663937c0f7bbf67ec1a67f5a751584097e5300cc",
-      "preserved_bytes": true
-    },
-    {
-      "previous": "design/hifi/v2/slices/partial-document.png",
-      "current": "design/assets/reference/partial-document.png",
-      "previous_sha256": "ffeb66427e27a5379149998ac30ae47555e6fde3b9245ad0d4c6338e56cfacf3",
       "preserved_bytes": true
     },
     {
@@ -2544,12 +2496,6 @@
       "previous": "design/hifi/v2/slices/partial-warning.png",
       "current": "design/assets/reference/partial-warning.png",
       "previous_sha256": "d86f03738187c59d89035394d1041b0c4a490f6324d4976299ce7cf01ed8e767",
-      "preserved_bytes": true
-    },
-    {
-      "previous": "design/hifi/v2/slices/progress-document.png",
-      "current": "design/assets/reference/progress-document.png",
-      "previous_sha256": "8377e48918849497adac99e81323b9c1f004ba3476428cc4b1a55f5d7bc3fca0",
       "preserved_bytes": true
     },
     {

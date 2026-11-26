@@ -22,7 +22,7 @@ from directory_tree_assets import TREE_CUTS, TREE_ICON_REFERENCES, component_ref
 from operation_reference_assets import OPERATION_CUTS, operation_reference_coverage
 from menu_shadow_assets import menu_shadow_entries, window_shadow_entries
 from file_type_assets import FILE_CATEGORY_GLYPHS
-from zipper_assets import ZIPPER_ICONS
+from document_assets import document_illustrations
 
 REPO = Path(__file__).resolve().parents[1]
 ROOT = REPO / 'design/assets'
@@ -122,7 +122,7 @@ def svg_entries(check: bool = False) -> list[dict]:
         ink, paper, muted = (('#20232a', '#ffffff', '#a4acbc') if theme == 'light'
                             else ('#eceef3', '#20232a', '#8590a6'))
         state_muted, track = (('#788399', '#e2e6ee') if theme == 'light' else ('#9aa8c2', '#404958'))
-        main_shapes = MAIN_SHAPES | file_shapes(theme) | brand_shapes(theme) | tree_shapes(theme)
+        main_shapes = MAIN_SHAPES | file_shapes(theme) | brand_shapes(theme) | tree_shapes(theme) | document_illustrations(theme)
         state_shapes = STATE_SHAPES | hero_shapes() | revised_status_shapes(theme)
         supplemental = supplemental_shapes(theme)
         definitions = CONTROL_PATHS | EXTRA_CONTROL_PATHS
@@ -163,10 +163,6 @@ def svg_entries(check: bool = False) -> list[dict]:
             if name in REFERENCES:
                 entry['source_reference'] = f'reference/{REFERENCES[name]}.png'
                 if name in ('app-mark', 'archive', 'archive-grey'):
-                    entry['reference_relation'] = 'historical-design-reference'
-            if name in ZIPPER_ICONS:
-                entry['visual_revision'] = 'interlocking-zipper'
-                if name in REFERENCES:
                     entry['reference_relation'] = 'historical-design-reference'
             if name in TREE_ICON_REFERENCES:
                 entry['source_reference'] = f'reference/{TREE_ICON_REFERENCES[name]}.png'
@@ -243,7 +239,7 @@ def reference_coverage() -> list[dict]:
         if not icons:
             raise ValueError(f'Unaccounted original reference: {reference}')
         primary = icons[0]
-        historical = reference in ('brand-titlebar', 'brand-extract')
+        historical = reference == 'brand-titlebar'
         role = ('historical-design-reference' if historical else
                 SUPPLEMENTAL_ROLES.get(primary, 'shared-icon-source-reference'))
         entry = {
@@ -325,7 +321,7 @@ def gallery(entries: list[dict]) -> str:
             '<nav>' + ''.join(f'<a href="#{group}">{title}</a>' for group, title in GROUP_TITLES.items()) +
             '<a href="#platform-brand">平台品牌导出</a><a href="../../docs/visual/file-association-icons.md">文件关联图标</a><a href="#directory-tree">目录树 B 切图</a><a href="#references">原像素参考</a></nav>' + ''.join(sections) + platform_section + operation_section +
             f'<section id="directory-tree"><h2>目录树 B，{len(component_cards)} 张原稿切图</h2><p><a href="../hifi/screens/directory-tree-capsule.png">多级目录图板</a>，<a href="../../docs/ux/directory-tree.md">交互与接入规范</a>，<a href="../../specs/visual/directory-tree.json">精确逻辑尺寸</a>。切片保留原始背景与裁剪尺寸，用于评审；动态行、连接线、提示和状态不作为整块控件贴图。文件夹、箭头与分支圆点已用于 Qt 目录树；实心信息 / 警告、分段转轮与骨架仍为待接入的边界状态资源。</p><div class="component-cuts references">' + ''.join(component_cards) + '</div></section>' +
-            '<section id="references"><h2>原像素参考与演示照片</h2><p>45 张原稿参考保留原始背景和不同裁剪矩形，每项都有对应的独立命名 SVG；3 张演示照片保留源分辨率。下方链接可直接查看对应素材。两张历史品牌参考保留原像素，当前标识采用独立修订的品牌母版。</p><div class="references">' + ''.join(cut_cards) + '</div></section></main></html>\n')
+            '<section id="references"><h2>原像素参考与演示照片</h2><p>36 张原稿参考保留原始背景和不同裁剪矩形，每项都有对应的独立命名 SVG；3 张演示照片保留源分辨率。下方链接可直接查看对应素材。标题栏历史品牌参考保留原像素，当前标识采用独立修订的品牌母版。</p><div class="references">' + ''.join(cut_cards) + '</div></section></main></html>\n')
 
 
 def main() -> None:

@@ -110,7 +110,7 @@ windows-install-lifecycle.json, linux-install-lifecycle.json e hashes de pacotes
 
 A sondagem Windows sem tarefas para proteção contra substituição ocupada usa configurações isoladas com bandeja desabilitada para que `CloseMainWindow` faça saída normal nessa configuração. Outras sondagens de abertura por associação mantêm configurações padrão da bandeja e terminam pela barreira explícita de encerramento. Sondagens de proteção de instalação não devem confundir janela oculta com falha de saída do processo nem contornar a verificação encerrando à força o caminho normal.
 
-Fixtures de protocolo de atualização Windows e fixtures de atualização Qt real incluem o lançador de associação e todos os nove ICOs de documento; instaladores não podem passar nas verificações se uma carga obrigatória estiver ausente. O pequeno programa principal C e o comando de associação do fixture de protocolo verificam apenas a transferência de atualização. Recursos incorporados do aplicativo, candidatos nativos e janelas reais são verificados separadamente pelo produto Qt completo; as conclusões não são misturadas.
+Fixtures de protocolo de atualização Windows e fixtures de atualização Qt real incluem o lançador de associação e todos os ICOs de documento exigidos pelo registro de formatos; instaladores não podem passar nas verificações se uma carga obrigatória estiver ausente. O pequeno programa principal C e o comando de associação do fixture de protocolo verificam apenas a transferência de atualização. Recursos incorporados do aplicativo, candidatos nativos e janelas reais são verificados separadamente pelo produto Qt completo; as conclusões não são misturadas.
 
 <a id="兼容基线的长期输入"></a>
 

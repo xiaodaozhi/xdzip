@@ -79,6 +79,13 @@ def gradients(prefix: str, grey: bool = False) -> str:
             '<stop offset="1" stop-color="#f7faff"/></linearGradient></defs>')
 
 
+def document_paper(prefix: str, outline: str) -> str:
+    return (f'<path fill="url(#{prefix}-paper)" stroke="{outline}" stroke-width=".55" '
+            'd="M6.4 2.275H14.4L19.325 7.2V20.4Q19.325 21.725 18 21.725H6.4Q4.675 21.725 4.675 20V4Q4.675 2.275 6.4 2.275Z"/>'
+            + f'<path fill="url(#{prefix}-fold)" stroke="{outline}" stroke-width=".45" '
+            'd="M14.4 2.45V5.9Q14.4 7.2 15.7 7.2H19.15Z"/>')
+
+
 def brand_shapes(theme: str, document_profile: str = 'ui') -> dict[str, str]:
     """Return the fixed 24-unit UI family; colors do not alter its geometry."""
     if document_profile not in ('ui', 'tiny', 'small'):
@@ -94,10 +101,7 @@ def brand_shapes(theme: str, document_profile: str = 'ui') -> dict[str, str]:
         mark = signature(badge[0] + (badge[2] - width) / 2,
                          badge[1] + (badge[2] - height) / 2, width)
         return (gradients(prefix, grey)
-                + f'<path fill="url(#{prefix}-paper)" stroke="{outline}" stroke-width=".55" '
-                  'd="M6.4 2.275H14.4L19.325 7.2V20.4Q19.325 21.725 18 21.725H6.4Q4.675 21.725 4.675 20V4Q4.675 2.275 6.4 2.275Z"/>'
-                + f'<path fill="url(#{prefix}-fold)" stroke="{outline}" stroke-width=".45" '
-                  'd="M14.4 2.45V5.9Q14.4 7.2 15.7 7.2H19.15Z"/>'
+                + document_paper(prefix, outline)
                 + f'<path d="{continuous_square_path(*badge)}" '
                   f'fill="url(#{prefix}-blue)" stroke="none"/>'
                 + mark)
@@ -130,7 +134,6 @@ def master_svg(kind: str, platform: str = 'default') -> str:
     if kind != 'archive':
         raise ValueError(f'Unknown brand master: {kind}')
 
-    # The shipped legacy ZIP container receipts cover this exact SVG.
     defs = gradients(prefix)
     effects = (
         '<defs><filter id="tile-shadow" x="-15%" y="-15%" width="130%" height="140%">'
@@ -149,7 +152,6 @@ def master_svg(kind: str, platform: str = 'default') -> str:
         'd="M248 80H620L832 292V888Q832 944 776 944H248Q192 944 192 888V136Q192 80 248 80Z"/>'
         f'<path fill="url(#{prefix}-fold)" filter="url(#fold-shadow)" '
         'd="M620 80V232Q620 292 680 292H832Z"/>'
-        '<path d="M212 162V878Q212 922 256 922H771" fill="none" stroke="#fff" stroke-width="5" stroke-opacity=".6"/>'
         f'<path d="{continuous_square_path(294, 334, 436)}" fill="url(#{prefix}-blue)"/>'
         + signature(416, 408, 192, 'url(#porcelain)')
         + '<path d="M417 817H473L417 878H473 M507 817V878 M545 878V817H578C618 817 618 852 578 852H545" '

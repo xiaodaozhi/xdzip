@@ -67,7 +67,7 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 
 `XDZIP_CHROMIUM` 可指定已有 Chromium／Edge 路徑。SVG 母版、小尺寸源和規範納入版本管理；素材源在主 [manifest.json](../../../design/assets/manifest.json) 中登記。生成入口是 [build-association-icons.py](../../../scripts/build-association-icons.py)，組合定義見 [association_icon_assets.py](../../../scripts/association_icon_assets.py)。
 
-匯出工件每格式包含 16 至 1024 畫素的通用與 macOS PNG，以及 ICO 和 ICNS。產品 ICO、ICNS 由格式能力表登記，與向量源同放 `file-associations/`；ZIP 容器保留遷移前原位元組，其他容器來自相應匯出。普通構建直接讀取這些容器，不依賴瀏覽器。臨時 PNG、完整匯出、聯絡表和回執保留在 `build/` 或 `dist/`。
+格式登錄表中的每種格式和支援的副檔名都有對應圖形，別名可共用帶標籤的圖示。格式標籤下方採用平整紙面。可匯出 16 至 1024 像素的 PNG，以及 ICO 和 ICNS。產品建置直接讀取版本化的平台圖示檔。Linux 使用系統 MIME 圖示。
 
 <a name="xdzip-验证与验收"></a>
 

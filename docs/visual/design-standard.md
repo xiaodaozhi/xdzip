@@ -87,13 +87,7 @@ Create, add, extract, task/result, conflict and settings windows share Operation
 
 [operation.header](../../specs/visual/layout-scale.json) is the sole parameter source; window mappings are in [window-registry.json](../../specs/visual/window-registry.json). This replaces per-window icon slots, centered 24-unit About branding and window-specific header heights; historical images, hashes and measurements remain unchanged. Text-only password, preflight and exit/restart headers gain no invented decorative icons and retain safety interactions. Main-window and menu density remain separately measured.
 
-Operation-window zipper illustrations share scripts/zipper_assets.py geometry and inventory: two interlocking rows of rounded teeth, low-contrast tape, separate slider and open pull tab. Teeth and metal use restrained highlights; scale proportionally inside assets and select colors for backgrounds without changing document silhouettes, icon slots or UI density. New consumers must register in ZIPPER_ICONS; asset checks verify light/dark completeness and compatible inline gradient IDs.
-
-| Current icon | Zipper colors and internal layout |
-| --- | --- |
-| archive-add | Silver white; retain blue document and add badge |
-| existing-archive | Silver white; proportionally enlarge and center for the taller document silhouette |
-| archive-warning | Warm white metal and brown tape with amber warning document |
+Operation illustrations use the folded paper and XD badge of the archive icon. Smaller badges identify actions and results. PDF uses the same paper shape with a red PDF badge. The 24-unit canvas and existing icon slots govern scaling.
 
 file-archive retains its simple flat file-category symbol with ochre horizontal teeth and rectangular pull tab, using the same symbol color in both themes; its source, SVG and PNG exports retain that style.
 
