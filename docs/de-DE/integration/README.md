@@ -14,7 +14,7 @@ Legen Sie in einem neuen, privaten, beschreibbaren Arbeitsverzeichnis einen Ordn
 
 ```sh
 xdzip create sample.zip docs --level normal --json
-xdzip add sample.zip notes.txt --into docs --conflict skip --json
+xdzip add sample.zip notes.txt --into docs --json
 xdzip test sample.zip --json
 ```
 

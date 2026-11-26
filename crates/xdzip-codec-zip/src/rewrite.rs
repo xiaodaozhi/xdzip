@@ -104,8 +104,9 @@ impl RewriteCodec for ZipCodec {
                     || name.len() > 4096
                     || std::str::from_utf8(&record.comment).is_err())
             {
-                // EFS declares both name and comment UTF-8. Preserve opaque legacy comments by refusing this edit.
-                return Err(EncodeError::Unsupported);
+                // EFS declares both name and comment UTF-8. Refuse a name change that
+                // would reinterpret an opaque legacy comment.
+                return Err(EncodeError::Name);
             }
         }
         // Both streams are host-owned staging/source handles. This codec does not replace the original.
@@ -145,7 +146,7 @@ impl RewriteCodec for ZipCodec {
                     name.clone()
                 };
                 if name.len() > 4096 {
-                    return Err(EncodeError::Limit);
+                    return Err(EncodeError::Name);
                 }
                 record.name = name.into_bytes();
                 record.flags |= 0x0800;
@@ -581,7 +582,7 @@ mod tests {
         assert_eq!(directory.records[0].flags & 0x800, 0);
         assert_eq!(
             rewrite(&original, &[Some("new.txt".into())]),
-            Err(EncodeError::Unsupported)
+            Err(EncodeError::Name)
         );
     }
     #[test]

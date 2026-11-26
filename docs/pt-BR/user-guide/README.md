@@ -9,7 +9,7 @@ Veja a [instalação](install.md) para conhecer as configurações compatíveis 
 | Instalar o XDZip e escolher o aplicativo padrão para arquivos compactados | [Instalar e abrir arquivos compactados](install.md) |
 | Buscar, ordenar e selecionar entradas ou ver um arquivo | [Navegar e visualizar](browse.md) |
 | Extrair todos os arquivos ou uma seleção, inclusive pelo gerenciador de arquivos | [Extrair arquivos](extract.md) |
-| Compactar, adicionar, substituir ou mover arquivos dentro de um arquivo compactado | [Criar e modificar arquivos compactados](create-and-modify.md) |
+| Compactar arquivos e adicionar, renomear ou mover entradas | [Criar e modificar arquivos compactados](create-and-modify.md) |
 | Usar senhas e arquivos com vários volumes | [Senhas e volumes divididos](passwords-and-volumes.md) |
 | Verificar arquivos e conferir progresso, cancelamento e resultados | [Verificações, tarefas e resultados](checks-and-tasks.md) |
 | Ajustar o idioma, a aparência ou a área de notificação e instalar atualizações | [Configurações e atualizações](settings-and-updates.md) |

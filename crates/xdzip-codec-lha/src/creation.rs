@@ -5,7 +5,7 @@ use xdzip_codec_api::{
     encode::{EncodeEntry, EncodeError, EncodeInput, EncodeOutput, EncodeProgress, EncodeSettings},
 };
 use xdzip_compression::{Crc16, LzhWriter, crc16};
-use xdzip_domain::path::{PortablePath, archive_components};
+use xdzip_domain::path::archive_components;
 const MAX_BYTES: u64 = 24 * 1024 * 1024 * 1024;
 const MAX_WORK: u64 = 96 * 1024 * 1024 * 1024;
 #[derive(Debug)]
@@ -157,7 +157,7 @@ pub(crate) fn rename_header(
     } else {
         name
     };
-    PortablePath::parse(name).ok_or(EncodeError::Invalid)?;
+    archive_components(name.as_bytes(), false).ok_or(EncodeError::Name)?;
     let (filename, dirname) = name_parts(name, directory)?;
     let mut header = Vec::new();
     header

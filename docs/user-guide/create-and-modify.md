@@ -11,7 +11,7 @@ English | [简体中文](../zh-CN/user-guide/create-and-modify.md) | [繁體中�
 
 ## Add, replace or move files
 
-Open an eligible ZIP/ZIPX, 7z, LHA/LZH, TAR or compressed TAR archive and navigate to the destination folder inside it. Drop local files or folders onto the list or grid, then review and confirm the addition. The conflict options include replacing eligible regular files in the archive. To move an existing entry, drag it to another folder inside the same archive and confirm. Dragging outside exports a copy. [Drag-and-drop behavior by platform](../engineering/archive-transfers.md)
+Open an eligible ZIP/ZIPX, 7z, LHA/LZH, TAR or compressed TAR archive and navigate to the destination folder inside it. Drop local files or folders onto the list or grid, then review and confirm the addition. An exact archive path match stops the addition and preserves the original archive. To move an existing entry, drag it to another folder inside the same archive and confirm. Dragging outside exports a copy. [Drag-and-drop behavior by platform](../engineering/archive-transfers.md)
 
 Creation and addition omit `.DS_Store` files and `__MACOSX` and `_MACOSX` directories. Archive modification depends on the format, contents and source. Encrypted, split and disk-indexed archives cannot be edited through the normal modification flow. When editing is unavailable, extract to a new folder and create a new archive. [Modification and drag-and-drop rules](../engineering/archive-transfers.md)
 

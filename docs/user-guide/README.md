@@ -9,7 +9,7 @@ Start with [installation](install.md) for the supported Windows, macOS and Ubunt
 | Install XDZip and choose the default app for archives | [Install and open archives](install.md) |
 | Search, sort and select archive entries, or view a file | [Browse and preview](browse.md) |
 | Extract all or selected files, including from a file manager | [Extract files](extract.md) |
-| Compress files, add or replace entries, or move them inside an archive | [Create and modify archives](create-and-modify.md) |
+| Compress files, add, rename or move archive entries | [Create and modify archives](create-and-modify.md) |
 | Work with passwords and multipart archives | [Passwords and split volumes](passwords-and-volumes.md) |
 | Verify archives and review progress, cancellation and results | [Checks, tasks and results](checks-and-tasks.md) |
 | Adjust language, appearance or tray behavior, and install updates | [Settings and updates](settings-and-updates.md) |

@@ -188,6 +188,6 @@ fn rewritten_binary_pax_path_declares_utf8_and_preserves_payload() {
             &cancel,
             &mut |_| {}
         ),
-        Err(EncodeError::Unsupported)
+        Err(EncodeError::Name)
     );
 }

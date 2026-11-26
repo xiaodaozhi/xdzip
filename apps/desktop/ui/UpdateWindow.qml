@@ -14,7 +14,6 @@ OperationWindow {
     property string targetDirectory: ""
     property string targetLabel: ""
     property string archiveLabel: ""
-    readonly property real density: Theme.operationCreateDensity
     clientWidth: Theme.operationCreateWidth
     requestedHeight: Math.min(Math.ceil(updateContent.implicitHeight + footer.implicitHeight), Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - Theme.operationAddingScreenMargin)
     title: qsTrId("update.title")
@@ -24,7 +23,6 @@ OperationWindow {
         targetLabel = controller.location || qsTrId("update.root");
         archiveLabel = controller.title;
         inputPanel.setInputPaths(paths);
-        conflict.currentIndex = 0;
         controller.clearCreationError();
         present();
     }
@@ -192,38 +190,18 @@ OperationWindow {
                             anchors.margins: Theme.operationCreateCardInset
                             spacing: Theme.operationAddingCardContentGap
                             Text {
-                                text: qsTrId("update.options")
+                                text: qsTrId("update.conflicts")
                                 font.pixelSize: Theme.operationCreateBodySize
                                 font.bold: true
                                 color: Theme.text
                             }
-                            Rectangle {
+                            Text {
+                                objectName: "updateConflictNote"
                                 Layout.fillWidth: true
-                                implicitHeight: optionsFields.implicitHeight + Theme.operationAddingSourceListInset * 2
-                                color: Theme.surface
-                                border.color: Theme.operationCardBorder
-                                radius: Theme.operationAddingCardRadius
-                                ColumnLayout {
-                                    id: optionsFields
-                                    anchors.fill: parent
-                                    anchors.margins: Theme.operationAddingSourceListInset
-                                    spacing: Theme.operationAddingCardContentGap
-                                    Text { text: qsTrId("update.conflicts"); font.pixelSize: Theme.operationCreateBodySize; color: Theme.text }
-                                    OperationSelect {
-                                        id: conflict
-                                        objectName: "updateConflictPolicy"
-                                        Layout.fillWidth: true
-                                        density: root.density
-                                        model: [qsTrId("update.ask"), qsTrId("update.skip"), qsTrId("update.rename"), qsTrId("update.replace")]
-                                    }
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: qsTrId("update.hint")
-                                        font.pixelSize: Theme.operationCreateNoteSize
-                                        color: Theme.textSecondary
-                                        wrapMode: Text.Wrap
-                                    }
-                                }
+                                text: qsTrId("update.hint")
+                                font.pixelSize: Theme.operationCreateNoteSize
+                                color: Theme.textSecondary
+                                wrapMode: Text.Wrap
                             }
                         }
                     }
@@ -251,7 +229,7 @@ OperationWindow {
                 text: qsTrId("update.add")
                 primary: true
                 enabled: root.inputs.length > 0 && root.controller.canUpdateArchive && !root.controller.busy && root.controller.sessionId === root.sourceSession
-                onClicked: root.controller.startUpdate(root.inputs, root.sourceSession, root.targetDirectory, conflict.currentIndex)
+                onClicked: root.controller.startUpdate(root.inputs, root.sourceSession, root.targetDirectory, 0)
             }
         }
     }

@@ -15,7 +15,7 @@
 
 ## Adicionar, substituir ou mover arquivos
 
-Abra um ZIP/ZIPX, 7z, LHA/LZH, TAR ou TAR compactado compatível e acesse a pasta de destino dentro dele. Arraste arquivos ou pastas locais para a lista ou a grade, depois confira e confirme a inclusão. Entre as opções de conflito está substituir arquivos comuns compatíveis dentro do arquivo compactado. Para mover uma entrada, arraste-a para outra pasta do mesmo arquivo compactado e confirme. Arrastar para fora da janela exporta uma cópia. [Como arrastar e soltar em cada plataforma](../engineering/archive-transfers.md)
+Abra um ZIP/ZIPX, 7z, LHA/LZH, TAR ou TAR compactado compatível e acesse a pasta de destino dentro dele. Arraste arquivos ou pastas locais para a lista ou a grade, depois confira e confirme a inclusão. Um caminho idêntico interrompe a adição e preserva o arquivo compactado original. Para mover uma entrada, arraste-a para outra pasta do mesmo arquivo compactado e confirme. Arrastar para fora da janela exporta uma cópia. [Como arrastar e soltar em cada plataforma](../engineering/archive-transfers.md)
 
 A criação e a inclusão ignoram arquivos `.DS_Store` e pastas `__MACOSX` e `_MACOSX`. As opções de modificação dependem do formato, do conteúdo e da origem. O fluxo normal de modificação não aceita arquivos criptografados, divididos ou indexados em disco. Quando não for possível editar, extraia o conteúdo em uma nova pasta e crie outro arquivo compactado. [Regras de modificação e arraste](../engineering/archive-transfers.md)
 

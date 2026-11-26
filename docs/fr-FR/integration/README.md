@@ -14,7 +14,7 @@ Dans un nouveau répertoire de travail privé accessible en écriture, créez le
 
 ```sh
 xdzip create sample.zip docs --level normal --json
-xdzip add sample.zip notes.txt --into docs --conflict skip --json
+xdzip add sample.zip notes.txt --into docs --json
 xdzip test sample.zip --json
 ```
 

@@ -54,7 +54,7 @@ pub fn command(chinese: bool) -> Command {
             .arg(flag("solid", "7z 固实压缩 / Solid 7z archive"))
             .arg(flag("password-stdin", "从标准输入读取密码 / Read password from stdin").requires("encrypt"))
             .arg(value("volume-size", "分卷字节数，可用 KiB/MiB/GiB / Volume size")))
-        .subcommand(Command::new("add").visible_alias("a").about("添加文件到普通压缩包 / Add files to an ordinary archive").arg(archive()).arg(inputs()).arg(conflict()).arg(value("into", "已有包内目录 / Existing member directory").default_value("")))
+        .subcommand(Command::new("add").visible_alias("a").about("添加文件到普通压缩包 / Add files to an ordinary archive").arg(archive()).arg(inputs()).arg(conflict().hide(true)).arg(value("into", "已有包内目录 / Existing member directory").default_value("")))
         .subcommand(Command::new("test").visible_alias("t").about("测试压缩包 / Test an archive").arg(archive()).arg(flag("password-stdin", "从标准输入读取密码 / Read password from stdin")))
         .subcommand(Command::new("gui").about("打开桌面版 / Open the desktop application").arg(Arg::new("archives").num_args(0..)))
         .subcommand(Command::new("setup").about("显式安装或移除用户级命令入口 / Register or remove the user command")

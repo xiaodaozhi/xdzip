@@ -15,7 +15,7 @@
 
 ## Añadir, sustituir o mover archivos
 
-Abre un archivo ZIP/ZIPX, 7z, LHA/LZH, TAR o TAR comprimido compatible y ve a la carpeta de destino dentro de él. Arrastra archivos o carpetas locales a la lista o cuadrícula, revisa la selección y confirma la adición. Entre las opciones para nombres en conflicto está sustituir los archivos normales que lo permitan. Para mover una entrada existente, arrástrala a otra carpeta del mismo archivo comprimido y confirma. Si la arrastras fuera de la ventana, exportas una copia. [Arrastrar y soltar según la plataforma](../engineering/archive-transfers.md)
+Abre un archivo ZIP/ZIPX, 7z, LHA/LZH, TAR o TAR comprimido compatible y ve a la carpeta de destino dentro de él. Arrastra archivos o carpetas locales a la lista o cuadrícula, revisa la selección y confirma la adición. Una ruta idéntica detiene la adición y conserva el archivo original. Para mover una entrada existente, arrástrala a otra carpeta del mismo archivo comprimido y confirma. Si la arrastras fuera de la ventana, exportas una copia. [Arrastrar y soltar según la plataforma](../engineering/archive-transfers.md)
 
 Al crear y añadir se omiten los archivos `.DS_Store` y los directorios `__MACOSX` y `_MACOSX`. Las posibilidades de modificación dependen del formato, contenido y origen. Los archivos comprimidos cifrados, divididos o con índice en disco no se pueden modificar por esta vía. Si no se puede editar, extrae el contenido en una carpeta nueva y crea otro archivo comprimido. [Reglas de modificación y arrastre](../engineering/archive-transfers.md)
 

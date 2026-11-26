@@ -12,6 +12,7 @@ ARCHIVE_NAME_TESTS = [
     'cargo', 'test', '--locked', '-p', 'xdzip-runtime', '--lib', '--',
     'extraction::', 'creation::tests::native_archive_names_',
     'creation::tests::duplicate_archive_names_', 'creation::tests::iso_creation_refuses_',
+    'updating::tests::', 'legacy_names_tests::',
 ]
 RUST_INPUTS = [
     '*.rs', 'Cargo.toml', 'Cargo.lock', ':(glob)**/Cargo.toml', ':(glob)**/Cargo.lock',

@@ -35,7 +35,7 @@ def verify_tar(root, payload):
             assert {member.name: archive.extractfile(member).read()
                     for member in archive if member.isfile()} == {
                 'project/target/renamed.bin': payload,
-                'project/target/extra.txt': b'replacement bytes',
+                'project/target/extra.txt': b'extra bytes',
             }, filename
 
 
@@ -54,7 +54,7 @@ def verify_members(root, seven_zip, payload):
     for filename in ('edit.lha', 'edit.lzh'):
         path = root / filename
         run(seven_zip, 't', path)
-        for name, content in [('renamed.bin', payload), ('extra.txt', b'replacement bytes')]:
+        for name, content in [('renamed.bin', payload), ('extra.txt', b'extra bytes')]:
             assert run(seven_zip, 'x', '-so', path, 'project/target/' + name) == content, path
     source_root = Path(__file__).resolve().parents[1] / 'tests/fixtures/streams'
     for method in ('deflate64', 'bzip2', 'lzma', 'xz'):
