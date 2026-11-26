@@ -112,21 +112,10 @@ Rectangle {
                 x: (root.width - width) / 2
                 y: Theme.welcomeContentTopInset
                 spacing: 0
-                RowLayout {
+                BrandWordmark {
+                    objectName: "welcomeBrandWordmark"
                     Layout.alignment: Qt.AlignHCenter
-                    spacing: 10
-                    Image {
-                        source: "qrc:/xdzip/assets/app-icon.png"
-                        Layout.preferredWidth: 26
-                        Layout.preferredHeight: 26
-                        fillMode: Image.PreserveAspectFit
-                    }
-                    Text {
-                        text: "xdzip"
-                        font.pixelSize: 14 * Theme.fontScale
-                        font.letterSpacing: 1
-                        color: Theme.textSecondary
-                    }
+                    iconHeight: Theme.welcomeWordmarkHeight
                 }
                 Text {
                     objectName: "welcomeHeadline"

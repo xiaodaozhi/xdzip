@@ -51,6 +51,8 @@ macOS Dock 实测反馈后的修订：ICNS 与 Qt 运行时 Dock 图标改用 `b
 
 [品牌对照图](brand/identity-reference.png) 从当前应用与 ZIP 文档的 ICO 生成。上方展示 256 px，下面从左到右展示 64、48、32、24 px，均使用实际导出的尺寸。当前应用图标以 [应用母版](brand/xdzip.svg) 为准。
 
+主窗口与起始页使用同一套横排字标。左侧复用界面的 XD 图标，右侧 [字样轮廓](brand/wordmark-lettering.svg) 取自 [Bruno Ace Regular](https://github.com/google/fonts/tree/main/ofl/brunoace) 的 02 微加粗稿，字面高度比初稿放大 10%。标题栏和起始页分别在 24 和 26 逻辑单位的高度下显示，随界面字号等比放大。浅深色 SVG 使用对应主题的正文色，由 `build-design-assets.py` 从共享图标和字样轮廓合成。
+
 应用图标接入 Qt 窗口、macOS app bundle、Windows 可执行资源与 Linux 桌面启动项 / hicolor 目录；文档图标和关联行为见[平台接入说明](../../apps/desktop/packaging/README.md)。默认应用仍由用户选择。
 
 ## 参考素材覆盖

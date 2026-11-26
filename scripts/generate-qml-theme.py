@@ -154,6 +154,11 @@ for key, value in layout['main']['interaction'].items():
     lines.append(f'    readonly property real main{key[0].upper() + key[1:]}: {value}')
 for key, value in layout['main']['linux_frame'].items():
     lines.append(f'    readonly property real mainLinux{key[0].upper() + key[1:]}: {value}')
+wordmark = layout['brand_wordmark']
+wordmark_width, wordmark_height = wordmark['canvas']
+lines.append(f'    readonly property real brandWordmarkAspect: {wordmark_width} / {wordmark_height}')
+lines.append(f'    readonly property real titlebarWordmarkHeight: {wordmark["titlebar_height"]}')
+lines.append(f'    readonly property real welcomeWordmarkHeight: {wordmark["welcome_height"]}')
 for key, value in layout['main']['titlebar'].items():
     if key.startswith('tab_') and key not in ('tab_height', 'tab_vertical_inset', 'tab_radius'):
         name = 'main' + ''.join(part.title() for part in key.split('_'))

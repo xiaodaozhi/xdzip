@@ -78,14 +78,31 @@ def check_application_icon(base, assets, path, entry, alias, prefix):
 
 def check_qt(base, assets, qrc):
     checked, applications, aliases = 0, 0, set()
+    wordmarks = {f'assets/brand-wordmark-{theme}.svg': (base / f'brand/wordmark-{theme}.svg').resolve()
+                 for theme in ('light', 'dark')}
+    wordmark_aliases = set()
     shadow_kinds = {'menu': 'menu-shadow-rasterization', 'frame': 'window-shadow-rasterization'}
     resources = [(resource.attrib.get('prefix', ''), node)
                  for resource in ET.parse(qrc).iter('qresource') for node in resource.findall('file')]
     for prefix, node in resources:
         path = (qrc.parent / node.text).resolve()
+        alias = node.attrib.get('alias', node.text)
+        if alias in wordmarks or path in wordmarks.values():
+            require(prefix.rstrip('/') == '/xdzip' and wordmarks.get(alias) == path
+                    and alias not in wordmark_aliases, f'Misplaced or duplicate wordmark: {alias}')
+            entry = assets.get(path)
+            require(entry is not None and entry.get('purpose') == 'interface-wordmark'
+                    and entry['runtime_usage']['qt_aliases'] == [alias], f'Untracked wordmark: {alias}')
+            require(hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], f'Stale wordmark: {alias}')
+            for source_key in ('source', 'mark_source'):
+                source = (base / entry[source_key]).resolve()
+                require(source in assets and hashlib.sha256(source.read_bytes()).hexdigest()
+                        == assets[source]['sha256'] == entry[f'{source_key}_sha256'],
+                        f'Stale wordmark provenance: {alias}')
+            wordmark_aliases.add(alias)
+            continue
         if path.suffix != '.png':
             continue
-        alias = node.attrib.get('alias', node.text)
         alias_path = prefix.rstrip('/') + '/' + alias.lstrip('/')
         require(alias_path not in aliases, f'Duplicate runtime image alias: {alias_path}')
         aliases.add(alias_path)
@@ -140,6 +157,7 @@ def check_qt(base, assets, qrc):
                 f'Runtime PNG dimensions differ from manifest: {node.text}')
         checked += 1
     require(applications == 2, 'Qt must register the default and macOS high-resolution application icons')
+    require(wordmark_aliases == set(wordmarks), 'Qt must register both interface wordmark themes')
     return checked
 
 
@@ -147,7 +165,7 @@ def main():
     subprocess.run([sys.executable, str(ROOT / "scripts/generate-file-icons.py"), "--check"], check=True)
     assets = load_assets(ASSET_ROOT)
     qt_count = check_qt(ASSET_ROOT, assets, ROOT / 'apps/desktop/ui.qrc')
-    print(f'Checked {qt_count} Qt raster aliases against the canonical library. '
+    print(f'Checked {qt_count} Qt raster aliases and both wordmark vectors against the canonical library. '
           'The default and macOS 512×512 application icons have separate platform profiles. '
           'Visual fidelity requires separate review.')
 
