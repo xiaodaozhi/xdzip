@@ -9,7 +9,7 @@ use xdzip_domain::path::PortablePath;
 pub(crate) struct Planned {
     pub index: usize,
     pub path: PortablePath,
-    pub link_target: Option<String>,
+    pub(super) link_target: Option<super::links::LinkTarget>,
 }
 pub(crate) struct Job {
     pub source: Source,
@@ -163,7 +163,6 @@ pub(crate) fn prepare(
             path,
         });
     }
-    let fixed_names = fixed_names || result.iter().any(|p| archive.rows[p.index].link);
     review_names(&mut result, &archive.rows, fixed_names, cancel)?;
     // GZIP has no per-entry compressed sizes. Use the immutable whole-source
     // size for a conservative selected-output ratio gate; work quotas still apply.
@@ -254,7 +253,9 @@ impl Job {
                 .iter()
                 .map(|p| {
                     std::mem::size_of::<Planned>()
-                        + p.link_target.as_ref().map_or(0, String::capacity)
+                        + p.link_target
+                            .as_ref()
+                            .map_or(0, super::links::LinkTarget::bytes)
                         + p.path
                             .parts()
                             .iter()
