@@ -8,6 +8,21 @@ use xdzip_codec_api::{
 };
 use xdzip_domain::path::PortablePath;
 
+type Nodes<T> = BTreeMap<String, (bool, Option<T>)>;
+const MAX_TARGET_BYTES: usize = 4 * 1024 * 1024;
+
+pub(super) struct LinkTarget {
+    original: String,
+    referent: String,
+    followed: usize,
+}
+
+impl LinkTarget {
+    pub(super) fn bytes(&self) -> usize {
+        self.original.capacity() + self.referent.capacity()
+    }
+}
+
 struct Target(Vec<u8>);
 impl DecodedSink for Target {
     fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
@@ -38,7 +53,7 @@ pub(super) fn validate_target(target: &str) -> Result<(), &'static str> {
         if matches!(part, "." | "..") {
             continue;
         }
-        if PortablePath::parse(part).is_none() {
+        if PortablePath::parse_extraction(part).is_none() {
             return Err("unsupported_link");
         }
     }
@@ -90,16 +105,20 @@ pub(super) fn prepare_decoded(
         let bytes = decode(entry)?;
         total = total
             .checked_add(bytes.len())
-            .filter(|n| *n <= 4 * 1024 * 1024)
+            .filter(|n| *n <= MAX_TARGET_BYTES)
             .ok_or("resource_limit")?;
         let target = String::from_utf8(bytes).map_err(|_| "unsupported_link")?;
         // Standard macOS bundles use parent-relative targets. Resolve them with
         // every link prefix in filesystem order before admitting any output.
         validate_target(&target)?;
-        p.link_target = Some(target);
+        p.link_target = Some(LinkTarget {
+            original: target,
+            referent: String::new(),
+            followed: 0,
+        });
     }
     // Exact spelling is required: aliases/duplicate records cannot silently retarget a link.
-    let mut nodes: BTreeMap<String, (bool, Option<&str>)> = BTreeMap::new();
+    let mut nodes: Nodes<String> = BTreeMap::new();
     let mut explicit = std::collections::BTreeSet::new();
     for p in planned.iter() {
         let name = p.path.display();
@@ -111,25 +130,66 @@ pub(super) fn prepare_decoded(
                 .entry(p.path.parts()[..at].join("/"))
                 .or_insert((true, None));
         }
-        nodes.insert(name, (rows[p.index].directory, p.link_target.as_deref()));
+        nodes.insert(
+            name,
+            (
+                rows[p.index].directory,
+                p.link_target.as_ref().map(|t| t.original.clone()),
+            ),
+        );
     }
-    for p in planned.iter().filter(|p| p.link_target.is_some()) {
-        resolve(&p.path, &nodes, cancel)?;
+    let mut referent_bytes = 0usize;
+    for p in planned {
+        if let Some(link) = &mut p.link_target {
+            (link.referent, link.followed) = resolve(&p.path, &nodes, cancel)?;
+            referent_bytes += link.referent.len();
+            if referent_bytes > MAX_TARGET_BYTES {
+                return Err("resource_limit");
+            }
+        }
     }
     Ok(())
 }
 
 /// Resolve link prefixes as well as complete targets (Framework/Versions/Current/A).
-fn resolve(
+fn resolve<T: AsRef<str>>(
     path: &PortablePath,
-    nodes: &BTreeMap<String, (bool, Option<&str>)>,
+    nodes: &Nodes<T>,
     cancel: &Cancellation,
-) -> Result<(), &'static str> {
-    let mut resolved = Vec::<String>::new();
-    let mut pending: VecDeque<String> = path.parts().iter().cloned().collect();
-    let mut followed = 0;
-    while let Some(component) = pending.pop_front() {
+) -> Result<(String, usize), &'static str> {
+    walk(
+        Vec::new(),
+        path.parts().iter().cloned().collect(),
+        0,
+        nodes,
+        cancel,
+    )
+}
+
+fn walk<T: AsRef<str>>(
+    mut resolved: Vec<String>,
+    mut pending: VecDeque<String>,
+    mut followed: usize,
+    nodes: &Nodes<T>,
+    cancel: &Cancellation,
+) -> Result<(String, usize), &'static str> {
+    loop {
         cancel.check().map_err(|_| "cancelled")?;
+        let count = resolved.len() + pending.len();
+        if count > 64
+            || resolved
+                .iter()
+                .chain(pending.iter())
+                .map(String::len)
+                .sum::<usize>()
+                + count
+                > 4096
+        {
+            return Err("resource_limit");
+        }
+        let Some(component) = pending.pop_front() else {
+            break;
+        };
         match component.as_str() {
             "." => {}
             ".." => {
@@ -144,6 +204,7 @@ fn resolve(
                     .join("/");
                 let (directory, target) = nodes.get(&name).ok_or("unsupported_link")?;
                 if let Some(target) = target {
+                    let target = target.as_ref();
                     followed += 1;
                     if followed > 64 {
                         return Err("unsupported_link");
@@ -160,20 +221,134 @@ fn resolve(
                 }
             }
         }
-        let count = resolved.len() + pending.len();
-        if count > 64
-            || resolved
-                .iter()
-                .chain(pending.iter())
-                .map(String::len)
-                .sum::<usize>()
-                + count
-                > 4096
-        {
+    }
+    Ok((resolved.join("/"), followed))
+}
+
+impl LinkTarget {
+    /// Every link encountered while resolving this link has a smaller count.
+    pub(super) fn order(&self) -> usize {
+        self.followed
+    }
+}
+
+/// Only objects published by this task can satisfy a link in the output graph.
+#[derive(Default)]
+pub(super) struct Output {
+    assigned: BTreeMap<String, String>,
+    nodes: Nodes<String>,
+    path_bytes: usize,
+    target_bytes: usize,
+}
+
+impl Output {
+    pub(super) fn parents(
+        &mut self,
+        original: &PortablePath,
+        path: &PortablePath,
+    ) -> Result<(), &'static str> {
+        for at in 1..path.parts().len() {
+            self.record(
+                original.parts()[..at].join("/"),
+                path.parts()[..at].join("/"),
+                true,
+                None,
+            )?;
+        }
+        Ok(())
+    }
+
+    pub(super) fn entry(
+        &mut self,
+        original: &PortablePath,
+        path: &PortablePath,
+        directory: bool,
+        link: Option<String>,
+    ) -> Result<(), &'static str> {
+        self.parents(original, path)?;
+        self.record(original.display(), path.display(), directory, link)
+    }
+
+    fn record(
+        &mut self,
+        original: String,
+        path: String,
+        directory: bool,
+        link: Option<String>,
+    ) -> Result<(), &'static str> {
+        if let Some(previous) = self.assigned.get(&original) {
+            if previous == &path && directory && self.nodes.get(&path).is_some_and(|node| node.0) {
+                return Ok(());
+            }
+            return Err("ambiguous_name");
+        }
+        if self.nodes.contains_key(&path) {
+            return Err("ambiguous_name");
+        }
+        self.path_bytes += original.len() + 2 * path.len();
+        if self.path_bytes > 24 * 1024 * 1024 {
             return Err("resource_limit");
         }
+        self.nodes.insert(path.clone(), (directory, link));
+        self.assigned.insert(original, path);
+        Ok(())
     }
-    Ok(())
+
+    pub(super) fn target(
+        &mut self,
+        link: &LinkTarget,
+        path: &PortablePath,
+        cancel: &Cancellation,
+    ) -> Result<String, &'static str> {
+        let wanted = if link.referent.is_empty() {
+            ""
+        } else {
+            self.assigned
+                .get(&link.referent)
+                .ok_or("unsupported_link")?
+        };
+        let parent = &path.parts()[..path.parts().len() - 1];
+        let resolve = |target: &str| {
+            validate_target(target)?;
+            walk(
+                parent.to_vec(),
+                target.split('/').map(str::to_owned).collect(),
+                1,
+                &self.nodes,
+                cancel,
+            )
+        };
+        let target = match resolve(&link.original) {
+            Ok((resolved, _)) if resolved == wanted => link.original.clone(),
+            Err("cancelled") => return Err("cancelled"),
+            _ => {
+                let wanted_parts: Vec<_> = wanted.split('/').filter(|n| !n.is_empty()).collect();
+                let shared = parent
+                    .iter()
+                    .zip(&wanted_parts)
+                    .take_while(|(a, b)| a.as_str() == **b)
+                    .count();
+                let relative = std::iter::repeat_n("..", parent.len() - shared)
+                    .chain(wanted_parts[shared..].iter().copied())
+                    .collect::<Vec<_>>()
+                    .join("/");
+                let relative = if relative.is_empty() {
+                    ".".into()
+                } else {
+                    relative
+                };
+                if resolve(&relative)?.0 != wanted {
+                    return Err("unsupported_link");
+                }
+                relative
+            }
+        };
+        self.target_bytes += target.len();
+        if self.target_bytes > MAX_TARGET_BYTES {
+            return Err("resource_limit");
+        }
+        Ok(target)
+    }
 }
 
 #[cfg(test)]
@@ -260,7 +435,7 @@ mod tests {
         nodes.insert("dir/file".into(), (false, None));
         assert_eq!(
             resolve(&PortablePath::parse("dir/link").unwrap(), &nodes, &cancel),
-            Ok(())
+            Ok(("dir/file".into(), 2))
         );
 
         for target in ["file/../file", "missing/../file", "file/."] {

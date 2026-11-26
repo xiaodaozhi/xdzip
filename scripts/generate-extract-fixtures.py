@@ -137,6 +137,19 @@ bundle = [
     ('Demo.app/Contents/Frameworks/F.framework/Resources', b'Versions/Current/Resources', 0o120777),
 ]
 (ROOT / 'unix_bundle.zip').write_bytes(unix_zip(bundle))
+(ROOT / 'link_renames.zip').write_bytes(unix_zip([
+    ('viewer', b'entry', 0o120777),
+    ('via', b'mount/../primary?.txt', 0o120777),
+    ('directory-view', b'tree-only', 0o120777),
+    ('entry', b'primary?.txt', 0o120777),
+    ('mount', b'assets', 0o120777),
+    ('assets/local', b'data.txt', 0o120777),
+    ('tree-only/pointer', b'../primary?.txt', 0o120777),
+    ('primary?.txt', b'owned primary', 0o100644),
+    ('assets/data.txt', b'owned asset', 0o100644),
+]))
+(ROOT / 'link_ambiguous_name.zip').write_bytes(unix_zip([
+    ('file', b'one', 0o100644), ('file', b'two', 0o100644), ('link', b'file', 0o120777)]))
 for label, target in [('absolute', b'/tmp/outside'), ('parent', b'../outside'),
                       ('backslash', b'..\\outside'), ('empty', b''), ('nul', b'file\x00x'),
                       ('dangling', b'missing'), ('cycle', b'link'), ('device', b'C:target')]:

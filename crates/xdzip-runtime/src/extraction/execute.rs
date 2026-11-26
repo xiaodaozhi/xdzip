@@ -152,8 +152,15 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 )
             })?;
         }
-        let has_links = job.planned.iter().any(|p| p.link_target.is_some());
-        let mut names = if !has_links && job.temporary.is_none() {
+        job.planned.sort_by_key(|p| {
+            p.link_target
+                .as_ref()
+                .map_or(0, super::links::LinkTarget::order)
+        });
+        let first_link = job.planned.partition_point(|p| p.link_target.is_none());
+        let has_links = first_link < job.planned.len();
+        let mut links = has_links.then(super::links::Output::default);
+        let mut names = if has_links || job.temporary.is_none() {
             Some(Names::new(&job, &control.cancel)?)
         } else {
             None
@@ -185,17 +192,8 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         stats.target = target.display_path().to_string_lossy().into_owned();
         workspace = Some(target.workspace(id).map_err(output)?);
         let workspace = workspace.as_mut().expect("workspace just created");
-        if has_links {
-            // Renaming/skipping a dependency would change the frozen link graph. Refuse
-            // occupied file/link leaves before writing, rather than producing a broken bundle.
-            for p in job.planned.iter().filter(|p| !job.rows[p.index].directory) {
-                if target.existing(&p.path).map_err(output)?.is_some() {
-                    return Err("output_conflict");
-                }
-            }
-        }
         let mut policy = job.options.conflict;
-        for planned in &job.planned {
+        for planned in &job.planned[..first_link] {
             control.cancel.check().map_err(|_| "cancelled")?;
             job.source.validate().map_err(|_| "source_changed")?;
             let entry = &job.rows[planned.index];
@@ -239,44 +237,14 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                     },
                 )?;
                 if let Some(names) = &mut names {
-                    names.resolve(&target, &planned.path, true, &control.cancel, &mut stats)?;
+                    let path =
+                        names.resolve(&target, &planned.path, true, &control.cancel, &mut stats)?;
+                    if let Some(links) = &mut links {
+                        links.entry(&planned.path, &path, true, None)?;
+                    }
                 } else {
                     target.ensure_directory(&planned.path).map_err(output)?;
                 }
-                continue;
-            }
-            if let Some(link_target) = &planned.link_target {
-                pending_file = Some(entry.size);
-                // Payload was fully decoded and CRC checked before output admission. Source
-                // identity is rechecked above; no untrusted link is ever used as a write path.
-                super::links::validate_target(link_target)?;
-                control.begin_commit()?;
-                stats.status = Status::Committing;
-                emit(&mut stats, start, publish);
-                let committed = job
-                    .source
-                    .validate()
-                    .map_err(|_| "source_changed")
-                    .and_then(|_| {
-                        workspace
-                            .commit_symlink(&planned.path, link_target)
-                            .map_err(output)
-                    });
-                let cancelled = control.end_commit(false);
-                if let Ok(receipt) = &committed {
-                    stats.committed_files += 1;
-                    if !job.links_pending {
-                        stats.decoded_bytes += entry.size;
-                    }
-                    stats.written_bytes += entry.size;
-                    stats.committed_bytes += entry.size;
-                    stats.cleanup_warning |= receipt.cleanup_warning;
-                    stats.record(&planned.path.display(), entry.size, "completed", "");
-                    pending_file = None;
-                }
-                committed?;
-                cancelled?;
-                emit(&mut stats, start, publish);
                 continue;
             }
             pending_file = Some(entry.size);
@@ -304,7 +272,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             };
             let mut overwrite = None;
             if let Some(existing) = existing {
-                if has_links {
+                if has_links && policy != ConflictPolicy::Rename {
                     return Err("output_conflict");
                 }
                 let mut decision = policy;
@@ -451,6 +419,103 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             }
             committed?;
             cancelled?;
+            if let Some(links) = &mut links {
+                links.entry(&planned.path, &path, false, None)?;
+            }
+        }
+        if let (Some(links), Some(names)) = (&mut links, &mut names) {
+            let mut candidates = Vec::new();
+            let mut candidate_bytes = 0usize;
+            // A directory can be a link's target even if only another link uses it as a parent.
+            // Claim all such directories before creating any symlink.
+            for planned in &job.planned[first_link..] {
+                job.source.validate().map_err(|_| "source_changed")?;
+                let path =
+                    names.resolve(&target, &planned.path, false, &control.cancel, &mut stats)?;
+                links.parents(&planned.path, &path)?;
+                candidate_bytes += path
+                    .parts()
+                    .iter()
+                    .map(|part| part.len() + 1)
+                    .sum::<usize>();
+                if candidate_bytes > 8 * 1024 * 1024 {
+                    return Err("resource_limit");
+                }
+                candidates.push(path);
+            }
+            for (planned, mut path) in job.planned[first_link..].iter().zip(candidates) {
+                control.cancel.check().map_err(|_| "cancelled")?;
+                let entry = &job.rows[planned.index];
+                stats.current = entry.display_name.clone();
+                pending_file = Some(entry.size);
+                path = match target.leaf_metadata(&path) {
+                    Ok(None) => path,
+                    Ok(Some(_)) if policy == ConflictPolicy::Rename => {
+                        names.fresh_file(&target, &planned.path, &path, &control.cancel)?
+                    }
+                    Ok(Some(_)) => return Err("output_conflict"),
+                    Err(OutputError::NameRejected) => {
+                        names.replacement_file(&target, &planned.path, &path, &control.cancel)?
+                    }
+                    Err(error) => return Err(output(error)),
+                };
+                let parent = names.parent_identity(&planned.path);
+                let data = links.target(
+                    planned.link_target.as_ref().ok_or("unsupported_link")?,
+                    &path,
+                    &control.cancel,
+                )?;
+                let bytes = data.len() as u64;
+                if stats.written_bytes + bytes > MAX_TASK_BYTES {
+                    return Err("task_quota");
+                }
+                let (committed, cancelled) = loop {
+                    stats.current = path.display();
+                    control.begin_commit()?;
+                    stats.status = Status::Committing;
+                    emit(&mut stats, start, publish);
+                    let committed = job
+                        .source
+                        .validate()
+                        .map_err(|_| "source_changed")
+                        .and_then(|_| {
+                            workspace
+                                .commit_symlink_with_parent(&path, &data, parent)
+                                .map_err(output)
+                        });
+                    let cancelled = control.end_commit(false);
+                    if let Err("unsafe_name") = committed
+                        && super::names::punctuation(&path)
+                    {
+                        cancelled?;
+                        path = names.replacement_file(
+                            &target,
+                            &planned.path,
+                            &path,
+                            &control.cancel,
+                        )?;
+                        continue;
+                    }
+                    break (committed, cancelled);
+                };
+                let receipt = committed?;
+                stats.committed_files += 1;
+                if !job.links_pending {
+                    stats.decoded_bytes += entry.size;
+                }
+                stats.written_bytes += bytes;
+                stats.committed_bytes += bytes;
+                stats.cleanup_warning |= receipt.cleanup_warning;
+                if path != planned.path {
+                    stats.record_mapping(&planned.path.display(), &path.display(), bytes);
+                } else {
+                    stats.record(&path.display(), bytes, "completed", "");
+                }
+                pending_file = None;
+                cancelled?;
+                links.entry(&planned.path, &path, false, Some(data))?;
+                emit(&mut stats, start, publish);
+            }
         }
         control.complete()
     })();

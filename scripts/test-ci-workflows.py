@@ -190,7 +190,8 @@ class WorkflowTests(unittest.TestCase):
             self.assertTrue(clippy.should_run(root, 'pull_request', ''))
             for rust_input in ('VERSION.json', 'resources/update-trust.json',
                                'resources/ui-languages.json', 'resources/i18n/en-US.json',
-                               'scripts/check-rust-codec-policy.py', 'scripts/rust-codec-policy.json'):
+                               'scripts/check-rust-codec-policy.py', 'scripts/rust-codec-policy.json',
+                               'tests/fixtures/extract/example.zip'):
                 (root / rust_input).parent.mkdir(parents=True, exist_ok=True)
                 before = git('rev-parse', 'HEAD')
                 commit(rust_input)
