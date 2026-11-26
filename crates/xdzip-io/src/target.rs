@@ -587,17 +587,36 @@ impl Grant {
 }
 
 fn open_selected_directory(path: &Path) -> io::Result<Dir> {
-    if let (Some(parent), Some(leaf)) = (path.parent(), path.file_name()) {
-        let parent = if parent.as_os_str().is_empty() {
-            Path::new(".")
-        } else {
-            parent
-        };
-        return Dir::open_ambient_dir(parent, cap_std::ambient_authority())?
-            .open_dir_nofollow(leaf);
+    let mut options = std::fs::OpenOptions::new();
+    options.read(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW);
     }
-    // Filesystem roots and the current-directory spelling have no final named child.
-    Dir::open_ambient_dir(path, cap_std::ambient_authority())
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::OpenOptionsExt;
+        use windows_sys::Win32::Storage::FileSystem::{
+            FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
+        };
+        options.custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT);
+    }
+    // The selected directory can be openable even when its parent is traverse-only.
+    let file = options.open(path)?;
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        use windows_sys::Win32::Storage::FileSystem::FILE_ATTRIBUTE_REPARSE_POINT;
+        let metadata = file.metadata()?;
+        if !metadata.is_dir() || metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "not a plain directory",
+            ));
+        }
+    }
+    Ok(Dir::from_std_file(file))
 }
 
 fn workspace_prefix(path: &Path) -> &'static str {

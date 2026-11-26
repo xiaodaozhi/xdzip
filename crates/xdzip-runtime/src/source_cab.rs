@@ -104,10 +104,17 @@ fn header(file: &mut File, control: &Cancellation) -> Result<Header, ScanError> 
         next,
     })
 }
-fn load(path: &Path, control: &Cancellation) -> Result<(Header, SourceVersion), ScanError> {
+fn load(
+    path: &Path,
+    expected: Option<&SourceVersion>,
+    control: &Cancellation,
+) -> Result<(Header, SourceVersion), ScanError> {
     control.check()?;
     let mut file = crate::source::open_companion(path)?;
     let before = SourceVersion::read(&file)?;
+    if expected.is_some_and(|expected| expected != &before) {
+        return Err(ScanError::SourceChanged);
+    }
     let header = header(&mut file, control)?;
     if SourceVersion::read(&file)? != before {
         return Err(ScanError::SourceChanged);
@@ -120,8 +127,12 @@ fn filename(path: &Path) -> Result<String, ScanError> {
         .map(str::to_lowercase)
         .ok_or(ScanError::Invalid)
 }
-pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabinet>, ScanError> {
-    let (selected, version) = load(path, control)?;
+pub(crate) fn discover(
+    path: &Path,
+    expected: &SourceVersion,
+    control: &Cancellation,
+) -> Result<Vec<Cabinet>, ScanError> {
+    let (selected, version) = load(path, Some(expected), control)?;
     if selected.prev.is_none() && selected.next.is_none() {
         return Ok(vec![Cabinet {
             path: path.into(),
@@ -174,7 +185,7 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
             return Err(ScanError::Invalid);
         }
         let previous = resolve(prev)?;
-        let (before, _) = load(&previous, control)?;
+        let (before, _) = load(&previous, None, control)?;
         if before.set != current.set || before.index >= current.index {
             return Err(ScanError::Invalid);
         }
@@ -190,13 +201,15 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
         .as_bytes()
         .to_vec();
     let set = current.set;
+    let selected_name = filename(path)?;
     let mut selected_seen = false;
     loop {
         control.check()?;
         if result.len() >= 1024 {
             return Err(ScanError::Limit);
         }
-        let (current, version) = load(&next, control)?;
+        let is_selected = filename(&next)? == selected_name;
+        let (current, version) = load(&next, is_selected.then_some(expected), control)?;
         if current.set != set
             || current.index as usize != result.len()
             || result
@@ -217,7 +230,7 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
                 return Err(ScanError::Invalid);
             }
         }
-        selected_seen |= filename(&next)? == filename(path)?;
+        selected_seen |= is_selected;
         result.push(Cabinet {
             path: next,
             name: raw_name,

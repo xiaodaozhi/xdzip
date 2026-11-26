@@ -3,7 +3,7 @@ use std::io;
 use std::time::SystemTime;
 
 /// Native identity; handle-based and never inferred from a display pathname.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct FileIdentity(u64, u64);
 impl FileIdentity {
     /// An opaque representation for a native identity carried across the desktop bridge.

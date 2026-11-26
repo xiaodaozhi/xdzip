@@ -70,6 +70,46 @@ pub(crate) fn open_companion(path: &Path) -> Result<File, ScanError> {
     })
 }
 
+fn admit_parts(
+    paths: Vec<PathBuf>,
+    selected: &str,
+    selected_version: &SourceVersion,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Vec<Part>, ScanError> {
+    let mut parts = Vec::new();
+    let mut start = 0u64;
+    let mut selected_seen = false;
+    for path in paths {
+        control.check()?;
+        let file = open_companion(&path)?;
+        let version = SourceVersion::read(&file)?;
+        if path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.eq_ignore_ascii_case(selected))
+        {
+            if &version != selected_version {
+                return Err(ScanError::SourceChanged);
+            }
+            selected_seen = true;
+        }
+        if version.length == 0 {
+            return Err(ScanError::Invalid);
+        }
+        let next = start.checked_add(version.length).ok_or(ScanError::Limit)?;
+        parts.push(Part {
+            path,
+            version,
+            start,
+        });
+        start = next;
+    }
+    if !selected_seen {
+        return Err(ScanError::SourceChanged);
+    }
+    Ok(parts)
+}
+
 impl Source {
     fn reopen_part(&self, path: &Path) -> io::Result<File> {
         if self.split || self.cab_names.is_some() {
@@ -105,7 +145,7 @@ impl Source {
         let cabinet = file.read_exact(&mut magic).is_ok() && &magic == b"MSCF";
         file.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
         if cabinet {
-            let cabinets = crate::source_cab::discover(path, control)?;
+            let cabinets = crate::source_cab::discover(path, &version, control)?;
             let mut parts = Vec::new();
             let mut names = Vec::new();
             let mut start = 0u64;
@@ -139,8 +179,12 @@ impl Source {
             .and_then(|s| s.to_str())
             .ok_or(ScanError::Io)?;
         let lower = filename.to_ascii_lowercase();
-        if let Some(paths) = rar_volumes(path, control)? {
-            return Self::from_rar_volumes(paths, control);
+        if let Some(paths) = rar_volumes(path, &magic, control)? {
+            let name = paths.first().ok_or(ScanError::MissingVolume)?.clone();
+            let parts = admit_parts(paths, filename, &version, control)?;
+            let source = Self::split_source(parts, name);
+            source.validate()?;
+            return Ok(source);
         }
         let (base, width, pkzip) = if let Some((base, ext)) = filename.rsplit_once('.') {
             if ext.len() >= 3
@@ -219,34 +263,9 @@ impl Source {
         if paths.len() > 1024 {
             return Err(ScanError::Limit);
         }
-        let mut parts = Vec::new();
-        let mut start = 0u64;
-        for path in paths {
-            control.check()?;
-            let file = open_companion(&path)?;
-            let version = SourceVersion::read(&file)?;
-            if version.length == 0 {
-                return Err(ScanError::Invalid);
-            }
-            let next = start.checked_add(version.length).ok_or(ScanError::Limit)?;
-            parts.push(Part {
-                path,
-                version,
-                start,
-            });
-            start = next;
-        }
+        let parts = admit_parts(paths, filename, &version, control)?;
         let name = parent.join(if pkzip { format!("{base}.zip") } else { base });
-        let mut source = Self {
-            lengths: parts.iter().map(|p| p.version.length).collect(),
-            cab_names: None,
-            parts,
-            cached: None,
-            split: true,
-            name,
-            position: 0,
-            tail: None,
-        };
+        let mut source = Self::split_source(parts, name);
         if pkzip {
             let lengths = source
                 .parts
@@ -263,29 +282,8 @@ impl Source {
         source.position = 0;
         Ok(source)
     }
-    fn from_rar_volumes(
-        paths: Vec<PathBuf>,
-        control: &xdzip_codec_api::Cancellation,
-    ) -> Result<Self, ScanError> {
-        let name = paths.first().ok_or(ScanError::MissingVolume)?.clone();
-        let mut parts = Vec::new();
-        let mut start = 0u64;
-        for path in paths {
-            control.check()?;
-            let file = open_companion(&path)?;
-            let version = SourceVersion::read(&file)?;
-            if version.length == 0 {
-                return Err(ScanError::Invalid);
-            }
-            let next = start.checked_add(version.length).ok_or(ScanError::Limit)?;
-            parts.push(Part {
-                path,
-                version,
-                start,
-            });
-            start = next;
-        }
-        let source = Self {
+    fn split_source(parts: Vec<Part>, name: PathBuf) -> Self {
+        Self {
             lengths: parts.iter().map(|p| p.version.length).collect(),
             cab_names: None,
             parts,
@@ -294,9 +292,7 @@ impl Source {
             name,
             position: 0,
             tail: None,
-        };
-        source.validate()?;
-        Ok(source)
+        }
     }
     pub fn validate(&self) -> Result<(), ScanError> {
         // Reopen read-only to compare handle identities, not path timestamps alone.
@@ -405,6 +401,7 @@ impl xdzip_codec_api::ReadSource for Source {
 /// Resolve only conventional adjacent RAR volume names; every opened part remains host-owned.
 fn rar_volumes(
     path: &std::path::Path,
+    marker: &[u8; 4],
     control: &xdzip_codec_api::Cancellation,
 ) -> Result<Option<Vec<PathBuf>>, ScanError> {
     let Some(filename) = path.file_name().and_then(|n| n.to_str()) else {
@@ -429,12 +426,8 @@ fn rar_volumes(
         .or_else(|| legacy.map(|(b, _)| b))
         .unwrap_or_else(|| lower.strip_suffix(".rar").unwrap());
     // PKZIP uses .zNN too. Only a real RAR marker can claim that overlapping spelling.
-    if legacy.is_some_and(|(_, ext)| ext.starts_with('z')) {
-        let mut probe = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
-        let mut marker = [0; 4];
-        if probe.read_exact(&mut marker).is_err() || !matches!(&marker, b"Rar!" | b"RE~^") {
-            return Ok(None);
-        }
+    if legacy.is_some_and(|(_, ext)| ext.starts_with('z')) && !matches!(marker, b"Rar!" | b"RE~^") {
+        return Ok(None);
     }
     let width = part.map_or(0, |(_, n)| n.len());
     let mut found = std::collections::BTreeMap::new();

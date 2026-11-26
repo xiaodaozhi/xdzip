@@ -324,6 +324,8 @@ mod windows {
 
     pub(super) fn preserve_archive_access(source: &File, stage: &File) -> Result<(), OutputError> {
         let policy = FileAccess::read(source)?;
+        // Keep the staged data private even if publication fails after the DACL is set.
+        check_policy(&policy, true)?;
         if !policy.same_owner(&FileAccess::read(stage)?) {
             return Err(OutputError::UnsafeTarget);
         }
@@ -429,30 +431,11 @@ mod windows {
         check_acl(file, true)
     }
     pub(super) fn check_acl(file: &File, confidential: bool) -> Result<(), OutputError> {
-        // SAFETY: file is borrowed for the whole operation; output pointers target
-        // initialized stack storage. The returned descriptor is RAII-owned below.
-        let mut acl = null_mut();
-        let mut owner = null_mut();
-        let mut descriptor = null_mut();
-        let status = unsafe {
-            GetSecurityInfo(
-                file.as_raw_handle(),
-                SE_FILE_OBJECT,
-                DACL_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION,
-                &mut owner,
-                null_mut(),
-                &mut acl,
-                null_mut(),
-                &mut descriptor,
-            )
-        };
-        if status != 0 {
-            return Err(OutputError::UnsafeTarget);
-        }
-        let _descriptor = Descriptor(descriptor);
-        if acl.is_null() {
-            return Err(OutputError::UnsafeTarget);
-        }
+        check_policy(&FileAccess::read(file)?, confidential)
+    }
+
+    fn check_policy(access: &FileAccess, confidential: bool) -> Result<(), OutputError> {
+        let FileAccess { owner, acl, .. } = *access;
         let mut token = null_mut();
         // SAFETY: pseudo process handle is valid; token receives an owned handle
         // and is closed by OwnedHandle even when later checks fail.
@@ -507,9 +490,6 @@ mod windows {
         // The owner can change a DACL even without an explicit allow ACE. An
         // unrelated owner therefore cannot make this a private grant by briefly
         // exposing only our SID. SYSTEM/Administrators are trusted platform actors.
-        if owner.is_null() || unsafe { IsValidSid(owner) } == 0 {
-            return Err(OutputError::UnsafeTarget);
-        }
         let trusted_owner = unsafe { EqualSid(owner, user_sid) != 0 }
             || allowed[..2]
                 .iter()

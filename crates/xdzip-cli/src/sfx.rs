@@ -35,15 +35,12 @@ impl Control {
 }
 fn extract(
     source: &Path,
-    target: Option<&Path>,
+    target: Option<(&Path, xdzip_io::FileIdentity)>,
     policy: ConflictPolicy,
     control: &Control,
     mut progress: impl FnMut(Snapshot),
 ) -> Result<Snapshot, &'static str> {
     xdzip_runtime::sfx::validate(source, &control.cancel)?;
-    if target.is_some_and(|target| !target.is_absolute() || !target.is_dir()) {
-        return Err("unsafe_target");
-    }
     let (client, mut receiver) = service::start().map_err(|_| "runtime_closed")?;
     let client = Arc::new(client);
     *control.client.lock().unwrap_or_else(|e| e.into_inner()) = Some(client.clone());
@@ -82,14 +79,10 @@ fn extract(
         if session == 0 {
             return Err("runtime_closed");
         }
-        let command = if let Some(target) = target {
+        let command = if let Some((target, identity)) = target {
             Command::Extract {
                 session,
-                target_identity: Some(
-                    xdzip_io::Grant::for_creation(target)
-                        .map_err(|_| "unsafe_target")?
-                        .identity(),
-                ),
+                target_identity: Some(identity),
                 options: Options {
                     target: target.to_str().ok_or("unsafe_name")?.into(),
                     all: true,
@@ -147,6 +140,15 @@ fn extract(
     result
 }
 
+fn authorize_target(target: &Path) -> Result<xdzip_io::FileIdentity, &'static str> {
+    if !target.is_absolute() {
+        return Err("unsafe_target");
+    }
+    xdzip_io::Grant::for_creation(target)
+        .map(|grant| grant.identity())
+        .map_err(|_| "unsafe_target")
+}
+
 pub(super) fn run() -> i32 {
     std::hint::black_box(MARKER);
     if !cfg!(all(windows, target_arch = "x86_64")) {
@@ -192,9 +194,11 @@ pub(super) fn run() -> i32 {
             }
             index += 2;
         }
+        let target = target.ok_or("invalid_arguments")?;
+        let identity = authorize_target(&target)?;
         Ok(extract(
             &source,
-            Some(&target.ok_or("invalid_arguments")?),
+            Some((&target, identity)),
             policy,
             &Arc::new(Control::default()),
             |_| {},

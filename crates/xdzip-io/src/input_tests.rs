@@ -71,6 +71,11 @@ fn archive_policy_filters_root_and_nested_metadata_without_deleting_sources() {
         "__MACOSX/._root",
         "_MACOSX",
         "资料",
+        "资料/文件.txt",
+        "资料/下级",
+        "资料/下级/zero",
+        "资料/仅元数据/下级",
+        "资料/仅元数据/下级/__MACOSX/._file",
     ]
     .iter()
     .map(|p| f.0.join(p))
