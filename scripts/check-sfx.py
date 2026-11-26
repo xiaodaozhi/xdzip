@@ -44,6 +44,9 @@ def main():
     (source / 'zero').write_bytes(b'')
     (source / 'must-not-run.cmd').write_text('@echo UNSAFE>"%~dp0EXECUTED"\n', encoding='ascii')
     expected = {'source/' + name: digest for name, digest in contents(source).items()}
+    root_member = output / 'root-member.txt'
+    root_member.write_bytes(b'archive member')
+    expected[root_member.name] = hashlib.sha256(root_member.read_bytes()).hexdigest()
     environment = {key: value for key, value in os.environ.items()
                    if not key.startswith(('XDZIP_', 'QT_', 'QML', 'PYTHONPATH'))}
     environment['PATH'] = str(Path(os.environ['SystemRoot']) / 'System32')
@@ -61,7 +64,8 @@ def main():
     checks.append('missing-or-invalid-fixed-location-stub-does-not-publish')
     for level in ['store', 'normal']:
         image = output / (level + '.sfx.exe')
-        value = json.loads(run([args.cli.resolve(), 'create', image, source, '--level', level, '--json']).stdout)
+        value = json.loads(run([args.cli.resolve(), 'create', image, source, root_member,
+                                '--level', level, '--json']).stdout)
         assert value['status'] == 'succeeded', value
         isolated = output / ('isolated-' + level)
         isolated.mkdir()
@@ -72,18 +76,19 @@ def main():
         target = output / ('extracted-' + level)
         target.mkdir()
         result = json.loads(run([executable, '--extract-to', target, '--conflict', 'skip'], env=environment).stdout)
-        assert result['status'] == 'succeeded' and result['committed_files'] == 3, result
+        assert result['status'] == 'succeeded' and result['committed_files'] == 4, result
         assert contents(target) == expected
         assert (target / 'source/中文/empty').is_dir()
         assert not (target / 'source/EXECUTED').exists()
-        (target / 'source/zero').write_bytes(b'old destination')
+        # Test the ordinary-file policies on a member outside any renamed tree.
+        (target / root_member.name).write_bytes(b'old destination')
         run([executable, '--extract-to', target, '--conflict', 'skip'], env=environment)
-        assert (target / 'source/zero').read_bytes() == b'old destination'
+        assert (target / root_member.name).read_bytes() == b'old destination'
         run([executable, '--extract-to', target, '--conflict', 'rename'], env=environment)
-        assert (target / 'source/zero').read_bytes() == b'old destination'
-        assert (target / 'source/zero (1)').read_bytes() == b''
+        assert (target / root_member.name).read_bytes() == b'old destination'
+        assert (target / 'root-member (1).txt').read_bytes() == root_member.read_bytes()
         run([executable, '--extract-to', target, '--conflict', 'overwrite'], env=environment)
-        assert (target / 'source/zero').read_bytes() == b''
+        assert (target / root_member.name).read_bytes() == root_member.read_bytes()
         damaged = isolated / 'damaged.exe'
         data = bytearray(executable.read_bytes())
         data[-100] ^= 1

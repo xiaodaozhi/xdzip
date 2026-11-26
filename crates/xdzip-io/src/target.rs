@@ -124,17 +124,19 @@ impl Grant {
         Self::authorize(path, Arc::from([]))
     }
     fn authorize(path: &Path, source: Arc<[FileIdentity]>) -> Result<Arc<Self>, OutputError> {
-        let m = std::fs::symlink_metadata(path).map_err(failure)?;
+        // Ignore syntactic trailing separators and "." before inspecting the leaf.
+        let path: PathBuf = path.components().collect();
+        let m = std::fs::symlink_metadata(&path).map_err(failure)?;
         if m.file_type().is_symlink() || !m.is_dir() {
             return Err(OutputError::UnsafeTarget);
         }
-        let dir = open_selected_directory(path).map_err(failure)?;
+        let dir = open_selected_directory(&path).map_err(failure)?;
         let file = directory_file(&dir)?;
         private::check(&file, true)?;
         let identity = FileIdentity::read(&file).map_err(failure)?;
         let grant = Arc::new(Self {
             dir,
-            path: path.into(),
+            path,
             identity,
             source,
             created_directories: Arc::new(AtomicU64::new(0)),
@@ -598,9 +600,12 @@ fn open_selected_directory(path: &Path) -> io::Result<Dir> {
     {
         use std::os::windows::fs::OpenOptionsExt;
         use windows_sys::Win32::Storage::FileSystem::{
-            FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
+            FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+            FILE_SHARE_WRITE,
         };
-        options.custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT);
+        options
+            .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE);
     }
     // The selected directory can be openable even when its parent is traverse-only.
     let file = options.open(path)?;
