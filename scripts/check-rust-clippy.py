@@ -1,4 +1,4 @@
-"""Run Rust lint and dependency policy checks when CI includes Rust inputs."""
+"""Run Rust lint, dependency policy and the extraction name check for Rust changes."""
 
 import os
 from pathlib import Path
@@ -8,6 +8,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 STRICT_CLIPPY = ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings']
+EXTRACTION_NAMES = ['cargo', 'test', '--locked', '-p', 'xdzip-runtime', '--lib', 'special_punctuation']
 RUST_INPUTS = [
     '*.rs', 'Cargo.toml', 'Cargo.lock', ':(glob)**/Cargo.toml', ':(glob)**/Cargo.lock',
     'rust-toolchain.toml', '.cargo', 'crates', 'third_party/brotli-rfc7932/dictionary.bin',
@@ -42,7 +43,10 @@ def main():
         result = subprocess.run(STRICT_CLIPPY, cwd=ROOT)
         if result.returncode:
             return result.returncode
-        return subprocess.run([sys.executable, 'scripts/check-rust-codec-policy.py'], cwd=ROOT).returncode
+        result = subprocess.run([sys.executable, 'scripts/check-rust-codec-policy.py'], cwd=ROOT)
+        if result.returncode:
+            return result.returncode
+        return subprocess.run(EXTRACTION_NAMES, cwd=ROOT).returncode
     print('No Rust inputs changed')
     return 0
 

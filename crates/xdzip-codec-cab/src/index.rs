@@ -474,7 +474,7 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
     xdzip_codec_api::names::resolve_cab(&mut index.rows, &legacy, reader.control, limits)?;
     for row in &mut index.rows {
         reader.check()?;
-        row.warning |= xdzip_domain::path::components(row.name_bytes(), false).is_none();
+        row.warning |= xdzip_domain::path::extraction_components(row.name_bytes(), false).is_none();
     }
     Ok(index)
 }

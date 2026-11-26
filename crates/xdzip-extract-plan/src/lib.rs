@@ -169,7 +169,7 @@ pub fn inspect(
 }
 
 fn components(raw: &[u8], directory: bool) -> Option<Vec<&str>> {
-    xdzip_domain::path::components(raw, directory)
+    xdzip_domain::path::extraction_components(raw, directory)
 }
 
 #[cfg(test)]

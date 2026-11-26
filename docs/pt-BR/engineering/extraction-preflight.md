@@ -21,7 +21,7 @@ A pré-verificação usa o serviço de comandos e eventos, com admissão limitad
 ## Regras executadas
 
 - Nomes devem ser resolvidos como UTF-8, com no máximo 4 KiB, 64 componentes e 255 bytes por componente; nomes originais não são reparados nem reescritos.
-- Rejeitar caminhos absolutos, componentes vazios, `.`, `..`, barras invertidas, dois-pontos, caracteres de controle e controle bidirecional, caracteres inválidos no Windows e espaços ou pontos finais em componentes.
+- Rejeitar caminhos absolutos, componentes vazios, `.`, `..`, barras invertidas, dois-pontos, caracteres de controle e controle bidirecional e espaços ou pontos finais em componentes.
 - Rejeitar nomes comuns de dispositivos Windows, inclusive com extensão e dígitos COM/LPT sobrescritos, aplicando de forma conservadora um subconjunto portátil multiplataforma.
 - Informar avisos de metadados existentes e usar os indicadores de capacidade de conteúdo e senha do registro. Um registro criptografado pode informar requisito de senha suportado ou criptografia não suportada. Um registro com tamanho conhecido e conteúdo não suportado também informa problema de método. A pré-verificação usa metadados e capacidades projetados pelo leitor; não descriptografa, autentica nem decodifica o conteúdo.
 - Verificar nomes exatamente duplicados, colisões por comparação Unicode em minúsculas, aliases de diretórios pais com diferenças de maiúsculas e conflitos arquivo/diretório nas duas ordens de inserção. Um diretório pai implícito pode ser complementado por um explícito do mesmo nome; registros explícitos duplicados de diretório continuam em conflito.

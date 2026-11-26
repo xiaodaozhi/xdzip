@@ -105,7 +105,8 @@ impl<'a> ImageReader<'a> {
         for row in &mut rows {
             self.control.check()?;
             row.warning |=
-                xdzip_domain::path::components(row.name_bytes(), row.directory).is_none();
+                xdzip_domain::path::extraction_components(row.name_bytes(), row.directory)
+                    .is_none();
         }
         Ok(Index {
             records: rows
@@ -243,7 +244,7 @@ impl IndexBuilder {
         }
         let warning = node.special
             || (!unlabelled_name
-                && xdzip_domain::path::components(&node.name, node.directory).is_none());
+                && xdzip_domain::path::extraction_components(&node.name, node.directory).is_none());
         let entry = Entry {
             format: self.format,
             id: EntryId::try_from(self.records.len() as u64 + 1).map_err(|_| ScanError::Limit)?,

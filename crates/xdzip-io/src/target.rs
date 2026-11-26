@@ -228,7 +228,7 @@ impl Grant {
         parent
             .dir
             .create_dir_with(leaf, &private_builder())
-            .map_err(failure)?;
+            .map_err(|error| crate::leaf_failure(error, leaf))?;
         self.created_directories.fetch_add(1, Ordering::Relaxed);
         self.checked_directory(path, &parent, leaf)
     }
@@ -267,7 +267,7 @@ impl Grant {
         let kind = match parent.dir.symlink_metadata(leaf) {
             Ok(m) => Some(m.file_type()),
             Err(e) if e.kind() == io::ErrorKind::NotFound => None,
-            Err(e) => return Err(failure(e)),
+            Err(e) => return Err(crate::leaf_failure(e, leaf)),
         };
         self.revalidate_parent(path, &parent)?;
         Ok(kind)
@@ -348,7 +348,7 @@ impl Grant {
     ) -> Result<Option<ExistingFile>, OutputError> {
         match parent.dir.symlink_metadata(leaf) {
             Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(None),
-            Err(e) => return Err(failure(e)),
+            Err(e) => return Err(crate::leaf_failure(e, leaf)),
             Ok(m) if m.file_type().is_symlink() || !m.is_file() => {
                 return Err(OutputError::UnsafeTarget);
             }
@@ -708,22 +708,23 @@ impl Workspace {
     /// Filesystems lacking the primitive fail without a copy/delete fallback.
     pub fn commit(
         &mut self,
-        stage: Stage,
+        mut stage: Stage,
         path: &PortablePath,
         overwrite: Option<&ExistingFile>,
     ) -> Result<CommitReceipt, OutputError> {
-        self.commit_with_parent(stage, path, overwrite, None)
+        self.commit_with_parent(&mut stage, path, overwrite, None)
     }
     /// Publish through an already claimed parent, failing if its native identity changed.
+    /// A rejected name leaves the sealed stage available for a fresh destination.
     pub fn commit_with_parent(
         &mut self,
-        mut stage: Stage,
+        stage: &mut Stage,
         path: &PortablePath,
         overwrite: Option<&ExistingFile>,
         parent_identity: Option<FileIdentity>,
     ) -> Result<CommitReceipt, OutputError> {
         stage.finish()?;
-        self.validate_stage(&stage)?;
+        self.validate_stage(stage)?;
         let parent = self.grant.output_parent(path, parent_identity)?;
         let leaf = path.parts().last().expect("validated leaf");
         self.grant.revalidate_parent(path, &parent)?;
@@ -744,7 +745,7 @@ impl Workspace {
             change();
         }
         self.grant.revalidate_parent(path, &parent)?;
-        self.validate_stage(&stage)?;
+        self.validate_stage(stage)?;
         if overwrite.is_some() {
             // Identity check is best effort; ordinary rename has no content-CAS
             // guarantee against a same-account editor between this check and commit.
@@ -759,12 +760,12 @@ impl Workspace {
             }
             self.dir()
                 .rename(&stage.name, &parent.dir, leaf)
-                .map_err(failure)?;
+                .map_err(|error| crate::leaf_failure(error, leaf))?;
             stage.published = true;
         } else {
             self.dir()
                 .hard_link(&stage.name, &parent.dir, leaf)
-                .map_err(failure)?;
+                .map_err(|error| crate::leaf_failure(error, leaf))?;
         }
         let clean = stage.remove_known();
         let recorded = self.record(&format!("committed {} {}\n", stage.name, path.display()));
@@ -1348,13 +1349,28 @@ mod race_tests {
             fs::write(target, b"concurrent editor").unwrap()
         }));
         assert!(matches!(
-            workspace.commit(stage, &PortablePath::parse("racing.txt").unwrap(), None),
+            workspace.commit_with_parent(
+                &mut stage,
+                &PortablePath::parse("racing.txt").unwrap(),
+                None,
+                None
+            ),
             Err(OutputError::Conflict)
         ));
         assert_eq!(
             fs::read(root.0.join("racing.txt")).unwrap(),
             b"concurrent editor"
         );
+        workspace
+            .commit_with_parent(
+                &mut stage,
+                &PortablePath::parse("other.txt").unwrap(),
+                None,
+                None,
+            )
+            .unwrap();
+        assert_eq!(fs::read(root.0.join("other.txt")).unwrap(), b"new file");
+        drop(stage);
         workspace.cleanup().unwrap();
     }
     #[test]

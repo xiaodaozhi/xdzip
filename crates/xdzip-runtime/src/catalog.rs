@@ -32,7 +32,7 @@ pub struct PhysicalEntry {
 }
 
 fn path(entry: &xdzip_codec_api::Entry) -> Option<String> {
-    xdzip_domain::path::components(entry.name_bytes(), entry.directory)?;
+    xdzip_domain::path::extraction_components(entry.name_bytes(), entry.directory)?;
     String::from_utf8(entry.name_bytes().to_vec()).ok()
 }
 
@@ -129,7 +129,7 @@ impl Archive {
         let mut selected = BTreeSet::new();
         for member in members {
             let name = member.strip_suffix('/').unwrap_or(member);
-            if PortablePath::parse(name).is_none() {
+            if PortablePath::parse_extraction(name).is_none() {
                 return Err("invalid_member_path");
             }
             if let Some(ids) = by_path.get(name) {
@@ -171,7 +171,7 @@ impl Archive {
             return Ok(String::new());
         }
         let name = path.strip_suffix('/').unwrap_or(path);
-        if PortablePath::parse(name).is_none() {
+        if PortablePath::parse_extraction(name).is_none() {
             return Err("invalid_member_path");
         }
         let prefix = format!("{name}/");

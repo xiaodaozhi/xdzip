@@ -135,7 +135,7 @@ pub(crate) fn prepare(
         } else {
             text
         };
-        let path = PortablePath::parse(text).ok_or("unsafe_name")?;
+        let path = PortablePath::parse_extraction(text).ok_or("unsafe_name")?;
         if !entry.directory {
             if entry.size > MAX_FILE_BYTES {
                 return Err("file_quota");

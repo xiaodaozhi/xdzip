@@ -113,6 +113,8 @@ pub enum OutputError {
     TargetChanged,
     /// A destination already exists; no overwrite occurred.
     Conflict,
+    /// The native filesystem rejected ordinary filename punctuation before publication.
+    NameRejected,
     /// The filesystem cannot provide the required publication primitive.
     Unsupported,
     /// Transaction or name admission budget was exceeded.
@@ -126,10 +128,19 @@ impl std::fmt::Display for OutputError {
             Self::UnsafeTarget => "unsafe_target",
             Self::TargetChanged => "target_changed",
             Self::Conflict => "output_conflict",
+            Self::NameRejected => "unsafe_name",
             Self::Unsupported => "unsupported_filesystem",
             Self::Limit => "resource_limit",
         })
     }
+}
+pub(crate) fn leaf_failure(error: std::io::Error, leaf: &str) -> OutputError {
+    if error.kind() == std::io::ErrorKind::InvalidInput
+        && leaf.contains(xdzip_domain::path::DESTINATION_PUNCTUATION)
+    {
+        return OutputError::NameRejected;
+    }
+    failure(error)
 }
 impl std::error::Error for OutputError {}
 pub(crate) fn failure(error: std::io::Error) -> OutputError {

@@ -1,8 +1,8 @@
 use super::{Snapshot, plan};
 use std::collections::{BTreeMap, BTreeSet};
 use xdzip_codec_api::Cancellation;
-use xdzip_domain::path::PortablePath;
-use xdzip_io::{FileIdentity, Grant, OutputError};
+use xdzip_domain::path::{DESTINATION_PUNCTUATION, PortablePath};
+use xdzip_io::{ExistingFile, FileIdentity, Grant, OutputError};
 
 /// Keeps archive paths distinct until the destination accepts or rejects a name.
 pub(super) struct Names {
@@ -65,8 +65,21 @@ impl Names {
                 continue;
             }
             let candidate = child_path(&output_parent, leaf)?;
-            let (path, identity) = match target.claim_directory(&candidate, parent_identity) {
+            let claimed = if win32_rejects(&candidate) {
+                Err(OutputError::NameRejected)
+            } else {
+                target.claim_directory(&candidate, parent_identity)
+            };
+            let free = |path: &PortablePath| match target.claim_directory(path, parent_identity) {
+                Ok(identity) => Ok(Some(identity)),
+                Err(OutputError::Conflict) => Ok(None),
+                Err(error) => Err(error),
+            };
+            let (path, identity) = match claimed {
                 Ok(identity) => (candidate, identity),
+                Err(OutputError::NameRejected) => {
+                    self.sanitized(&source, &candidate, true, cancel, free)?
+                }
                 Err(OutputError::Conflict) => {
                     if target
                         .leaf_metadata(&candidate)
@@ -75,13 +88,12 @@ impl Names {
                     {
                         return Err("unsafe_target");
                     }
-                    self.suffixed(&source, &candidate, true, cancel, |path| {
-                        match target.claim_directory(path, parent_identity) {
-                            Ok(identity) => Ok(Some(identity)),
-                            Err(OutputError::Conflict) => Ok(None),
-                            Err(error) => Err(error),
+                    match self.available(&source, &candidate, true, 1, cancel, free) {
+                        Err("unsafe_name") if punctuation(&candidate) => {
+                            self.sanitized(&source, &candidate, true, cancel, free)?
                         }
-                    })?
+                        result => result?,
+                    }
                 }
                 Err(error) => return Err(super::execute::output(error)),
             };
@@ -92,7 +104,7 @@ impl Names {
             self.directories.insert(source.clone(), (path, identity));
             parent_identity = Some(identity);
         }
-        PortablePath::parse(&output_parent).ok_or("unsafe_name")
+        PortablePath::parse_extraction(&output_parent).ok_or("unsafe_name")
     }
 
     pub(super) fn parent_identity(&self, path: &PortablePath) -> Option<FileIdentity> {
@@ -108,17 +120,81 @@ impl Names {
         candidate: &PortablePath,
         cancel: &Cancellation,
     ) -> Result<PortablePath, &'static str> {
-        self.suffixed(&original.display(), candidate, false, cancel, |path| {
+        let available = self.available(&original.display(), candidate, false, 1, cancel, |path| {
+            Ok(target.leaf_metadata(path)?.is_none().then_some(()))
+        });
+        match available {
+            Err("unsafe_name") if punctuation(candidate) => {
+                self.replacement_file(target, original, candidate, cancel)
+            }
+            result => result.map(|(path, ())| path),
+        }
+    }
+
+    /// Select an ordinary leaf. A forced replacement begins as a no-overwrite candidate.
+    pub(super) fn file_slot(
+        &self,
+        target: &Grant,
+        original: &PortablePath,
+        candidate: PortablePath,
+        parent: Option<FileIdentity>,
+        cancel: &Cancellation,
+    ) -> Result<(PortablePath, Option<ExistingFile>), &'static str> {
+        let kind = if win32_rejects(&candidate) {
+            Err(OutputError::NameRejected)
+        } else {
+            target.leaf_metadata(&candidate)
+        };
+        let existing = match kind {
+            Ok(Some(kind)) if kind.is_dir() => {
+                return Ok((self.fresh_file(target, original, &candidate, cancel)?, None));
+            }
+            Ok(Some(_)) => target.existing_with_parent(&candidate, parent),
+            Ok(None) => Ok(None),
+            Err(error) => Err(error),
+        };
+        match existing {
+            Err(OutputError::NameRejected) => Ok((
+                self.replacement_file(target, original, &candidate, cancel)?,
+                None,
+            )),
+            result => Ok((candidate, result.map_err(super::execute::output)?)),
+        }
+    }
+
+    pub(super) fn replacement_file(
+        &self,
+        target: &Grant,
+        original: &PortablePath,
+        candidate: &PortablePath,
+        cancel: &Cancellation,
+    ) -> Result<PortablePath, &'static str> {
+        self.sanitized(&original.display(), candidate, false, cancel, |path| {
             Ok(target.leaf_metadata(path)?.is_none().then_some(()))
         })
         .map(|(path, ())| path)
     }
 
-    fn suffixed<T>(
+    fn sanitized<T>(
         &self,
         source: &str,
         path: &PortablePath,
         directory: bool,
+        cancel: &Cancellation,
+        try_name: impl FnMut(&PortablePath) -> Result<Option<T>, OutputError>,
+    ) -> Result<(PortablePath, T), &'static str> {
+        let (leaf, parent) = path.parts().split_last().expect("nonempty extraction path");
+        let safe_leaf = leaf.replace(DESTINATION_PUNCTUATION, "_");
+        let safe_path = child_path(&parent.join("/"), &safe_leaf)?;
+        self.available(source, &safe_path, directory, 0, cancel, try_name)
+    }
+
+    fn available<T>(
+        &self,
+        source: &str,
+        path: &PortablePath,
+        directory: bool,
+        first: usize,
         cancel: &Cancellation,
         mut try_name: impl FnMut(&PortablePath) -> Result<Option<T>, OutputError>,
     ) -> Result<(PortablePath, T), &'static str> {
@@ -129,19 +205,13 @@ impl Names {
         let available = 4096usize
             .saturating_sub(output_parent.len() + usize::from(!output_parent.is_empty()))
             .min(255);
-        for index in 1..=10_000 {
+        for index in first..=10_000 {
             cancel.check().map_err(|_| "cancelled")?;
-            let suffix = format!(" ({index})");
-            if available <= suffix.len() {
-                return Err("rename_limit");
-            }
-            let (stem, extension) = leaf
-                .rfind('.')
-                .filter(|dot| !directory && *dot > 0 && leaf.len() - dot + suffix.len() < available)
-                .map_or((leaf.as_str(), ""), |dot| leaf.split_at(dot));
-            let end = stem
-                .floor_char_boundary((available - suffix.len() - extension.len()).min(stem.len()));
-            let name = format!("{}{suffix}{extension}", &stem[..end]);
+            let name = if index == 0 {
+                leaf.clone()
+            } else {
+                numbered(leaf, directory, available, index)?
+            };
             let mut reserved = original_parent.to_owned();
             push_part(&mut reserved, &name);
             // Folding only keeps a generated suffix from stealing a later archive name.
@@ -157,6 +227,35 @@ impl Names {
     }
 }
 
+fn numbered(
+    leaf: &str,
+    directory: bool,
+    available: usize,
+    index: usize,
+) -> Result<String, &'static str> {
+    let suffix = format!(" ({index})");
+    if available <= suffix.len() {
+        return Err("rename_limit");
+    }
+    let (stem, extension) = leaf
+        .rfind('.')
+        .filter(|dot| !directory && *dot > 0 && leaf.len() - dot + suffix.len() < available)
+        .map_or((leaf, ""), |dot| leaf.split_at(dot));
+    let end =
+        stem.floor_char_boundary((available - suffix.len() - extension.len()).min(stem.len()));
+    Ok(format!("{}{suffix}{extension}", &stem[..end]))
+}
+
+pub(super) fn punctuation(path: &PortablePath) -> bool {
+    path.parts()
+        .last()
+        .is_some_and(|leaf| leaf.contains(DESTINATION_PUNCTUATION))
+}
+
+fn win32_rejects(path: &PortablePath) -> bool {
+    cfg!(windows) && punctuation(path)
+}
+
 fn push_part(path: &mut String, component: &str) {
     if !path.is_empty() {
         path.push('/');
@@ -167,5 +266,5 @@ fn push_part(path: &mut String, component: &str) {
 fn child_path(parent: &str, leaf: &str) -> Result<PortablePath, &'static str> {
     let mut path = parent.to_owned();
     push_part(&mut path, leaf);
-    PortablePath::parse(&path).ok_or("unsafe_name")
+    PortablePath::parse_extraction(&path).ok_or("unsafe_name")
 }

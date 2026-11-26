@@ -21,7 +21,7 @@ Die Vorprüfung läuft über den Befehls- und Ereignisdienst mit begrenzter Zula
 ## Ausgeführte Regeln
 
 - Namen müssen als UTF-8 auflösbar sein, höchstens 4 KiB, 64 Komponenten und 255 Bytes je Komponente; Originalnamen werden weder repariert noch umgeschrieben.
-- Absolute Pfade, leere Komponenten, `.`, `..`, Backslashes, Doppelpunkte, Steuer- und bidirektionale Steuerzeichen, ungültige Windows-Zeichen sowie abschließende Leerzeichen oder Punkte in Komponenten ablehnen.
+- Absolute Pfade, leere Komponenten, `.`, `..`, Backslashes, Doppelpunkte, Steuer- und bidirektionale Steuerzeichen sowie abschließende Leerzeichen oder Punkte in Komponenten ablehnen.
 - Übliche Windows-Gerätenamen einschließlich Formen mit Erweiterung und hochgestellten COM/LPT-Ziffern ablehnen; dabei vorsichtig eine plattformübergreifende portable Namensmenge anwenden.
 - Vorhandene Metadatenwarnungen melden und Nutzdaten- und Passwortfähigkeitsflags des Datensatzes verwenden. Ein verschlüsselter Datensatz kann einen unterstützten Passwortbedarf oder nicht unterstützte Verschlüsselung melden. Ein Datensatz mit bekannter Größe und nicht unterstützten Nutzdaten meldet zusätzlich einen Methodenbefund. Die Vorprüfung nutzt vom Leser projizierte Metadaten und Fähigkeiten; sie entschlüsselt, authentifiziert oder dekodiert keine Nutzdaten.
 - Exakte Namensduplikate, Kollisionen durch Unicode-Kleinschreibvergleich, sich in Großschreibung unterscheidende Elternverzeichnis-Aliasse und Datei-/Verzeichniskonflikte in beiden Einfügereihenfolgen prüfen. Ein implizites Elternverzeichnis darf durch ein explizites gleichen Namens ergänzt werden; doppelte explizite Verzeichnisdatensätze bleiben Konflikte.

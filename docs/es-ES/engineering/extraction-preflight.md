@@ -21,7 +21,7 @@ La comprobación previa se ejecuta mediante el servicio de comandos y eventos co
 ## Reglas aplicadas
 
 - Los nombres deben poder resolverse como UTF-8, con máximo 4 KiB, 64 componentes y 255 bytes por componente; los nombres originales no se reparan ni reescriben.
-- Rechazar rutas absolutas, componentes vacíos, `.`, `..`, barras inversas, dos puntos, caracteres de control y control bidireccional, caracteres inválidos de Windows y espacios o puntos finales en componentes.
+- Rechazar rutas absolutas, componentes vacíos, `.`, `..`, barras inversas, dos puntos, caracteres de control y control bidireccional y espacios o puntos finales en componentes.
 - Rechazar nombres comunes de dispositivos Windows, incluidas formas con extensión y dígitos COM/LPT en superíndice, aplicando de forma conservadora un subconjunto portable multiplataforma.
 - Informar las advertencias de metadatos existentes y usar los indicadores de capacidad de contenido y contraseña del registro. Un registro cifrado puede informar de un requisito de contraseña compatible o de cifrado no compatible. Un registro de tamaño conocido con contenido no compatible también informa un problema de método. La comprobación usa metadatos y capacidades proyectados por el lector; no descifra, autentica ni decodifica el contenido.
 - Comprobar nombres exactamente duplicados, colisiones por comparación Unicode en minúsculas, alias de directorios padre con diferencias de mayúsculas y conflictos archivo/directorio en ambos órdenes de inserción. Un directorio padre implícito puede completarse con uno explícito del mismo nombre; los registros explícitos duplicados de directorio siguen siendo conflictos.

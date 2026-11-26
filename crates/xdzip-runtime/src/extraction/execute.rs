@@ -20,6 +20,7 @@ pub(super) fn output(error: OutputError) -> &'static str {
         OutputError::Conflict => "output_conflict",
         OutputError::Unsupported => "unsupported_filesystem",
         OutputError::Limit => "resource_limit",
+        OutputError::NameRejected => "unsafe_name",
     }
 }
 pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
@@ -279,7 +280,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 continue;
             }
             pending_file = Some(entry.size);
-            let mut path = if let Some(names) = &mut names {
+            let candidate = if let Some(names) = &mut names {
                 names.resolve(&target, &planned.path, false, &control.cancel, &mut stats)?
             } else {
                 planned.path.clone()
@@ -287,19 +288,22 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             let parent_identity = names
                 .as_ref()
                 .and_then(|n| n.parent_identity(&planned.path));
+            let (mut path, existing) = if let Some(names) = &names {
+                names.file_slot(
+                    &target,
+                    &planned.path,
+                    candidate,
+                    parent_identity,
+                    &control.cancel,
+                )?
+            } else {
+                let existing = target
+                    .existing_with_parent(&candidate, parent_identity)
+                    .map_err(output)?;
+                (candidate, existing)
+            };
             let mut overwrite = None;
-            if let Some(names) = &names
-                && target
-                    .leaf_metadata(&path)
-                    .map_err(output)?
-                    .is_some_and(|kind| kind.is_dir())
-            {
-                path = names.fresh_file(&target, &planned.path, &path, &control.cancel)?;
-            }
-            if let Some(existing) = target
-                .existing_with_parent(&path, parent_identity)
-                .map_err(output)?
-            {
+            if let Some(existing) = existing {
                 if has_links {
                     return Err("output_conflict");
                 }
@@ -398,19 +402,40 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             if let Some(zone) = origin {
                 stage.preserve_origin(zone).map_err(output)?;
             }
-            control.begin_commit()?;
-            stats.status = Status::Committing;
-            emit(&mut stats, start, publish);
-            let committed = job
-                .source
-                .validate()
-                .map_err(|_| "source_changed")
-                .and_then(|_| {
-                    workspace
-                        .commit_with_parent(stage, &path, overwrite.as_ref(), parent_identity)
-                        .map_err(output)
-                });
-            let cancelled = control.end_commit(false);
+            let (committed, cancelled) = loop {
+                control.begin_commit()?;
+                stats.status = Status::Committing;
+                emit(&mut stats, start, publish);
+                let committed = job
+                    .source
+                    .validate()
+                    .map_err(|_| "source_changed")
+                    .and_then(|_| {
+                        workspace
+                            .commit_with_parent(
+                                &mut stage,
+                                &path,
+                                overwrite.as_ref(),
+                                parent_identity,
+                            )
+                            .map_err(output)
+                    });
+                let cancelled = control.end_commit(false);
+                if let Err("unsafe_name") = committed
+                    && let Some(names) = &names
+                    && super::names::punctuation(&path)
+                {
+                    cancelled?;
+                    // The failed native operation published nothing. Keep the verified
+                    // stage and reserve a replacement without granting overwrite.
+                    path =
+                        names.replacement_file(&target, &planned.path, &path, &control.cancel)?;
+                    stats.current = path.display();
+                    overwrite = None;
+                    continue;
+                }
+                break (committed, cancelled);
+            };
             if let Ok(receipt) = &committed {
                 stats.committed_files += 1;
                 stats.committed_bytes += actual;

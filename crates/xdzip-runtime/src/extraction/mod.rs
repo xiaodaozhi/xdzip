@@ -521,7 +521,7 @@ impl Archive {
             conflict: ConflictPolicy::Ask,
             allow_high_ratio: false,
         };
-        let mut job = self.extraction_job(options, cancel)?;
+        let mut job = self.extraction_job_with_names(options, cancel, true)?;
         if job.planned.len() != 1 {
             return Err("invalid_selection");
         }
