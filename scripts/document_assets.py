@@ -23,12 +23,12 @@ def document_illustrations(theme: str) -> dict[str, str]:
     warning = status_badge('#f6bb55', 'M18.4 16.8v2.25m0 1.55h.01', '#5c340c')
     conflict = corner_badge(
         '#f6bb55',
-        '<path d="M0 -2.2V.35" stroke="#5c340c" stroke-width="1.75"/>'
-        '<circle cy="2.1" r=".85" fill="#5c340c" stroke="none"/>',
+        '<rect x="-.57" y="-2.55" width="1.14" height="2.72" rx=".55" fill="#5c340c" stroke="none"/>'
+        '<circle cy="2.17" r=".63" fill="#5c340c" stroke="none"/>',
     )
     windows_download = corner_badge(
         '#2d64da',
-        '<path d="M-.88 -2.65H.88V.1H2.6L0 2.72 -2.6 .1H-.88Z" fill="#fff" stroke="none"/>',
+        '<path d="M0 -2.65V2.6M-2.05 .55L0 2.6 2.05 .55" fill="none" stroke="#fff" stroke-width="1.15"/>',
     )
     download = 'M18.4 16.65v3.6m-1.55-1.5 1.55 1.5 1.55-1.5'
     tray = download + 'M16.7 21h3.4'
