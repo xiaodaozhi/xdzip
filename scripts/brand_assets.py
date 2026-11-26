@@ -88,15 +88,20 @@ def document_paper(prefix: str, outline: str) -> str:
 
 def brand_shapes(theme: str, document_profile: str = 'ui') -> dict[str, str]:
     """Return the fixed 24-unit UI family; colors do not alter its geometry."""
-    if document_profile not in ('ui', 'tiny', 'small'):
+    profiles = {
+        'ui': ((6.8, 9, 10.4), 7.08),
+        'tiny': ((5.5, 7.9, 13), 11.75),
+        'small': ((6, 8.4, 12), 9.894),
+        'corner-badge': ((6.05, 6.15, 9.4), 6.4),
+    }
+    if document_profile not in profiles:
         raise ValueError(f'Unknown document optical profile: {document_profile}')
     outline = '#c7d1e1' if theme == 'light' else '#98aac2'
+    badge, height = profiles[document_profile]
 
     def document(grey: bool = False) -> str:
         prefix = 'archive-grey-brand' if grey else 'archive-brand'
-        badge = {'ui': (6.8, 9, 10.4), 'tiny': (5.5, 7.9, 13), 'small': (6, 8.4, 12)}[document_profile]
         # Preserve the optical height, not the old wider signature's width.
-        height = {'ui': 7.08, 'tiny': 11.75, 'small': 9.894}[document_profile]
         width = height * MARK_VIEWBOX[2] / MARK_VIEWBOX[3]
         mark = signature(badge[0] + (badge[2] - width) / 2,
                          badge[1] + (badge[2] - height) / 2, width)
