@@ -156,9 +156,9 @@ def build(reference: Path | None) -> None:
         shutil.copyfile(reference, OUTPUT / 'identity-reference.png')
     if not (OUTPUT / 'identity-reference.png').is_file():
         raise ValueError('Supply the generated visual direction with --reference on the first build')
-    (OUTPUT / 'mark.svg').write_text(mark_svg())
+    (OUTPUT / 'mark.svg').write_text(mark_svg(), encoding='utf-8', newline='\n')
     for stem, kind in [('xdzip', 'application')]:
-        (OUTPUT / f'{stem}.svg').write_text(master_svg(kind))
+        (OUTPUT / f'{stem}.svg').write_text(master_svg(kind), encoding='utf-8', newline='\n')
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'),

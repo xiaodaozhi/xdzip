@@ -60,6 +60,12 @@ def continuous_square_path(x: float, y: float, side: float) -> str:
             f'C{point(.14, 0)} {point(opposite, 0)} {point(.3, 0)}Z')
 
 
+def application_gradient(prefix: str) -> str:
+    return (f'<defs><linearGradient id="{prefix}-blue" x1="0" y1="0" x2="1" y2="1">'
+            '<stop stop-color="#3C84ED"/><stop offset="1" stop-color="#474FD6"/>'
+            '</linearGradient></defs>')
+
+
 def gradients(prefix: str, grey: bool = False) -> str:
     blue = ('#c1c6cf', '#979eaa', '#7b8493') if grey else ('#00beef', '#0068ff', '#153de2')
     return (f'<defs><linearGradient id="{prefix}-blue" x1=".15" y1="0" x2=".78" y2="1">'
@@ -97,7 +103,7 @@ def brand_shapes(theme: str, document_profile: str = 'ui') -> dict[str, str]:
                 + mark)
 
     return {
-        'app-mark': gradients('app-brand')
+        'app-mark': application_gradient('app-brand')
         + f'<path d="{continuous_square_path(2, 2, 20)}" fill="url(#app-brand-blue)" stroke="none"/>'
         + signature(7.5, 5.25, 9),
         'archive': document(),
@@ -110,7 +116,21 @@ def master_svg(kind: str, platform: str = 'default') -> str:
     if platform not in ('default', 'macos'):
         raise ValueError(f'Unknown icon platform: {platform}')
     viewbox = '-20 -20 1064 1064' if platform == 'macos' else '32 32 960 960'
+    opening = ('<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" '
+               f'viewBox="{viewbox}" fill="none">')
     prefix = 'xdzip-master'
+    if kind == 'application':
+        content = (
+            application_gradient(prefix)
+            + f'<path id="app-tile" d="{continuous_square_path(80, 80, 864)}" fill="url(#{prefix}-blue)"/>'
+            + signature(322, 227, 380, '#FFFFFF')
+        )
+        return f'{opening}{content}</svg>\n'
+
+    if kind != 'archive':
+        raise ValueError(f'Unknown brand master: {kind}')
+
+    # The shipped legacy ZIP container receipts cover this exact SVG.
     defs = gradients(prefix)
     effects = (
         '<defs><filter id="tile-shadow" x="-15%" y="-15%" width="130%" height="140%">'
@@ -124,29 +144,18 @@ def master_svg(kind: str, platform: str = 'default') -> str:
         '<stop offset=".45" stop-color="#fff" stop-opacity="0"/>'
         '<stop offset="1" stop-color="#09255b" stop-opacity=".05"/></linearGradient></defs>'
     )
-    if kind == 'application':
-        content = (
-            f'<path id="app-tile" d="{continuous_square_path(80, 80, 864)}" '
-            f'fill="url(#{prefix}-blue)" filter="url(#tile-shadow)"/>'
-            f'<path d="{continuous_square_path(80, 80, 864)}" fill="url(#tile-surface)"/>'
-            + signature(322, 227, 380, 'url(#porcelain)')
-        )
-    elif kind == 'archive':
-        content = (
-            f'<path fill="url(#{prefix}-paper)" stroke="#bdcce0" stroke-width="1.7" filter="url(#tile-shadow)" '
-            'd="M248 80H620L832 292V888Q832 944 776 944H248Q192 944 192 888V136Q192 80 248 80Z"/>'
-            f'<path fill="url(#{prefix}-fold)" filter="url(#fold-shadow)" '
-            'd="M620 80V232Q620 292 680 292H832Z"/>'
-            '<path d="M212 162V878Q212 922 256 922H771" fill="none" stroke="#fff" stroke-width="5" stroke-opacity=".6"/>'
-            f'<path d="{continuous_square_path(294, 334, 436)}" fill="url(#{prefix}-blue)"/>'
-            + signature(416, 408, 192, 'url(#porcelain)')
-            + '<path d="M417 817H473L417 878H473 M507 817V878 M545 878V817H578C618 817 618 852 578 852H545" '
-              'fill="none" stroke="#39465d" stroke-width="14" stroke-linejoin="round" stroke-linecap="square"/>'
-        )
-    else:
-        raise ValueError(f'Unknown brand master: {kind}')
-    return ('<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" '
-            f'viewBox="{viewbox}" fill="none">{defs}{effects}{content}</svg>\n')
+    content = (
+        f'<path fill="url(#{prefix}-paper)" stroke="#bdcce0" stroke-width="1.7" filter="url(#tile-shadow)" '
+        'd="M248 80H620L832 292V888Q832 944 776 944H248Q192 944 192 888V136Q192 80 248 80Z"/>'
+        f'<path fill="url(#{prefix}-fold)" filter="url(#fold-shadow)" '
+        'd="M620 80V232Q620 292 680 292H832Z"/>'
+        '<path d="M212 162V878Q212 922 256 922H771" fill="none" stroke="#fff" stroke-width="5" stroke-opacity=".6"/>'
+        f'<path d="{continuous_square_path(294, 334, 436)}" fill="url(#{prefix}-blue)"/>'
+        + signature(416, 408, 192, 'url(#porcelain)')
+        + '<path d="M417 817H473L417 878H473 M507 817V878 M545 878V817H578C618 817 618 852 578 852H545" '
+          'fill="none" stroke="#39465d" stroke-width="14" stroke-linejoin="round" stroke-linecap="square"/>'
+    )
+    return f'{opening}{defs}{effects}{content}</svg>\n'
 
 
 def mark_svg() -> str:
@@ -178,7 +187,7 @@ def brand_export_specs() -> list[dict]:
                             'purpose': purpose, 'source': source, 'size': [size, size], 'format': 'png',
                             'optical_body_height': 0.90,
                             'raster_profile': ('Compact document at 16/24; balanced document at 32; master lighting at 48–1024'
-                                               if stem == 'xdzip-zip' else 'UI detail at 16/24/32; master lighting at 48–1024')})
+                                               if stem == 'xdzip-zip' else 'UI detail at 16/24/32; application master at 48–1024')})
         for size in EXPORT_SIZES:
             entries.append({'file': f'brand/macos/{png_name(stem, size)}', 'kind': 'platform-icon',
                             'purpose': purpose, 'source': source, 'size': [size, size], 'format': 'png',
