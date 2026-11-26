@@ -9,11 +9,27 @@ def status_badge(color: str, mark: str, ink: str = '#fff') -> str:
     )
 
 
+def corner_badge(color: str, symbol: str) -> str:
+    return (
+        '<g transform="translate(18.65 18.7)">'
+        f'<circle r="4.5" fill="{color}" stroke="#fff" stroke-width=".9"/>{symbol}</g>'
+    )
+
+
 def document_illustrations(theme: str) -> dict[str, str]:
     outline = '#c7d1e1' if theme == 'light' else '#98aac2'
     archive = brand_shapes(theme)['archive']
+    corner_document = brand_shapes(theme, document_profile='corner-badge')['archive']
     warning = status_badge('#f6bb55', 'M18.4 16.8v2.25m0 1.55h.01', '#5c340c')
-    conflict = status_badge('#de8d22', 'M18.4 16.35l2.6 4.45h-5.2Z M18.4 18.15v.9')
+    conflict = corner_badge(
+        '#f6bb55',
+        '<rect x="-.57" y="-2.55" width="1.14" height="2.72" rx=".55" fill="#5c340c" stroke="none"/>'
+        '<circle cy="2.17" r=".63" fill="#5c340c" stroke="none"/>',
+    )
+    windows_download = corner_badge(
+        '#2d64da',
+        '<path d="M0 -2.65V2.6M-2.05 .55L0 2.6 2.05 .55" fill="none" stroke="#fff" stroke-width="1.15"/>',
+    )
     download = 'M18.4 16.65v3.6m-1.55-1.5 1.55 1.5 1.55-1.5'
     tray = download + 'M16.7 21h3.4'
     pdf = (
@@ -35,10 +51,10 @@ def document_illustrations(theme: str) -> dict[str, str]:
         'document-download': archive + status_badge('#2d64da', download),
         'existing-archive': back + archive,
         'file-pdf': pdf,
-        'windows-document': archive + status_badge('#2d64da', tray),
+        'windows-document': corner_document + windows_download,
         'linux-document': archive + status_badge('#177a85', tray),
         'conflict-pdf': pdf,
-        'document-conflict': archive + conflict,
+        'document-conflict': corner_document + conflict,
         'archive-warning': back + archive + warning,
         'document-warning': archive + warning,
     }

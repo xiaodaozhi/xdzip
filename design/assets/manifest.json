@@ -3136,11 +3136,11 @@
           "assets/conflict-document.png"
         ]
       },
-      "sha256": "d08852c76c37a8aa816ff0425b578fe499787475b25bb1f5e3fbbef577a0e136",
+      "sha256": "86658bb4c044af558369d45329eaf1b4933a56557baefb4c0ed7ae41e64ef321",
       "visible_bounds": [
         4.3333,
         2.0,
-        23.0,
+        23.6667,
         23.6667
       ],
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
@@ -4560,13 +4560,13 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "14968b155e82b0cf0d1ebfea4de562d326cdb394f5f3e383b487b454b0aaca73",
+      "sha256": "501720fe0094bc504e26a99a0c61c0f33d4d4bc04bc5d1b403e86c1ef8b452ce",
       "source_reference": "reference/windows-document.png",
       "role": "platform-operation-illustration",
       "visible_bounds": [
         4.3333,
         2.0,
-        23.0,
+        23.6667,
         23.6667
       ],
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
@@ -5064,11 +5064,11 @@
           "assets/dark/conflict-document.png"
         ]
       },
-      "sha256": "ce24baedb6ce966f14ae22877698fbe9947f1d3af95ae6bab56a598ba8999641",
+      "sha256": "ace86ae863490e3894cdfd0c0b60480894c665fe009f435507d0ec76c208ae8b",
       "visible_bounds": [
         4.3333,
         2.0,
-        23.0,
+        23.6667,
         23.6667
       ],
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
@@ -6480,13 +6480,13 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "da85c3364cb485bbebe04aca04faa08620316b504777e1fb18c280aac847c444",
+      "sha256": "19d4d4ae76c9252631bb1274a46d301f107fcef7eae6d178eff9da6cb3d3c9bf",
       "source_reference": "reference/windows-document.png",
       "role": "platform-operation-illustration",
       "visible_bounds": [
         4.3333,
         2.0,
-        23.0,
+        23.6667,
         23.6667
       ],
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
@@ -8658,15 +8658,15 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/document-conflict.svg",
-      "source_sha256": "d08852c76c37a8aa816ff0425b578fe499787475b25bb1f5e3fbbef577a0e136",
+      "source_sha256": "86658bb4c044af558369d45329eaf1b4933a56557baefb4c0ed7ae41e64ef321",
       "visible_bounds": [
         4.0,
         1.0,
-        23.0,
+        24.0,
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "38a101b1875fc76627da837d33df9ea0f590894a10f0881b34190932f9ccc604"
+      "sha256": "81d480cec23593ebfe3fe2478da7c7a91c8dcf82aa30d70c0e9e9fb4c9a33603"
     },
     {
       "id": "raster/light/document-conflict@2x",
@@ -8688,15 +8688,15 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/document-conflict.svg",
-      "source_sha256": "d08852c76c37a8aa816ff0425b578fe499787475b25bb1f5e3fbbef577a0e136",
+      "source_sha256": "86658bb4c044af558369d45329eaf1b4933a56557baefb4c0ed7ae41e64ef321",
       "visible_bounds": [
         4.0,
         2.0,
-        23.0,
-        23.5
+        24.0,
+        24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "6c8025f7bef9edf1c2ae9954bebd29dffffdaba3aa6dee001da0e90905691887"
+      "sha256": "14a33d6861d8c21312e38caa4b2a8615ee9a0da99487f3f7065a0f80afa27e93"
     },
     {
       "id": "raster/light/document-conflict@3x",
@@ -8718,15 +8718,15 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/document-conflict.svg",
-      "source_sha256": "d08852c76c37a8aa816ff0425b578fe499787475b25bb1f5e3fbbef577a0e136",
+      "source_sha256": "86658bb4c044af558369d45329eaf1b4933a56557baefb4c0ed7ae41e64ef321",
       "visible_bounds": [
         4.3333,
         2.0,
-        23.0,
+        23.6667,
         23.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "052938b18eaa0c04d77925042022636f5864c3c864949110306d4eb79a0f7a08"
+      "sha256": "71961ef7fb2ced064a6aa9e9ffe1966300b990e5b0fa03c07661c64baa96a075"
     },
     {
       "id": "raster/light/document-conflict@9x",
@@ -8748,15 +8748,15 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/document-conflict.svg",
-      "source_sha256": "d08852c76c37a8aa816ff0425b578fe499787475b25bb1f5e3fbbef577a0e136",
+      "source_sha256": "86658bb4c044af558369d45329eaf1b4933a56557baefb4c0ed7ae41e64ef321",
       "visible_bounds": [
         4.3333,
         1.8889,
-        23.0,
-        23.4444
+        23.6667,
+        23.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "247d7f0d3243b57ff471cf68c4a17e13785ad16b51e2d03cf1ba12028537112c"
+      "sha256": "5e99bc32b5408875fe90f065bca92b1b4db7c453248c39de0322184b3aa86efa"
     },
     {
       "id": "raster/light/document-download@1x",
@@ -14212,15 +14212,15 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/windows-document.svg",
-      "source_sha256": "14968b155e82b0cf0d1ebfea4de562d326cdb394f5f3e383b487b454b0aaca73",
+      "source_sha256": "501720fe0094bc504e26a99a0c61c0f33d4d4bc04bc5d1b403e86c1ef8b452ce",
       "visible_bounds": [
         4.0,
         1.0,
-        23.0,
+        24.0,
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "2155700aa1b0f32cf05b09ef07d9565a0d6923c8181000bab7ee4a011f5e1096"
+      "sha256": "09ffd36b24418b457e97056ff7bc581c920b458c39044a5ef4f03dab27e819e1"
     },
     {
       "id": "raster/light/windows-document@2x",
@@ -14242,15 +14242,15 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/windows-document.svg",
-      "source_sha256": "14968b155e82b0cf0d1ebfea4de562d326cdb394f5f3e383b487b454b0aaca73",
+      "source_sha256": "501720fe0094bc504e26a99a0c61c0f33d4d4bc04bc5d1b403e86c1ef8b452ce",
       "visible_bounds": [
         4.0,
         2.0,
-        23.0,
-        23.5
+        24.0,
+        24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "6019f3f8b13559524adbe07f14ea7e6233ba25a65f9a3efcb6a5f715037f93e9"
+      "sha256": "77d77cac7dc92292616fa6ccf2131f3339d04c921ba349cc90c18f84376124de"
     },
     {
       "id": "raster/light/windows-document@3x",
@@ -14272,15 +14272,15 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/windows-document.svg",
-      "source_sha256": "14968b155e82b0cf0d1ebfea4de562d326cdb394f5f3e383b487b454b0aaca73",
+      "source_sha256": "501720fe0094bc504e26a99a0c61c0f33d4d4bc04bc5d1b403e86c1ef8b452ce",
       "visible_bounds": [
         4.3333,
         2.0,
-        23.0,
+        23.6667,
         23.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "b545238814db3337ca97b8459b8439ea8b07aceb439039746311757a9d6df3e2"
+      "sha256": "ebda7aa27a8b38bda45296f8d2fea7626e06807a119b31f94b5674ceef0a764d"
     },
     {
       "id": "raster/dark/activity@1x",
@@ -16132,15 +16132,15 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/document-conflict.svg",
-      "source_sha256": "ce24baedb6ce966f14ae22877698fbe9947f1d3af95ae6bab56a598ba8999641",
+      "source_sha256": "ace86ae863490e3894cdfd0c0b60480894c665fe009f435507d0ec76c208ae8b",
       "visible_bounds": [
         4.0,
         1.0,
-        23.0,
+        24.0,
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "d3f019818f603aaaa0b1bf37f18b70bae98811267e0ac1842696aab6eddde45b"
+      "sha256": "04e6db9878106947d2a1d3f4e660da4ac488f9edca851bf0f07bf4dfadca6443"
     },
     {
       "id": "raster/dark/document-conflict@2x",
@@ -16162,15 +16162,15 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/document-conflict.svg",
-      "source_sha256": "ce24baedb6ce966f14ae22877698fbe9947f1d3af95ae6bab56a598ba8999641",
+      "source_sha256": "ace86ae863490e3894cdfd0c0b60480894c665fe009f435507d0ec76c208ae8b",
       "visible_bounds": [
         4.0,
         2.0,
-        23.0,
-        23.5
+        24.0,
+        24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "7705df13f906f15cf19e3729e7b0b2baad49f1ce119a1de842fdc1845522036c"
+      "sha256": "e274ef65b24aaabdeca616a37b4cf6028bf4835e6e89205df04eafdb9302ff37"
     },
     {
       "id": "raster/dark/document-conflict@3x",
@@ -16192,15 +16192,15 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/document-conflict.svg",
-      "source_sha256": "ce24baedb6ce966f14ae22877698fbe9947f1d3af95ae6bab56a598ba8999641",
+      "source_sha256": "ace86ae863490e3894cdfd0c0b60480894c665fe009f435507d0ec76c208ae8b",
       "visible_bounds": [
         4.3333,
         2.0,
-        23.0,
+        23.6667,
         23.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "ad8e2eef3685e08fbd97d682c473296ec098a17f4e2579596c756f9ad3b65c40"
+      "sha256": "0b376bd866e13908ada0960f0a79e254ee6aec05b83157910175098ea1d0de73"
     },
     {
       "id": "raster/dark/document-conflict@9x",
@@ -16222,15 +16222,15 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/document-conflict.svg",
-      "source_sha256": "ce24baedb6ce966f14ae22877698fbe9947f1d3af95ae6bab56a598ba8999641",
+      "source_sha256": "ace86ae863490e3894cdfd0c0b60480894c665fe009f435507d0ec76c208ae8b",
       "visible_bounds": [
         4.3333,
         1.8889,
-        23.0,
-        23.4444
+        23.6667,
+        23.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "b21a0bad595a1382396cad662d0b1a89e5f87e5d861ffa991bd58b995acb0046"
+      "sha256": "5075698437ac66aec0fbcfee528aabbb8b41a1ae8cd7fc3ff7d9327040c5fada"
     },
     {
       "id": "raster/dark/document-download@1x",
@@ -21686,15 +21686,15 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/windows-document.svg",
-      "source_sha256": "da85c3364cb485bbebe04aca04faa08620316b504777e1fb18c280aac847c444",
+      "source_sha256": "19d4d4ae76c9252631bb1274a46d301f107fcef7eae6d178eff9da6cb3d3c9bf",
       "visible_bounds": [
         4.0,
         1.0,
-        23.0,
+        24.0,
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "997783b6967f0e32aa71f142afd2c934442286b8a3447b474379eb2fe98e0afb"
+      "sha256": "938f4f58fb69d61402f5a62fcbe20dd623d8d978d6d2a47edc2de973ccd835ff"
     },
     {
       "id": "raster/dark/windows-document@2x",
@@ -21716,15 +21716,15 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/windows-document.svg",
-      "source_sha256": "da85c3364cb485bbebe04aca04faa08620316b504777e1fb18c280aac847c444",
+      "source_sha256": "19d4d4ae76c9252631bb1274a46d301f107fcef7eae6d178eff9da6cb3d3c9bf",
       "visible_bounds": [
         4.0,
         2.0,
-        23.0,
-        23.5
+        24.0,
+        24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "b381a4c807e444c57f83f7f8039613f675103141786141263b8af2231f36f460"
+      "sha256": "cb0c89753be493e2bddf953584b732abded6fdcc70c1047ef33b5216640fbb48"
     },
     {
       "id": "raster/dark/windows-document@3x",
@@ -21746,15 +21746,15 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/windows-document.svg",
-      "source_sha256": "da85c3364cb485bbebe04aca04faa08620316b504777e1fb18c280aac847c444",
+      "source_sha256": "19d4d4ae76c9252631bb1274a46d301f107fcef7eae6d178eff9da6cb3d3c9bf",
       "visible_bounds": [
         4.3333,
         2.0,
-        23.0,
+        23.6667,
         23.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "dfe7561f5bcbbbd84e4cec4e6345148b58dfc7b87aa0393a92133a1e33b9db52"
+      "sha256": "c473ce845397301db3cd99ecacd83e268203633a9ca9f951cf7babaf6271a240"
     },
     {
       "id": "reference/integrity-progress-panel",
