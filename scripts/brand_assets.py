@@ -92,7 +92,6 @@ def brand_shapes(theme: str, document_profile: str = 'ui') -> dict[str, str]:
         'ui': ((6.8, 9, 10.4), 7.08),
         'tiny': ((5.5, 7.9, 13), 11.75),
         'small': ((6, 8.4, 12), 9.894),
-        'corner-badge': ((6.05, 6.15, 9.4), 6.4),
     }
     if document_profile not in profiles:
         raise ValueError(f'Unknown document optical profile: {document_profile}')
