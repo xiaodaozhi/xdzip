@@ -159,17 +159,11 @@ pub(crate) fn admit(
         if entry.name.len() > NAME_LIMIT {
             return Err(EncodeError::Limit);
         }
-        if entry.directory && entry.size != 0
-            || entry.name.is_empty()
-            || xdzip_domain::path::components(entry.name.as_bytes(), false).is_none()
-            || entry.name.ends_with('/')
-            || entry.name.contains('\0')
-        {
+        if entry.directory && entry.size != 0 {
             return Err(EncodeError::Invalid);
         }
-        if entry.name.len() > NAME_LIMIT {
-            return Err(EncodeError::Limit);
-        }
+        xdzip_domain::path::archive_components(entry.name.as_bytes(), false)
+            .ok_or(EncodeError::Name)?;
         names = names
             .checked_add(entry.name.len())
             .ok_or(EncodeError::Limit)?;

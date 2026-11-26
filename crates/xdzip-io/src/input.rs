@@ -8,7 +8,7 @@ use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use unicode_normalization::UnicodeNormalization;
-use xdzip_domain::path::PortablePath;
+use xdzip_domain::path::{archive_components, components};
 
 /// Stable source failures; paths and OS error text never enter task diagnostics.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -21,7 +21,7 @@ pub enum InputError {
     Unsafe,
     /// A name is not valid under the portable path policy.
     Name,
-    /// Names collide after canonical Unicode and case folding.
+    /// Several inputs claim the same archive name under the scan policy.
     Collision,
     /// A source admission budget was exceeded.
     Limit,
@@ -48,7 +48,7 @@ impl InputError {
 /// Immutable format-visible information; no ambient filesystem authority.
 #[derive(Clone, Debug)]
 pub struct InputEntry {
-    /// Portable archive-relative name, without a trailing directory slash.
+    /// The archive-relative name, without a trailing directory slash.
     pub name: String,
     /// Explicit directory, including empty directories.
     pub directory: bool,
@@ -77,6 +77,13 @@ struct Directory {
     identity: FileIdentity,
     children: Vec<Child>,
 }
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum ScanPolicy {
+    Portable,
+    ArchiveUpdate,
+    ArchiveCreation,
+}
+
 /// Host-owned source authority and frozen directory topology. It retains only root handles.
 pub struct InputTree {
     roots: Vec<Root>,
@@ -88,7 +95,7 @@ pub struct InputTree {
     name_bytes: usize,
     total_bytes: u64,
     visited: usize,
-    filter_macos_metadata: bool,
+    policy: ScanPolicy,
 }
 fn id(dir: &Dir) -> Result<FileIdentity, InputError> {
     FileIdentity::read(&dir.try_clone().map_err(|_| InputError::Io)?.into_std_file())
@@ -150,22 +157,30 @@ impl InputTree {
         excluded: Vec<(PathBuf, FileIdentity)>,
         stop: &dyn Fn() -> bool,
     ) -> Result<Self, InputError> {
-        Self::scan_with_policy(paths, excluded, stop, false)
+        Self::scan_with_policy(paths, excluded, stop, ScanPolicy::Portable)
     }
-    /// Freeze creation/addition inputs, excluding macOS metadata at every depth.
+    /// Freeze archive update or single-file stream inputs, excluding macOS metadata.
     /// Existing archives and ordinary file publication use the unfiltered scan.
     pub fn scan_for_archive(
         paths: &[PathBuf],
         excluded: Vec<(PathBuf, FileIdentity)>,
         stop: &dyn Fn() -> bool,
     ) -> Result<Self, InputError> {
-        Self::scan_with_policy(paths, excluded, stop, true)
+        Self::scan_with_policy(paths, excluded, stop, ScanPolicy::ArchiveUpdate)
+    }
+    /// Freeze inputs to a new named archive, preserving original member names.
+    pub fn scan_for_creation(
+        paths: &[PathBuf],
+        excluded: Vec<(PathBuf, FileIdentity)>,
+        stop: &dyn Fn() -> bool,
+    ) -> Result<Self, InputError> {
+        Self::scan_with_policy(paths, excluded, stop, ScanPolicy::ArchiveCreation)
     }
     fn scan_with_policy(
         paths: &[PathBuf],
         excluded: Vec<(PathBuf, FileIdentity)>,
         stop: &dyn Fn() -> bool,
-        filter_macos_metadata: bool,
+        policy: ScanPolicy,
     ) -> Result<Self, InputError> {
         if paths.is_empty() || paths.len() > 100_000 {
             return Err(InputError::Limit);
@@ -221,7 +236,7 @@ impl InputTree {
             name_bytes: 0,
             total_bytes: 0,
             visited: 0,
-            filter_macos_metadata,
+            policy,
         };
         let mut root_ids = BTreeMap::new();
         for (path, directory) in &selected {
@@ -301,7 +316,7 @@ impl InputTree {
         Ok(dir)
     }
     fn ignores_metadata(&self, name: &std::ffi::OsStr, directory: bool) -> bool {
-        self.filter_macos_metadata
+        self.policy != ScanPolicy::Portable
             && ((!directory && name == ".DS_Store")
                 || (directory && (name == "__MACOSX" || name == "_MACOSX")))
     }
@@ -387,10 +402,13 @@ impl InputTree {
             return Err(InputError::Limit);
         }
         self.visited += 1;
-        let portable = PortablePath::parse(&name).ok_or(InputError::Name)?;
-        if portable.parts().len() > 64 {
-            return Err(InputError::Limit);
-        }
+        let exact = self.policy == ScanPolicy::ArchiveCreation;
+        let parse = if exact {
+            archive_components
+        } else {
+            components
+        };
+        parse(name.as_bytes(), false).ok_or(InputError::Name)?;
         self.name_bytes = self
             .name_bytes
             .checked_add(name.len())
@@ -398,7 +416,11 @@ impl InputTree {
         if self.name_bytes > 16 * 1024 * 1024 {
             return Err(InputError::Limit);
         }
-        let key = name.nfc().collect::<String>().to_lowercase();
+        let key = if exact {
+            name.clone()
+        } else {
+            name.nfc().collect::<String>().to_lowercase()
+        };
         if !self.names.insert(key.clone()) {
             return Err(InputError::Collision);
         }

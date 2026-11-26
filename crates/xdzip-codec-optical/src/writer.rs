@@ -5,7 +5,7 @@ use xdzip_codec_api::Cancellation;
 use xdzip_codec_api::encode::{
     EncodeEntry, EncodeError, EncodeInput, EncodeOutput, EncodeProgress, EncodeSettings,
 };
-use xdzip_domain::path::PortablePath;
+use xdzip_domain::path::archive_components;
 
 const SECTOR: usize = 2048;
 const METADATA: usize = 64 << 20;
@@ -179,21 +179,21 @@ impl Plan {
         order.sort_by(|a, b| a.1.name.cmp(&b.1.name));
         for (input, entry) in order {
             checked(cancel)?;
-            let path = PortablePath::parse(&entry.name).ok_or(EncodeError::Invalid)?;
-            if path.parts().len() > if entry.directory { 7 } else { 8 } {
+            let parts =
+                archive_components(entry.name.as_bytes(), false).ok_or(EncodeError::Name)?;
+            if parts.len() > if entry.directory { 7 } else { 8 } {
                 return Err(EncodeError::Limit);
             }
             // Joliet counts UCS-2 identifier bytes, the file version and one per parent directory.
-            let path_length = path
-                .parts()
+            let path_length = parts
                 .iter()
                 .map(|part| part.encode_utf16().count() * 2)
                 .sum::<usize>()
-                + path.parts().len()
+                + parts.len()
                 - 1
                 + if entry.directory { 0 } else { 4 };
             if path_length > 240 {
-                return Err(EncodeError::Limit);
+                return Err(EncodeError::Name);
             }
             if entry.size >= 1u64 << 32 || (entry.directory && entry.size != 0) {
                 return Err(EncodeError::Limit);
@@ -203,8 +203,13 @@ impl Plan {
             if !nodes[parent].directory || names.contains_key(&entry.name) {
                 return invalid();
             }
-            if name.chars().count() > 64 || name.chars().any(|ch| ch as u32 > 0xffff || ch == ';') {
-                return Err(EncodeError::Unsupported);
+            // ECMA-119 Annex C.4.5 excludes these identifier characters from UCS-2.
+            if name.chars().count() > 64
+                || name
+                    .chars()
+                    .any(|ch| ch as u32 > 0xffff || matches!(ch, '*' | '?' | ';'))
+            {
+                return Err(EncodeError::Name);
             }
             let index = nodes.len();
             let alias = if entry.directory {

@@ -5,7 +5,7 @@ use xdzip_codec_api::{
     encode::{EncodeEntry, EncodeError, EncodeInput, EncodeOutput, EncodeProgress, EncodeSettings},
 };
 use xdzip_compression::{Crc16, LzhWriter, crc16};
-use xdzip_domain::path::PortablePath;
+use xdzip_domain::path::{PortablePath, archive_components};
 const MAX_BYTES: u64 = 24 * 1024 * 1024 * 1024;
 const MAX_WORK: u64 = 96 * 1024 * 1024 * 1024;
 #[derive(Debug)]
@@ -102,7 +102,7 @@ fn name_parts(name: &str, directory: bool) -> Result<(&[u8], Vec<u8>), EncodeErr
         dir.push(255);
     }
     if filename.len() + dir.len() > 4096 {
-        return Err(EncodeError::Limit);
+        return Err(EncodeError::Name);
     }
     Ok((filename.as_bytes(), dir))
 }
@@ -264,9 +264,10 @@ pub(crate) fn append(
     let mut headers = 0usize;
     for entry in input.entries() {
         check(cancel)?;
-        if PortablePath::parse(&entry.name).is_none() || (entry.directory && entry.size != 0) {
+        if entry.directory && entry.size != 0 {
             return Err(EncodeError::Invalid);
         }
+        archive_components(entry.name.as_bytes(), false).ok_or(EncodeError::Name)?;
         names = names
             .checked_add(entry.name.len())
             .and_then(|n| n.checked_add(usize::from(entry.directory)))

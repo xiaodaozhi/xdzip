@@ -169,6 +169,14 @@ fn explanation(code: &str, chinese: bool) -> &'static str {
             "该格式或归档特性不支持本次操作",
             "The archive format or feature does not support this operation",
         ),
+        "entry_name_unrepresentable" => (
+            "该归档格式无法原样保存一个或多个输入名称",
+            "The archive format cannot store one or more input names exactly",
+        ),
+        "input_collision" => (
+            "多个输入名称在归档内冲突，请先调整名称",
+            "Input names conflict in the archive. Rename one before continuing",
+        ),
         "protected_source" => (
             "不能覆盖本次操作的输入文件",
             "An input file cannot be overwritten",
