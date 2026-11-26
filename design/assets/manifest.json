@@ -3136,7 +3136,7 @@
           "assets/conflict-document.png"
         ]
       },
-      "sha256": "f9d78fec169a81816fc6186e7f38d1c720c8fb5a8ec975b4ae3aad56645dd255",
+      "sha256": "44dde2d15a4893290da29a62e118ce87829b7c34247af885eb32b47f41468199",
       "visible_bounds": [
         4.3333,
         2.0,
@@ -5064,7 +5064,7 @@
           "assets/dark/conflict-document.png"
         ]
       },
-      "sha256": "3155dc10eea278d59bab97e2158901a4fbb6136a8c198d1d1439dc76562cbc4b",
+      "sha256": "ac06aa7f2ae0cac58ccc5add0c65c24ed3d6c560e712ca43498d228ea627d05f",
       "visible_bounds": [
         4.3333,
         2.0,
@@ -8662,7 +8662,7 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/document-conflict.svg",
-      "source_sha256": "f9d78fec169a81816fc6186e7f38d1c720c8fb5a8ec975b4ae3aad56645dd255",
+      "source_sha256": "44dde2d15a4893290da29a62e118ce87829b7c34247af885eb32b47f41468199",
       "visible_bounds": [
         4.0,
         1.0,
@@ -8670,7 +8670,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "65c4309367581d495c5813ec5c06bc2b06519d73b8c4782bc55c2088c92e172f"
+      "sha256": "31fac57c085adec34dc69c9d5fd31c33f9fb1eb5324463d2aa2f5366b4783198"
     },
     {
       "id": "raster/light/document-conflict@2x",
@@ -8692,7 +8692,7 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/document-conflict.svg",
-      "source_sha256": "f9d78fec169a81816fc6186e7f38d1c720c8fb5a8ec975b4ae3aad56645dd255",
+      "source_sha256": "44dde2d15a4893290da29a62e118ce87829b7c34247af885eb32b47f41468199",
       "visible_bounds": [
         4.0,
         2.0,
@@ -8700,7 +8700,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "61b7d4e23b495c355db4a912c84f855532ecd716c060d27a4876ea87a70d717e"
+      "sha256": "3dc78df861501c2dad9ca090d19491b4a23db9c533b14c1864dbc6634b149866"
     },
     {
       "id": "raster/light/document-conflict@3x",
@@ -8722,7 +8722,7 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/document-conflict.svg",
-      "source_sha256": "f9d78fec169a81816fc6186e7f38d1c720c8fb5a8ec975b4ae3aad56645dd255",
+      "source_sha256": "44dde2d15a4893290da29a62e118ce87829b7c34247af885eb32b47f41468199",
       "visible_bounds": [
         4.3333,
         2.0,
@@ -8730,7 +8730,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "4c1a503be5e59f690ed1211c5daebeeb9ce2fc3fe0eeba726b2221057d8b9676"
+      "sha256": "2495c65ce2749a6b9b84ee6a0dfa04b42362c0a5078462e5b5cda8373a192822"
     },
     {
       "id": "raster/light/document-conflict@9x",
@@ -8752,7 +8752,7 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/document-conflict.svg",
-      "source_sha256": "f9d78fec169a81816fc6186e7f38d1c720c8fb5a8ec975b4ae3aad56645dd255",
+      "source_sha256": "44dde2d15a4893290da29a62e118ce87829b7c34247af885eb32b47f41468199",
       "visible_bounds": [
         4.3333,
         1.8889,
@@ -8760,7 +8760,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "754264edfb0fdfd29f012c17159991ecd3f45012d770b274d6c84e8c538e7dd4"
+      "sha256": "c41e7956c6764d5e069fbd992a3ed5e5944064685711d74d38b041fe462a7d33"
     },
     {
       "id": "raster/light/document-download@1x",
@@ -16136,7 +16136,7 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/document-conflict.svg",
-      "source_sha256": "3155dc10eea278d59bab97e2158901a4fbb6136a8c198d1d1439dc76562cbc4b",
+      "source_sha256": "ac06aa7f2ae0cac58ccc5add0c65c24ed3d6c560e712ca43498d228ea627d05f",
       "visible_bounds": [
         4.0,
         1.0,
@@ -16144,7 +16144,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "adb2753f3114bd492ad82c09609f7e02e102223504613ef29be95ef2de6da5f3"
+      "sha256": "c85108a95b19791f2d383660de0fe78bb8f35506459bc7733b9800eb0f804527"
     },
     {
       "id": "raster/dark/document-conflict@2x",
@@ -16166,7 +16166,7 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/document-conflict.svg",
-      "source_sha256": "3155dc10eea278d59bab97e2158901a4fbb6136a8c198d1d1439dc76562cbc4b",
+      "source_sha256": "ac06aa7f2ae0cac58ccc5add0c65c24ed3d6c560e712ca43498d228ea627d05f",
       "visible_bounds": [
         4.0,
         2.0,
@@ -16174,7 +16174,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "8fd218b7e6dbdcb83f27f8176e58f57cd43d8c39eede247dc290d1b142d8369b"
+      "sha256": "5b206eb458f971252a779e2ac4abcc96b84aad87915269930f772e3620afdec6"
     },
     {
       "id": "raster/dark/document-conflict@3x",
@@ -16196,7 +16196,7 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/document-conflict.svg",
-      "source_sha256": "3155dc10eea278d59bab97e2158901a4fbb6136a8c198d1d1439dc76562cbc4b",
+      "source_sha256": "ac06aa7f2ae0cac58ccc5add0c65c24ed3d6c560e712ca43498d228ea627d05f",
       "visible_bounds": [
         4.3333,
         2.0,
@@ -16204,7 +16204,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "7c8a9e9f3939b7e67ee4b4fceb8352d708ac817a4717a4a325b2299b837aed1f"
+      "sha256": "6e498cdf8f1e5f95f6fae4a5160fe0b9ccfd2bac80df9f285152992e407d374a"
     },
     {
       "id": "raster/dark/document-conflict@9x",
@@ -16226,7 +16226,7 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/document-conflict.svg",
-      "source_sha256": "3155dc10eea278d59bab97e2158901a4fbb6136a8c198d1d1439dc76562cbc4b",
+      "source_sha256": "ac06aa7f2ae0cac58ccc5add0c65c24ed3d6c560e712ca43498d228ea627d05f",
       "visible_bounds": [
         4.3333,
         1.8889,
@@ -16234,7 +16234,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "c599da5ed772664ff08cdd764f4df44bd248600fc6d1a35d5367e64e6e0e1d32"
+      "sha256": "2ebbae6c0f7b9e0580d3907b93284530ff35e8f37c4cfcd22a28d915f3549a56"
     },
     {
       "id": "raster/dark/document-download@1x",

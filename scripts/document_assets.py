@@ -23,7 +23,7 @@ def document_illustrations(theme: str) -> dict[str, str]:
     conflict = corner_badge(
         '#f6bb55',
         '<rect x="-.56" y="-2.32" width="1.12" height="2.32" rx=".54" fill="#5c340c" stroke="none"/>'
-        '<circle cy="1.85" r=".61" fill="#5c340c" stroke="none"/>',
+        '<circle cy="1.47" r=".61" fill="#5c340c" stroke="none"/>',
     )
     windows_download = corner_badge(
         '#2d64da',
