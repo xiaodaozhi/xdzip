@@ -58,6 +58,7 @@
       "role": "operation",
       "width": "Theme.operationExtractWidth",
       "design": "design/hifi/screens/extract-macos.png",
+      "conflict_policy": "解压默认选择使用新名称，保留现有下拉框布局和其他选项。",
       "reason": "原生与正文标题均为解压文件，高度随实际内容和共享 footer 自适应，上限沿用解压窗口及可用屏幕高度，正文可滚动；资源管理器入口的布局选项使用与冲突策略一致的共享下拉框密度；目标状态复用创建窗口的图标与提示，保留原有路径框及同名文件夹布局",
       "header_design": "design/hifi/screens/create.png",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",

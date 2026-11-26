@@ -24,15 +24,15 @@ pub(crate) struct Job {
     pub temporary: Option<Arc<xdzip_io::Grant>>,
     pub open_path: String,
 }
-/// Canonical admission key accounts for common Unicode/case aliases. Exclusive native
-/// publication remains authoritative on filesystems with different name semantics.
-fn key(value: &str) -> String {
+/// Conservative key for fixed-name consumers and for protecting original names from suffixes.
+pub(super) fn key(value: &str) -> String {
     value.nfd().flat_map(char::to_lowercase).collect()
 }
 pub(crate) fn prepare(
     archive: &Archive,
     options: &Options,
     cancel: &Cancellation,
+    fixed_names: bool,
 ) -> Result<Vec<Planned>, &'static str> {
     let mut resolved = options.clone();
     resolved.selected = archive.resolve_query_selectors(&options.selected, cancel)?;
@@ -94,10 +94,8 @@ pub(crate) fn prepare(
     for prefix in prefixes {
         prefix_keys.insert(prefix);
     }
-    let mut mapped: BTreeMap<String, (String, bool)> = BTreeMap::new();
     let mut result = Vec::new();
     let mut bytes = 0usize;
-    let mut key_bytes = 0usize;
     let mut declared = 0u64;
     for (index, entry) in archive.rows.iter().enumerate() {
         cancel.check().map_err(|_| "cancelled")?;
@@ -159,36 +157,14 @@ pub(crate) fn prepare(
             .checked_add(display.len())
             .filter(|n| *n <= 4 * 1024 * 1024)
             .ok_or("resource_limit")?;
-        // Resolve case/NFD aliases deterministically, rejecting ambiguous directory spellings
-        // and all file/directory collisions before a workspace or visible directory is created.
-        let mut canonical_parts = Vec::new();
-        for (part_at, part) in path.parts().iter().enumerate() {
-            canonical_parts.push(part.clone());
-            let spelling = canonical_parts.join("/");
-            let canonical = key(&spelling);
-            let directory = part_at + 1 < path.parts().len() || entry.directory;
-            if let Some((previous, was_dir)) = mapped.get(&canonical) {
-                if *was_dir != directory || (directory && previous != &spelling) {
-                    return Err("ambiguous_name");
-                }
-                if !directory {
-                    canonical_parts = previous.split('/').map(str::to_owned).collect();
-                }
-            } else {
-                key_bytes = key_bytes
-                    .checked_add(canonical.len() + spelling.len())
-                    .filter(|n| *n <= 8 * 1024 * 1024)
-                    .ok_or("resource_limit")?;
-                mapped.insert(canonical, (spelling, directory));
-            }
-        }
-        let canonical_path = canonical_parts.join("/");
         result.push(Planned {
             index,
             link_target: None,
-            path: PortablePath::parse(&canonical_path).ok_or("unsafe_name")?,
+            path,
         });
     }
+    let fixed_names = fixed_names || result.iter().any(|p| archive.rows[p.index].link);
+    review_names(&mut result, &archive.rows, fixed_names, cancel)?;
     // GZIP has no per-entry compressed sizes. Use the immutable whole-source
     // size for a conservative selected-output ratio gate; work quotas still apply.
     if (archive.format.descriptor().container == "tar"
@@ -219,6 +195,51 @@ pub(crate) fn prepare(
     // No subsequent filesystem write may traverse an archive-created link.
     result.sort_by_key(|p| archive.rows[p.index].link);
     Ok(result)
+}
+
+fn review_names(
+    result: &mut [Planned],
+    rows: &[Entry],
+    fixed_names: bool,
+    cancel: &Cancellation,
+) -> Result<(), &'static str> {
+    let mut mapped: BTreeMap<String, (String, bool)> = BTreeMap::new();
+    let mut key_bytes = 0usize;
+    for planned in result {
+        cancel.check().map_err(|_| "cancelled")?;
+        let parts = planned.path.parts();
+        let mut spelling = String::new();
+        for (at, part) in parts.iter().enumerate() {
+            if at != 0 {
+                spelling.push('/');
+            }
+            spelling.push_str(part);
+            let canonical = if fixed_names {
+                key(&spelling)
+            } else {
+                spelling.clone()
+            };
+            let directory = at + 1 < parts.len() || rows[planned.index].directory;
+            if let Some((previous, was_dir)) = mapped.get(&canonical) {
+                if *was_dir != directory || (directory && previous != &spelling) {
+                    return Err("ambiguous_name");
+                }
+                if fixed_names && !directory && previous != &spelling {
+                    spelling = previous.clone();
+                }
+            } else {
+                key_bytes = key_bytes
+                    .checked_add(canonical.len() + spelling.len())
+                    .filter(|n| *n <= 8 * 1024 * 1024)
+                    .ok_or("resource_limit")?;
+                mapped.insert(canonical, (spelling.clone(), directory));
+            }
+        }
+        if fixed_names {
+            planned.path = PortablePath::parse(&spelling).ok_or("unsafe_name")?;
+        }
+    }
+    Ok(())
 }
 
 impl Job {

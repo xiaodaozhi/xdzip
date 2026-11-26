@@ -353,7 +353,7 @@ fn numbered_split_legacy_zip_keeps_decoded_names_and_read_only_edit_boundary() {
 }
 
 #[test]
-fn decoded_directory_aliases_repeat_unicode_and_case_checks_before_publication() {
+fn decoded_directory_aliases_keep_both_branches() {
     let temp = Temp::new();
     let path = temp.0.join("aliases.zip");
     let cancel = Cancellation::default();
@@ -364,12 +364,21 @@ fn decoded_directory_aliases_repeat_unicode_and_case_checks_before_publication()
     fs::write(&path, &bytes).unwrap();
     let archive = Archive::open(&path, &cancel).unwrap();
     assert!(archive.rows.iter().all(|r| !r.warning));
-    let options = temp.options("refused");
-    assert!(matches!(
-        archive.extraction_job(options, &cancel),
-        Err("ambiguous_name")
-    ));
-    assert_eq!(fs::read_dir(temp.0.join("refused")).unwrap().count(), 0);
+    let done = extract(
+        archive
+            .extraction_job(temp.options("output"), &cancel)
+            .unwrap(),
+    );
+    assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+    assert_eq!(done.committed_files, 2);
+    let entries: Vec<_> = fs::read_dir(temp.0.join("output"))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
+    assert_eq!(entries.len(), 2);
+    for dir in entries {
+        assert_eq!(fs::read_dir(dir.path()).unwrap().count(), 1);
+    }
     assert_eq!(fs::read(path).unwrap(), bytes);
 }
 

@@ -38,7 +38,7 @@ OperationWindow {
         allFiles = Boolean(intent.all);
         target.text = intent.target || "";
         sameFolder.checked = true;
-        conflict.currentIndex = 0;
+        conflict.currentIndex = 2;
         highRatio.checked = false;
         openAfter.checked = !shellMode;
         present();

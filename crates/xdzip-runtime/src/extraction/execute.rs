@@ -1,4 +1,5 @@
 use super::auxiliary::AuxiliaryBudget;
+use super::names::Names;
 use super::plan::Job;
 use super::{ConflictPolicy, Control, MAX_FILE_BYTES, MAX_TASK_BYTES, Prompt, Snapshot, Status};
 use crate::task_interaction::{Interaction, decoding, emit};
@@ -10,7 +11,7 @@ use xdzip_codec_api::payload::{DecodeError, DecodedSink};
 use xdzip_domain::path::PortablePath;
 use xdzip_io::{Grant, OutputError};
 
-fn output(error: OutputError) -> &'static str {
+pub(super) fn output(error: OutputError) -> &'static str {
     match error {
         OutputError::Io => "output_io",
         OutputError::NoSpace => "disk_full",
@@ -150,6 +151,12 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 )
             })?;
         }
+        let has_links = job.planned.iter().any(|p| p.link_target.is_some());
+        let mut names = if !has_links && job.temporary.is_none() {
+            Some(Names::new(&job, &control.cancel)?)
+        } else {
+            None
+        };
         let source_ids = job.source.identities().map_err(|_| "source_changed")?;
         let root = if let Some(temporary) = &job.temporary {
             temporary.validate().map_err(output)?;
@@ -177,7 +184,6 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         stats.target = target.display_path().to_string_lossy().into_owned();
         workspace = Some(target.workspace(id).map_err(output)?);
         let workspace = workspace.as_mut().expect("workspace just created");
-        let has_links = job.planned.iter().any(|p| p.link_target.is_some());
         if has_links {
             // Renaming/skipping a dependency would change the frozen link graph. Refuse
             // occupied file/link leaves before writing, rather than producing a broken bundle.
@@ -231,7 +237,11 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                         decoded.map_err(|e| write_error.unwrap_or_else(|| decoding(e)))
                     },
                 )?;
-                target.ensure_directory(&planned.path).map_err(output)?;
+                if let Some(names) = &mut names {
+                    names.resolve(&target, &planned.path, true, &control.cancel, &mut stats)?;
+                } else {
+                    target.ensure_directory(&planned.path).map_err(output)?;
+                }
                 continue;
             }
             if let Some(link_target) = &planned.link_target {
@@ -269,9 +279,27 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 continue;
             }
             pending_file = Some(entry.size);
-            let mut path = planned.path.clone();
+            let mut path = if let Some(names) = &mut names {
+                names.resolve(&target, &planned.path, false, &control.cancel, &mut stats)?
+            } else {
+                planned.path.clone()
+            };
+            let parent_identity = names
+                .as_ref()
+                .and_then(|n| n.parent_identity(&planned.path));
             let mut overwrite = None;
-            if let Some(existing) = target.existing(&path).map_err(output)? {
+            if let Some(names) = &names
+                && target
+                    .leaf_metadata(&path)
+                    .map_err(output)?
+                    .is_some_and(|kind| kind.is_dir())
+            {
+                path = names.fresh_file(&target, &planned.path, &path, &control.cancel)?;
+            }
+            if let Some(existing) = target
+                .existing_with_parent(&path, parent_identity)
+                .map_err(output)?
+            {
                 if has_links {
                     return Err("output_conflict");
                 }
@@ -311,7 +339,13 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                         emit(&mut stats, start, publish);
                         continue;
                     }
-                    ConflictPolicy::Rename => path = fresh_name(&target, &path, &control.cancel)?,
+                    ConflictPolicy::Rename => {
+                        path = if let Some(names) = &names {
+                            names.fresh_file(&target, &planned.path, &path, &control.cancel)?
+                        } else {
+                            fresh_name(&target, &path, &control.cancel)?
+                        };
+                    }
                     ConflictPolicy::Overwrite if existing.source_protected => {
                         return Err("protected_source");
                     }
@@ -373,7 +407,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 .map_err(|_| "source_changed")
                 .and_then(|_| {
                     workspace
-                        .commit(stage, &path, overwrite.as_ref())
+                        .commit_with_parent(stage, &path, overwrite.as_ref(), parent_identity)
                         .map_err(output)
                 });
             let cancelled = control.end_commit(false);
@@ -381,7 +415,13 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 stats.committed_files += 1;
                 stats.committed_bytes += actual;
                 stats.cleanup_warning |= receipt.cleanup_warning;
-                stats.record(&path.display(), actual, "completed", "");
+                let output = path.display();
+                let original = planned.path.display();
+                if names.is_some() && output != original {
+                    stats.record_mapping(&original, &output, actual);
+                } else {
+                    stats.record(&output, actual, "completed", "");
+                }
                 pending_file = None;
             }
             committed?;

@@ -954,7 +954,10 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
             .details
             .iter()
             .map(|d| ffi::TaskOutcome {
-                name: d.name.clone(),
+                name: d.original_name.as_ref().map_or_else(
+                    || d.name.clone(),
+                    |original| format!("{original} → {}", d.name),
+                ),
                 size: d.size,
                 status: d.status.into(),
                 error: d.error.into(),

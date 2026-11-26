@@ -304,6 +304,13 @@ impl Runtime {
                         )
                     },
                 );
+                for detail in snapshot.details.iter() {
+                    if let Some(original) = &detail.original_name {
+                        response
+                            .text
+                            .push_str(&format!("\n{} → {}", original, detail.name));
+                    }
+                }
                 if command == "test" {
                     response.text = if self.chinese {
                         if matches!(snapshot.format, "TAR" | "ISO" | "UDF") {
@@ -416,5 +423,19 @@ impl Drop for Runtime {
     }
 }
 fn summary(s: &Snapshot) -> Value {
-    json!({"files":s.files, "declared_bytes":s.total_known.then_some(s.declared_bytes), "decoded_bytes":s.decoded_bytes, "read_bytes":s.read_bytes, "verified_files":s.verified_files, "verified_bytes":s.verified_bytes, "committed_files":s.committed_files, "committed_bytes":s.committed_bytes, "skipped_files":s.skipped_files, "created_directories":s.created_directories, "output_parts":s.output_parts, "cleanup_warning":s.cleanup_warning, "outcome_uncertain":s.outcome_uncertain, "leftovers":s.leftovers})
+    let mut result = json!({"files":s.files, "declared_bytes":s.total_known.then_some(s.declared_bytes), "decoded_bytes":s.decoded_bytes, "read_bytes":s.read_bytes, "verified_files":s.verified_files, "verified_bytes":s.verified_bytes, "committed_files":s.committed_files, "committed_bytes":s.committed_bytes, "skipped_files":s.skipped_files, "created_directories":s.created_directories, "output_parts":s.output_parts, "cleanup_warning":s.cleanup_warning, "outcome_uncertain":s.outcome_uncertain, "leftovers":s.leftovers});
+    if s.kind == xdzip_runtime::extraction::TaskKind::Extract {
+        let renamed: Vec<_> = s
+            .details
+            .iter()
+            .filter_map(|d| {
+                d.original_name
+                    .as_ref()
+                    .map(|original| json!({"original": original, "output": d.name}))
+            })
+            .collect();
+        result["renamed"] = json!(renamed);
+        result["omitted_details"] = json!(s.omitted_details);
+    }
+    result
 }

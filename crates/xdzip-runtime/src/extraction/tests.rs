@@ -163,16 +163,119 @@ fn ordinary_conflict_responses_are_single_use_and_cancel_wakes_waiter() {
     assert_eq!(std::fs::read(target.0.join(leaf)).unwrap(), b"old");
 }
 #[test]
-fn canonical_aliases_use_regular_conflicts_and_unsafe_plans_create_nothing() {
+fn native_filename_equivalence_preserves_content_paths_and_reports_changes() {
     let target = Target::new();
-    let a = archive("aliases.zip");
+    assert_native_filename_output(&target);
+    if let Some(path) = std::env::var_os("XDZIP_TEST_CASE_SENSITIVE_TARGET") {
+        let target = Target(PathBuf::from(path).join("native-names"));
+        std::fs::create_dir(&target.0).unwrap();
+        assert!(distinct_names(&target, "CaseProbe", "caseprobe"));
+        assert_native_filename_output(&target);
+    }
+}
+
+fn distinct_names(target: &Target, first: &str, second: &str) -> bool {
+    let first = target.0.join(first);
+    let second = target.0.join(second);
+    std::fs::File::create_new(&first).unwrap();
+    let distinct = match std::fs::File::create_new(&second) {
+        Ok(file) => {
+            drop(file);
+            std::fs::remove_file(&second).unwrap();
+            true
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => false,
+        Err(e) => panic!("{e}"),
+    };
+    std::fs::remove_file(first).unwrap();
+    distinct
+}
+
+fn assert_native_filename_output(target: &Target) {
+    let case = distinct_names(target, "CaseProbe", "caseprobe");
+    let accented_case = distinct_names(target, "Ä-probe", "ä-probe");
+    let unicode = distinct_names(target, "é-probe", "e\u{301}-probe");
+    let a = archive("native_names.zip");
     let mut options = target.options();
-    options.conflict = ConflictPolicy::Skip;
+    options.conflict = ConflictPolicy::Rename;
     let done = execute(&a, options, &Control::default(), |_| {});
-    assert_eq!(done.status, Status::Succeeded);
-    assert_eq!(done.committed_files, 1);
-    assert_eq!(done.skipped_files, 1);
-    assert_eq!(std::fs::read(target.0.join("A.txt")).unwrap(), b"first");
+    assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+    assert_eq!(done.committed_files, 11);
+    assert_eq!(done.skipped_files, 0);
+    let expected: [(&str, &str, &[u8]); 11] = [
+        ("A.txt", "A.txt", b"first"),
+        ("a.txt", if case { "a.txt" } else { "a (2).txt" }, b"second"),
+        ("a (1).txt", "a (1).txt", b"original numbered name"),
+        ("Docs/first.txt", "Docs/first.txt", b"first branch"),
+        (
+            "docs/second.txt",
+            if case {
+                "docs/second.txt"
+            } else {
+                "docs (1)/second.txt"
+            },
+            b"second branch",
+        ),
+        ("café.txt", "café.txt", b"composed"),
+        ("Ä.txt", "Ä.txt", b"uppercase accented"),
+        (
+            "ä.txt",
+            if accented_case {
+                "ä.txt"
+            } else {
+                "ä (1).txt"
+            },
+            b"lowercase accented",
+        ),
+        (
+            "cafe\u{301}.txt",
+            if unicode {
+                "cafe\u{301}.txt"
+            } else {
+                "cafe\u{301} (1).txt"
+            },
+            b"decomposed",
+        ),
+        ("Résumé/a.txt", "Résumé/a.txt", b"composed parent"),
+        (
+            "Re\u{301}sume\u{301}/b.txt",
+            if unicode {
+                "Re\u{301}sume\u{301}/b.txt"
+            } else {
+                "Re\u{301}sume\u{301} (1)/b.txt"
+            },
+            b"decomposed parent",
+        ),
+    ];
+    for (original, output, contents) in expected {
+        assert_eq!(
+            std::fs::read(target.0.join(output)).unwrap(),
+            contents,
+            "{output}"
+        );
+        assert_eq!(
+            done.details
+                .iter()
+                .any(|d| d.original_name.as_deref() == Some(original) && d.name == output),
+            original != output,
+            "{original}"
+        );
+    }
+    if !case {
+        assert!(!target.0.join("Docs/second.txt").exists());
+        assert!(
+            done.details
+                .iter()
+                .any(|d| d.original_name.as_deref() == Some("docs") && d.name == "docs (1)")
+        );
+    }
+    if !unicode {
+        assert!(!target.0.join("Résumé/b.txt").exists());
+    }
+}
+
+#[test]
+fn unsafe_plans_create_nothing() {
     let target = Target::new();
     let a = archive("unsafe.zip");
     assert!(

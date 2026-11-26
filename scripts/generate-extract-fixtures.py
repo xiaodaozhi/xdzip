@@ -63,6 +63,23 @@ with zipfile.ZipFile(ROOT / 'aliases.zip', 'w') as archive:
     archive.writestr('A.txt', b'first')
     archive.writestr('a.txt', b'second')
 
+with zipfile.ZipFile(ROOT / 'native_names.zip', 'w') as archive:
+    for name, data in [
+        ('A.txt', b'first'),
+        ('a.txt', b'second'),
+        ('a (1).txt', b'original numbered name'),
+        ('Docs/', b''),
+        ('Docs/first.txt', b'first branch'),
+        ('docs/second.txt', b'second branch'),
+        ('Ä.txt', b'uppercase accented'),
+        ('ä.txt', b'lowercase accented'),
+        ('café.txt', b'composed'),
+        ('cafe\u0301.txt', b'decomposed'),
+        ('Résumé/a.txt', b'composed parent'),
+        ('Re\u0301sume\u0301/b.txt', b'decomposed parent'),
+    ]:
+        archive.writestr(zipfile.ZipInfo(name, (2026, 11, 26, 0, 0, 0)), data)
+
 def partial_result_fixture():
     """Two valid files followed by a bad CRC, for actual result-window outcomes."""
     stream = io.BytesIO()
