@@ -589,6 +589,7 @@ fn password_control_bypasses_a_full_command_queue_and_shutdown_wakes_waiting_tas
             }
         }
         let extract = submit(&mut || Command::Extract {
+            target_identity: None,
             session,
             options: target.options(),
         });

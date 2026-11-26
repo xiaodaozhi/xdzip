@@ -9,6 +9,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use xdzip_codec_api::{Cancellation, ScanError};
+use xdzip_io::VolumeDirectory;
 
 pub(crate) struct Cabinet {
     pub path: PathBuf,
@@ -104,21 +105,18 @@ fn header(file: &mut File, control: &Cancellation) -> Result<Header, ScanError> 
         next,
     })
 }
-fn load(path: &Path, control: &Cancellation) -> Result<(Header, SourceVersion), ScanError> {
+fn load(
+    directory: &VolumeDirectory,
+    path: &Path,
+    expected: Option<&SourceVersion>,
+    control: &Cancellation,
+) -> Result<(Header, SourceVersion), ScanError> {
     control.check()?;
-    let metadata = std::fs::symlink_metadata(path).map_err(|_| ScanError::MissingVolume)?;
-    if !metadata.is_file() || metadata.file_type().is_symlink() {
-        return Err(ScanError::Io);
-    }
-    #[cfg(windows)]
-    {
-        use std::os::windows::fs::MetadataExt;
-        if metadata.file_attributes() & 0x400 != 0 {
-            return Err(ScanError::Io);
-        }
-    }
-    let mut file = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
+    let mut file = crate::source::open_companion(directory, path)?;
     let before = SourceVersion::read(&file)?;
+    if expected.is_some_and(|expected| expected != &before) {
+        return Err(ScanError::SourceChanged);
+    }
     let header = header(&mut file, control)?;
     if SourceVersion::read(&file)? != before {
         return Err(ScanError::SourceChanged);
@@ -131,33 +129,43 @@ fn filename(path: &Path) -> Result<String, ScanError> {
         .map(str::to_lowercase)
         .ok_or(ScanError::Invalid)
 }
-pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabinet>, ScanError> {
-    let (selected, version) = load(path, control)?;
-    if selected.prev.is_none() && selected.next.is_none() {
-        return Ok(vec![Cabinet {
-            path: path.into(),
-            name: path
-                .file_name()
-                .and_then(|name| name.to_str())
-                .ok_or(ScanError::Invalid)?
-                .as_bytes()
-                .to_vec(),
-            version,
-        }]);
+pub(crate) fn discover(
+    path: &Path,
+    file: &mut File,
+    expected: &SourceVersion,
+    volumes: Option<VolumeDirectory>,
+    control: &Cancellation,
+) -> Result<(Vec<Cabinet>, Option<VolumeDirectory>), ScanError> {
+    let selected = header(file, control)?;
+    if &SourceVersion::read(file)? != expected {
+        return Err(ScanError::SourceChanged);
     }
-    let parent = path.parent().unwrap_or_else(|| Path::new("."));
+    if selected.prev.is_none() && selected.next.is_none() {
+        return Ok((
+            vec![Cabinet {
+                path: path.into(),
+                name: path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .ok_or(ScanError::Invalid)?
+                    .as_bytes()
+                    .to_vec(),
+                version: expected.clone(),
+            }],
+            None,
+        ));
+    }
+    let volumes = volumes.ok_or(ScanError::Io)?;
+    let (selected, _) = load(&volumes, path, Some(expected), control)?;
     let mut directory = BTreeMap::<String, Option<PathBuf>>::new();
     let mut directory_name_bytes = 0usize;
-    for (count, item) in std::fs::read_dir(parent)
-        .map_err(|_| ScanError::Io)?
-        .enumerate()
-    {
+    for (count, item) in volumes.names().map_err(|_| ScanError::Io)?.enumerate() {
         control.check()?;
         if count >= 100_000 {
             return Err(ScanError::Limit);
         }
         let item = item.map_err(|_| ScanError::Io)?;
-        if let Some(name) = item.file_name().to_str() {
+        if let Some(name) = item.to_str() {
             directory_name_bytes = directory_name_bytes
                 .checked_add(name.len().saturating_mul(4))
                 .filter(|bytes| *bytes <= 16 * 1024 * 1024)
@@ -165,7 +173,7 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
             directory
                 .entry(name.to_lowercase())
                 .and_modify(|path| *path = None)
-                .or_insert(Some(PathBuf::from(item.file_name())));
+                .or_insert(Some(PathBuf::from(item)));
         }
     }
     let resolve = |raw: &[u8]| -> Result<PathBuf, ScanError> {
@@ -174,7 +182,7 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
             .ok_or(ScanError::MissingVolume)?
             .clone()
             .ok_or(ScanError::Invalid)?;
-        Ok(parent.join(name))
+        Ok(volumes.path().join(name))
     };
     let mut first = path.to_path_buf();
     let mut current = selected;
@@ -185,7 +193,7 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
             return Err(ScanError::Invalid);
         }
         let previous = resolve(prev)?;
-        let (before, _) = load(&previous, control)?;
+        let (before, _) = load(&volumes, &previous, None, control)?;
         if before.set != current.set || before.index >= current.index {
             return Err(ScanError::Invalid);
         }
@@ -201,13 +209,15 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
         .as_bytes()
         .to_vec();
     let set = current.set;
+    let selected_name = filename(path)?;
     let mut selected_seen = false;
     loop {
         control.check()?;
         if result.len() >= 1024 {
             return Err(ScanError::Limit);
         }
-        let (current, version) = load(&next, control)?;
+        let is_selected = filename(&next)? == selected_name;
+        let (current, version) = load(&volumes, &next, is_selected.then_some(expected), control)?;
         if current.set != set
             || current.index as usize != result.len()
             || result
@@ -228,7 +238,7 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
                 return Err(ScanError::Invalid);
             }
         }
-        selected_seen |= filename(&next)? == filename(path)?;
+        selected_seen |= is_selected;
         result.push(Cabinet {
             path: next,
             name: raw_name,
@@ -243,7 +253,7 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
     if !selected_seen {
         return Err(ScanError::Invalid);
     }
-    Ok(result)
+    Ok((result, Some(volumes)))
 }
 
 #[cfg(test)]

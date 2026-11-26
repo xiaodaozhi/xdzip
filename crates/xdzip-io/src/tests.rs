@@ -278,6 +278,21 @@ fn windows_read_only_acl_allows_output_but_mutation_does_not() {
         assert!(temporary.display_path().is_dir());
         drop(grant);
     }
+    let root = Owned::new();
+    grant_access(&root, "S-1-1-0", "(R)");
+    let original = root.0.join("archive.zip");
+    fs::write(&original, b"original shared bytes").unwrap();
+    let identity = FileIdentity::read(&File::open(&original).unwrap()).unwrap();
+    let update = ArchiveUpdate::open(&original, identity).unwrap();
+    let mut workspace = update.workspace(1).unwrap();
+    let mut staged = workspace.stage().unwrap();
+    staged.write_all(b"replacement bytes").unwrap();
+    assert!(matches!(
+        update.commit(&mut workspace, staged),
+        Err(OutputError::UnsafeTarget)
+    ));
+    workspace.cleanup().unwrap();
+    assert_eq!(fs::read(&original).unwrap(), b"original shared bytes");
     // Read-only sharing does not authorize mutation. Both effective and
     // inherited write/delete/ACL rights and generic write/all must still
     // reject before creating a staging directory or touching any existing bytes.

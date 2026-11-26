@@ -251,21 +251,24 @@ fn native_payload_install_switches_pointer_after_validation_and_keeps_old_runtim
     let response = runtime
         .task(
             "create",
-            xdzip_runtime::service::Command::Create(xdzip_runtime::creation::Options {
-                inputs: vec![
-                    bin.to_str().unwrap().into(),
-                    source.join(installation::PAYLOAD).to_str().unwrap().into(),
-                ],
-                target: root.to_str().unwrap().into(),
-                name: archive_name.into(),
-                method: 8,
-                level: 1,
-                conflict: xdzip_runtime::extraction::ConflictPolicy::Ask,
-                volume_bytes: 0,
-                solid: false,
-                encrypt_headers: false,
-                password: None,
-            }),
+            xdzip_runtime::service::Command::Create(
+                xdzip_runtime::creation::Options {
+                    inputs: vec![
+                        bin.to_str().unwrap().into(),
+                        source.join(installation::PAYLOAD).to_str().unwrap().into(),
+                    ],
+                    target: root.to_str().unwrap().into(),
+                    name: archive_name.into(),
+                    method: 8,
+                    level: 1,
+                    conflict: xdzip_runtime::extraction::ConflictPolicy::Ask,
+                    volume_bytes: 0,
+                    solid: false,
+                    encrypt_headers: false,
+                    password: None,
+                },
+                None,
+            ),
         )
         .unwrap();
     assert_eq!(response.exit, 0);

@@ -60,6 +60,11 @@ pub(crate) fn secure_temporary_directory(file: &File) -> Result<(), OutputError>
     windows::secure_temporary_directory(file)
 }
 
+#[cfg(windows)]
+pub(crate) fn preserve_archive_access(source: &File, stage: &File) -> Result<(), OutputError> {
+    windows::preserve_archive_access(source, stage)
+}
+
 #[cfg(target_os = "macos")]
 #[allow(unsafe_code)]
 mod macos {
@@ -228,6 +233,149 @@ mod windows {
             }
         }
     }
+
+    struct FileAccess {
+        _descriptor: Descriptor,
+        owner: PSID,
+        acl: *mut ACL,
+    }
+
+    impl FileAccess {
+        fn read(file: &File) -> Result<Self, OutputError> {
+            let mut owner = null_mut();
+            let mut acl = null_mut();
+            let mut descriptor = null_mut();
+            // SAFETY: READ_CONTROL on the borrowed handle authorizes this query. The
+            // returned pointers stay valid while the allocated descriptor remains alive.
+            let status = unsafe {
+                GetSecurityInfo(
+                    file.as_raw_handle(),
+                    SE_FILE_OBJECT,
+                    DACL_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION,
+                    &mut owner,
+                    null_mut(),
+                    &mut acl,
+                    null_mut(),
+                    &mut descriptor,
+                )
+            };
+            let descriptor = Descriptor(descriptor);
+            if status != 0
+                || descriptor.0.is_null()
+                || owner.is_null()
+                || acl.is_null()
+                // SAFETY: successful GetSecurityInfo returned descriptor-owned structures.
+                || unsafe { IsValidSid(owner) == 0 || IsValidAcl(acl) == 0 }
+            {
+                return Err(OutputError::UnsafeTarget);
+            }
+            Ok(Self {
+                _descriptor: descriptor,
+                owner,
+                acl,
+            })
+        }
+
+        fn same_owner(&self, other: &Self) -> bool {
+            // SAFETY: both descriptors own validated SIDs for the duration of the call.
+            unsafe { EqualSid(self.owner, other.owner) != 0 }
+        }
+
+        fn same_policy(&self, other: &Self) -> bool {
+            // SAFETY: both validated ACLs remain live. GetAce returns an entry inside
+            // each ACL and IsValidAcl guarantees AceSize for entries within AceCount.
+            unsafe {
+                let count = (*self.acl).AceCount;
+                self.same_owner(other)
+                    && count == (*other.acl).AceCount
+                    && (0..u32::from(count)).all(|index| {
+                        let mut left = null_mut();
+                        let mut right = null_mut();
+                        if GetAce(self.acl, index, &mut left) == 0
+                            || GetAce(other.acl, index, &mut right) == 0
+                            || left.is_null()
+                            || right.is_null()
+                        {
+                            return false;
+                        }
+                        let left_header = &*left.cast::<ACE_HEADER>();
+                        let right_header = &*right.cast::<ACE_HEADER>();
+                        let len = usize::from(left_header.AceSize);
+                        let header_size = std::mem::size_of::<ACE_HEADER>();
+                        // Protecting the copied DACL can turn inherited ACEs into
+                        // explicit ACEs. Preserve their order, rights and applicability.
+                        len >= header_size
+                            && len == usize::from(right_header.AceSize)
+                            && left_header.AceType == right_header.AceType
+                            && (left_header.AceFlags ^ right_header.AceFlags)
+                                & !(INHERITED_ACE as u8)
+                                == 0
+                            && std::slice::from_raw_parts(
+                                left.cast::<u8>().add(header_size),
+                                len - header_size,
+                            ) == std::slice::from_raw_parts(
+                                right.cast::<u8>().add(header_size),
+                                len - header_size,
+                            )
+                    })
+            }
+        }
+    }
+
+    pub(super) fn preserve_archive_access(source: &File, stage: &File) -> Result<(), OutputError> {
+        let policy = FileAccess::read(source)?;
+        // Keep the staged data private even if publication fails after the DACL is set.
+        check_policy(&policy, true)?;
+        if !policy.same_owner(&FileAccess::read(stage)?) {
+            return Err(OutputError::UnsafeTarget);
+        }
+        // SAFETY: the stage handle has WRITE_DAC and the validated ACL stays live.
+        // Protect the copy so the private workspace cannot contribute additional ACEs.
+        let status = unsafe {
+            SetSecurityInfo(
+                stage.as_raw_handle(),
+                SE_FILE_OBJECT,
+                DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                null_mut(),
+                null_mut(),
+                policy.acl,
+                null_mut(),
+            )
+        };
+        if status != 0 || !policy.same_policy(&FileAccess::read(stage)?) {
+            return Err(OutputError::UnsafeTarget);
+        }
+        if !policy.same_policy(&FileAccess::read(source)?) {
+            return Err(OutputError::TargetChanged);
+        }
+        Ok(())
+    }
+
+    #[cfg(test)]
+    #[test]
+    fn archive_replacement_preserves_access_from_the_original_file() {
+        use std::io::Write;
+
+        let fixture = crate::tests::Owned::new();
+        let path = fixture.0.join("archive.zip");
+        std::fs::write(&path, b"original").unwrap();
+        let original = File::open(&path).unwrap();
+        let identity = crate::FileIdentity::read(&original).unwrap();
+        let policy = FileAccess::read(&original).unwrap();
+        drop(original);
+
+        let update = crate::ArchiveUpdate::open(&path, identity).unwrap();
+        let mut workspace = update.workspace(1).unwrap();
+        let mut stage = workspace.stage().unwrap();
+        stage.write_all(b"replacement").unwrap();
+        check_confidential(&stage.verification_reader().unwrap(), false).unwrap();
+        update.commit(&mut workspace, stage).unwrap();
+        workspace.cleanup().unwrap();
+
+        assert_eq!(std::fs::read(&path).unwrap(), b"replacement");
+        assert!(policy.same_policy(&FileAccess::read(&File::open(&path).unwrap()).unwrap()));
+    }
+
     pub(super) fn secure_temporary_directory(file: &File) -> Result<(), OutputError> {
         // Only a freshly created empty directory below an owned grant reaches
         // this function. Protect its DACL before any plaintext is written. OW is
@@ -283,30 +431,11 @@ mod windows {
         check_acl(file, true)
     }
     pub(super) fn check_acl(file: &File, confidential: bool) -> Result<(), OutputError> {
-        // SAFETY: file is borrowed for the whole operation; output pointers target
-        // initialized stack storage. The returned descriptor is RAII-owned below.
-        let mut acl = null_mut();
-        let mut owner = null_mut();
-        let mut descriptor = null_mut();
-        let status = unsafe {
-            GetSecurityInfo(
-                file.as_raw_handle(),
-                SE_FILE_OBJECT,
-                DACL_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION,
-                &mut owner,
-                null_mut(),
-                &mut acl,
-                null_mut(),
-                &mut descriptor,
-            )
-        };
-        if status != 0 {
-            return Err(OutputError::UnsafeTarget);
-        }
-        let _descriptor = Descriptor(descriptor);
-        if acl.is_null() {
-            return Err(OutputError::UnsafeTarget);
-        }
+        check_policy(&FileAccess::read(file)?, confidential)
+    }
+
+    fn check_policy(access: &FileAccess, confidential: bool) -> Result<(), OutputError> {
+        let FileAccess { owner, acl, .. } = *access;
         let mut token = null_mut();
         // SAFETY: pseudo process handle is valid; token receives an owned handle
         // and is closed by OwnedHandle even when later checks fail.
@@ -361,9 +490,6 @@ mod windows {
         // The owner can change a DACL even without an explicit allow ACE. An
         // unrelated owner therefore cannot make this a private grant by briefly
         // exposing only our SID. SYSTEM/Administrators are trusted platform actors.
-        if owner.is_null() || unsafe { IsValidSid(owner) } == 0 {
-            return Err(OutputError::UnsafeTarget);
-        }
         let trusted_owner = unsafe { EqualSid(owner, user_sid) != 0 }
             || allowed[..2]
                 .iter()

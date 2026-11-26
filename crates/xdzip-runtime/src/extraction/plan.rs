@@ -22,6 +22,7 @@ pub(crate) struct Job {
     pub session: u64,
     pub links_pending: bool,
     pub temporary: Option<Arc<xdzip_io::Grant>>,
+    pub target_identity: Option<xdzip_io::FileIdentity>,
     pub open_path: String,
 }
 /// Conservative key for fixed-name consumers and for protecting original names from suffixes.

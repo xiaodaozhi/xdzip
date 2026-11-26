@@ -1,9 +1,11 @@
 //! Best-effort source version checks, never an atomic filesystem snapshot claim.
 use std::fs::File;
 use std::io::{self, Read, Seek, SeekFrom};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::time::SystemTime;
 use xdzip_codec_api::ScanError;
+use xdzip_io::VolumeDirectory;
 
 #[derive(Clone, Eq, PartialEq)]
 pub(crate) struct SourceVersion {
@@ -48,6 +50,7 @@ pub(crate) struct Source {
     lengths: Vec<u64>,
     cab_names: Option<Vec<Vec<u8>>>,
     cached: Option<(usize, File)>,
+    volume_directory: Option<Arc<VolumeDirectory>>,
     split: bool,
     name: PathBuf,
     position: u64,
@@ -59,12 +62,75 @@ struct Part {
     version: SourceVersion,
     start: u64,
 }
+
+pub(crate) fn open_companion(directory: &VolumeDirectory, path: &Path) -> Result<File, ScanError> {
+    directory
+        .open_part(path.file_name().ok_or(ScanError::Invalid)?)
+        .map_err(|error| {
+            if error.kind() == io::ErrorKind::NotFound {
+                ScanError::MissingVolume
+            } else {
+                ScanError::Io
+            }
+        })
+}
+
+fn admit_parts(
+    directory: &VolumeDirectory,
+    paths: Vec<PathBuf>,
+    selected: &str,
+    selected_version: &SourceVersion,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Vec<Part>, ScanError> {
+    let mut parts = Vec::new();
+    let mut start = 0u64;
+    let mut selected_seen = false;
+    for path in paths {
+        control.check()?;
+        let file = open_companion(directory, &path)?;
+        let version = SourceVersion::read(&file)?;
+        if path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.eq_ignore_ascii_case(selected))
+        {
+            if &version != selected_version {
+                return Err(ScanError::SourceChanged);
+            }
+            selected_seen = true;
+        }
+        if version.length == 0 {
+            return Err(ScanError::Invalid);
+        }
+        let next = start.checked_add(version.length).ok_or(ScanError::Limit)?;
+        parts.push(Part {
+            path,
+            version,
+            start,
+        });
+        start = next;
+    }
+    if !selected_seen {
+        return Err(ScanError::SourceChanged);
+    }
+    Ok(parts)
+}
+
 impl Source {
+    fn reopen_part(&self, path: &Path) -> io::Result<File> {
+        if let Some(directory) = &self.volume_directory {
+            directory.open_part(path.file_name().ok_or(io::ErrorKind::InvalidInput)?)
+        } else {
+            xdzip_io::open_regular_readonly(path)
+        }
+    }
+
     pub fn new(file: File, path: PathBuf, version: SourceVersion) -> Self {
         Self {
             lengths: vec![version.length],
             cab_names: None,
             cached: Some((0, file)),
+            volume_directory: None,
             split: false,
             name: path.clone(),
             parts: vec![Part {
@@ -80,13 +146,27 @@ impl Source {
         path: &std::path::Path,
         control: &xdzip_codec_api::Cancellation,
     ) -> Result<Self, ScanError> {
-        let mut file = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
+        // Hold the original parent before opening any member. Explicit standalone
+        // selections can still open through a link or beneath a traverse-only parent.
+        let mut directory = VolumeDirectory::open(path).ok();
+        let mut file = match directory
+            .as_ref()
+            .zip(path.file_name())
+            .and_then(|(directory, name)| directory.open_part(name).ok())
+        {
+            Some(file) => file,
+            None => {
+                directory = None;
+                xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?
+            }
+        };
         let version = SourceVersion::read(&file)?;
         let mut magic = [0; 4];
         let cabinet = file.read_exact(&mut magic).is_ok() && &magic == b"MSCF";
         file.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
         if cabinet {
-            let cabinets = crate::source_cab::discover(path, control)?;
+            let (cabinets, directory) =
+                crate::source_cab::discover(path, &mut file, &version, directory, control)?;
             let mut parts = Vec::new();
             let mut names = Vec::new();
             let mut start = 0u64;
@@ -108,7 +188,8 @@ impl Source {
                 split: parts.len() > 1,
                 parts,
                 cab_names: Some(names),
-                cached: None,
+                cached: directory.is_none().then_some((0, file)),
+                volume_directory: directory.map(Arc::new),
                 position: 0,
                 tail: None,
             };
@@ -120,8 +201,13 @@ impl Source {
             .and_then(|s| s.to_str())
             .ok_or(ScanError::Io)?;
         let lower = filename.to_ascii_lowercase();
-        if let Some(paths) = rar_volumes(path, control)? {
-            return Self::from_rar_volumes(paths, control);
+        if let Some(paths) = rar_volumes(path, &magic, directory.as_ref(), control)? {
+            let directory = directory.ok_or(ScanError::Io)?;
+            let name = paths.first().ok_or(ScanError::MissingVolume)?.clone();
+            let parts = admit_parts(&directory, paths, filename, &version, control)?;
+            let source = Self::split_source(parts, name, directory);
+            source.validate()?;
+            return Ok(source);
         }
         let (base, width, pkzip) = if let Some((base, ext)) = filename.rsplit_once('.') {
             if ext.len() >= 3
@@ -143,7 +229,7 @@ impl Source {
         } else {
             return Ok(Self::new(file, path.into(), version));
         };
-        let parent = path.parent().unwrap_or_else(|| std::path::Path::new("."));
+        let directory = directory.ok_or(ScanError::Io)?;
         let prefix = if pkzip {
             format!("{}.z", base.to_ascii_lowercase())
         } else {
@@ -151,21 +237,18 @@ impl Source {
         };
         let mut numbered = std::collections::BTreeMap::new();
         let mut final_part = None;
-        for (scanned, item) in std::fs::read_dir(parent)
-            .map_err(|_| ScanError::Io)?
-            .enumerate()
-        {
+        for (scanned, item) in directory.names().map_err(|_| ScanError::Io)?.enumerate() {
             control.check()?;
             if scanned >= 100_000 {
                 return Err(ScanError::Limit);
             }
             let item = item.map_err(|_| ScanError::Io)?;
-            let Some(name) = item.file_name().to_str().map(str::to_owned) else {
+            let Some(name) = item.to_str() else {
                 continue;
             };
             let folded = name.to_ascii_lowercase();
             if pkzip && folded == format!("{}.zip", base.to_ascii_lowercase()) {
-                if final_part.replace(item.path()).is_some() {
+                if final_part.replace(directory.path().join(&item)).is_some() {
                     return Err(ScanError::Invalid);
                 }
             } else if let Some(ext) = folded.strip_prefix(&prefix) {
@@ -176,7 +259,10 @@ impl Source {
                 if number == 0 || number > 1024 || ext != format!("{number:0width$}") {
                     return Err(ScanError::Invalid);
                 }
-                if numbered.insert(number, item.path()).is_some() {
+                if numbered
+                    .insert(number, directory.path().join(&item))
+                    .is_some()
+                {
                     return Err(ScanError::Invalid);
                 }
             }
@@ -200,46 +286,11 @@ impl Source {
         if paths.len() > 1024 {
             return Err(ScanError::Limit);
         }
-        let mut parts = Vec::new();
-        let mut start = 0u64;
-        for path in paths {
-            control.check()?;
-            let metadata =
-                std::fs::symlink_metadata(&path).map_err(|_| ScanError::MissingVolume)?;
-            if metadata.file_type().is_symlink() || !metadata.is_file() {
-                return Err(ScanError::Io);
-            }
-            #[cfg(windows)]
-            {
-                use std::os::windows::fs::MetadataExt;
-                if metadata.file_attributes() & 0x400 != 0 {
-                    return Err(ScanError::Io);
-                }
-            }
-            let file = xdzip_io::open_regular_readonly(&path).map_err(|_| ScanError::Io)?;
-            let version = SourceVersion::read(&file)?;
-            if version.length == 0 {
-                return Err(ScanError::Invalid);
-            }
-            let next = start.checked_add(version.length).ok_or(ScanError::Limit)?;
-            parts.push(Part {
-                path,
-                version,
-                start,
-            });
-            start = next;
-        }
-        let name = parent.join(if pkzip { format!("{base}.zip") } else { base });
-        let mut source = Self {
-            lengths: parts.iter().map(|p| p.version.length).collect(),
-            cab_names: None,
-            parts,
-            cached: None,
-            split: true,
-            name,
-            position: 0,
-            tail: None,
-        };
+        let parts = admit_parts(&directory, paths, filename, &version, control)?;
+        let name = directory
+            .path()
+            .join(if pkzip { format!("{base}.zip") } else { base });
+        let mut source = Self::split_source(parts, name, directory);
         if pkzip {
             let lengths = source
                 .parts
@@ -256,77 +307,34 @@ impl Source {
         source.position = 0;
         Ok(source)
     }
-    fn from_rar_volumes(
-        paths: Vec<PathBuf>,
-        control: &xdzip_codec_api::Cancellation,
-    ) -> Result<Self, ScanError> {
-        let name = paths.first().ok_or(ScanError::MissingVolume)?.clone();
-        let mut parts = Vec::new();
-        let mut start = 0u64;
-        for path in paths {
-            control.check()?;
-            let m = std::fs::symlink_metadata(&path).map_err(|_| ScanError::MissingVolume)?;
-            if !m.is_file() || m.file_type().is_symlink() {
-                return Err(ScanError::Io);
-            }
-            #[cfg(windows)]
-            {
-                use std::os::windows::fs::MetadataExt;
-                if m.file_attributes() & 0x400 != 0 {
-                    return Err(ScanError::Io);
-                }
-            }
-            let file = xdzip_io::open_regular_readonly(&path).map_err(|_| ScanError::Io)?;
-            let version = SourceVersion::read(&file)?;
-            if version.length == 0 {
-                return Err(ScanError::Invalid);
-            }
-            let next = start.checked_add(version.length).ok_or(ScanError::Limit)?;
-            parts.push(Part {
-                path,
-                version,
-                start,
-            });
-            start = next;
-        }
-        let source = Self {
+    fn split_source(parts: Vec<Part>, name: PathBuf, directory: VolumeDirectory) -> Self {
+        Self {
             lengths: parts.iter().map(|p| p.version.length).collect(),
             cab_names: None,
             parts,
             cached: None,
+            volume_directory: Some(Arc::new(directory)),
             split: true,
             name,
             position: 0,
             tail: None,
-        };
-        source.validate()?;
-        Ok(source)
+        }
     }
     pub fn validate(&self) -> Result<(), ScanError> {
         // Reopen read-only to compare handle identities, not path timestamps alone.
         // Failure to reopen or inspect also invalidates the old snapshot.
         let version = |file: &File| SourceVersion::read(file).map_err(|_| ScanError::SourceChanged);
+        if let Some(directory) = &self.volume_directory {
+            directory.validate().map_err(|_| ScanError::SourceChanged)?;
+        }
         if let Some((index, file)) = &self.cached
             && version(file)? != self.parts[*index].version
         {
             return Err(ScanError::SourceChanged);
         }
         for part in &self.parts {
-            if self.split || self.cab_names.is_some() {
-                let m =
-                    std::fs::symlink_metadata(&part.path).map_err(|_| ScanError::SourceChanged)?;
-                if m.file_type().is_symlink() {
-                    return Err(ScanError::SourceChanged);
-                }
-                #[cfg(windows)]
-                {
-                    use std::os::windows::fs::MetadataExt;
-                    if m.file_attributes() & 0x400 != 0 {
-                        return Err(ScanError::SourceChanged);
-                    }
-                }
-            }
-            let current = xdzip_io::open_regular_readonly(&part.path)
+            let current = self
+                .reopen_part(&part.path)
                 .map_err(|_| ScanError::SourceChanged)?;
             if version(&current)? != part.version {
                 return Err(ScanError::SourceChanged);
@@ -342,6 +350,7 @@ impl Source {
             lengths: self.lengths.clone(),
             cab_names: self.cab_names.clone(),
             cached: None,
+            volume_directory: self.volume_directory.clone(),
             split: self.split,
             name: self.name.clone(),
             position: 0,
@@ -364,7 +373,8 @@ impl Source {
     pub fn origin_zone(&self) -> Result<Option<xdzip_io::OriginZone>, ScanError> {
         let mut zone = None;
         for part in &self.parts {
-            let file = xdzip_io::open_regular_readonly(&part.path)
+            let file = self
+                .reopen_part(&part.path)
                 .map_err(|_| ScanError::SourceChanged)?;
             if SourceVersion::read(&file)? != part.version {
                 return Err(ScanError::SourceChanged);
@@ -421,13 +431,14 @@ impl xdzip_codec_api::ReadSource for Source {
 /// Resolve only conventional adjacent RAR volume names; every opened part remains host-owned.
 fn rar_volumes(
     path: &std::path::Path,
+    marker: &[u8; 4],
+    directory: Option<&VolumeDirectory>,
     control: &xdzip_codec_api::Cancellation,
 ) -> Result<Option<Vec<PathBuf>>, ScanError> {
     let Some(filename) = path.file_name().and_then(|n| n.to_str()) else {
         return Ok(None);
     };
     let lower = filename.to_ascii_lowercase();
-    let parent = path.parent().unwrap_or_else(|| std::path::Path::new("."));
     let part = lower
         .strip_suffix(".rar")
         .and_then(|s| s.rsplit_once(".part"))
@@ -445,25 +456,19 @@ fn rar_volumes(
         .or_else(|| legacy.map(|(b, _)| b))
         .unwrap_or_else(|| lower.strip_suffix(".rar").unwrap());
     // PKZIP uses .zNN too. Only a real RAR marker can claim that overlapping spelling.
-    if legacy.is_some_and(|(_, ext)| ext.starts_with('z')) {
-        let mut probe = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
-        let mut marker = [0; 4];
-        if probe.read_exact(&mut marker).is_err() || !matches!(&marker, b"Rar!" | b"RE~^") {
-            return Ok(None);
-        }
+    if legacy.is_some_and(|(_, ext)| ext.starts_with('z')) && !matches!(marker, b"Rar!" | b"RE~^") {
+        return Ok(None);
     }
     let width = part.map_or(0, |(_, n)| n.len());
+    let directory = directory.ok_or(ScanError::Io)?;
     let mut found = std::collections::BTreeMap::new();
-    for (count, item) in std::fs::read_dir(parent)
-        .map_err(|_| ScanError::Io)?
-        .enumerate()
-    {
+    for (count, item) in directory.names().map_err(|_| ScanError::Io)?.enumerate() {
         control.check()?;
         if count >= 100_000 {
             return Err(ScanError::Limit);
         }
         let item = item.map_err(|_| ScanError::Io)?;
-        let Some(name) = item.file_name().to_str().map(|n| n.to_ascii_lowercase()) else {
+        let Some(name) = item.to_str().map(|n| n.to_ascii_lowercase()) else {
             continue;
         };
         let index = if width != 0 {
@@ -492,7 +497,7 @@ fn rar_volumes(
             if index >= 1024 {
                 return Err(ScanError::Limit);
             }
-            if found.insert(index, item.path()).is_some() {
+            if found.insert(index, directory.path().join(&item)).is_some() {
                 return Err(ScanError::Invalid);
             }
         }
@@ -525,7 +530,7 @@ impl Read for Source {
             .saturating_sub(1);
         if self.cached.as_ref().is_none_or(|(index, _)| *index != at) {
             self.cached = None;
-            let file = xdzip_io::open_regular_readonly(&self.parts[at].path)?;
+            let file = self.reopen_part(&self.parts[at].path)?;
             if SourceVersion::read(&file).map_err(io::Error::other)? != self.parts[at].version {
                 return Err(io::Error::other("source_changed"));
             }

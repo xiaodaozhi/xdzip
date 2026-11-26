@@ -1108,6 +1108,7 @@ void BrowserController::drainCreationUiWhenIdle() {
         command.kind = xdzip::reader::CommandKind::CheckTarget;
         command.session = creation ? 0 : m_activeTarget->session.toULongLong();
         command.path = rust::String(m_activeTarget->path.toStdString());
+        command.target_identity = rust::String(m_activeTarget->identity.toStdString());
         submit(std::move(command));
     } else if (std::exchange(m_creationPreviewPending, false)) {
         xdzip::reader::Command command{};
@@ -1151,6 +1152,9 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     xdzip::reader::Command command{};
     command.kind = xdzip::reader::CommandKind::Create;
     command.path = rust::String(QDir::cleanPath(target).toStdString());
+    if (creationTargetMatches(target))
+        command.target_identity =
+            rust::String(m_creationTargetCheck.value("identity").toString().toStdString());
     command.text = rust::String(name.toStdString());
     for (const auto &path : inputs)
         command.inputs.push_back(rust::String(QDir::cleanPath(path).toStdString()));
@@ -1187,10 +1191,11 @@ void BrowserController::invalidateCreationTarget() {
     m_creationTargetCheck.clear();
     emit extractionChanged();
 }
-void BrowserController::checkTarget(const QString &path) {
-    queueTargetCheck(path, false);
+void BrowserController::checkTarget(const QString &path, const QString &identity) {
+    queueTargetCheck(path, false, identity);
 }
-void BrowserController::queueTargetCheck(const QString &path, bool creation) {
+void BrowserController::queueTargetCheck(const QString &path, bool creation,
+                                         const QString &identity) {
     if (!runtimeAvailable() ||
         (!creation && (!m_ready || m_extractionIntent.value("session").toString() != m_session)))
         return;
@@ -1203,15 +1208,20 @@ void BrowserController::queueTargetCheck(const QString &path, bool creation) {
         state = {
             {"valid", false}, {"errorCode", "invalid_path"}, {"error", explain("invalid_path")}};
     } else {
-        TargetRequest request{QDir::cleanPath(path), creation ? QString{} : m_session, revision,
-                              ++m_targetSequence, creation};
+        TargetRequest request{QDir::cleanPath(path),
+                              creation ? QString{} : m_session,
+                              revision,
+                              ++m_targetSequence,
+                              creation,
+                              identity};
         pending = request;
         state = {{"path", request.path}, {"valid", false}, {"checking", true}};
     }
     emit extractionChanged();
     drainCreationUiWhenIdle();
 }
-void BrowserController::finishTargetCheck(const QString &error, quint64 leftovers) {
+void BrowserController::finishTargetCheck(const QString &error, quint64 leftovers,
+                                          const QString &identity) {
     const auto request = std::exchange(m_activeTarget, std::nullopt);
     if (!request)
         return;
@@ -1225,11 +1235,14 @@ void BrowserController::finishTargetCheck(const QString &error, quint64 leftover
             {"valid", false}, {"errorCode", "stale_session"}, {"error", explain("stale_session")}};
         return;
     }
+    const auto checkedError =
+        error.isEmpty() && identity.isEmpty() ? QStringLiteral("target_changed") : error;
     state = {{"path", request->path},
              {"session", request->session},
-             {"valid", error.isEmpty()},
-             {"errorCode", error},
-             {"error", error.isEmpty() ? QString{} : explain(error)},
+             {"valid", checkedError.isEmpty()},
+             {"identity", checkedError.isEmpty() ? identity : QString{}},
+             {"errorCode", checkedError},
+             {"error", checkedError.isEmpty() ? QString{} : explain(checkedError)},
              {"leftovers", QString::number(leftovers)}};
 }
 void BrowserController::deferActiveTarget() {
@@ -1251,7 +1264,9 @@ void BrowserController::startExtraction(const QString &target, bool all, bool cr
     xdzip::reader::Command command{};
     command.kind = xdzip::reader::CommandKind::Extract;
     command.session = m_session.toULongLong();
-    command.path = rust::String(target.toStdString());
+    command.path = rust::String(m_targetCheck.value("path").toString().toStdString());
+    command.target_identity =
+        rust::String(m_targetCheck.value("identity").toString().toStdString());
     command.directory = rust::String(m_extractionDirectory.toStdString());
     if (!all)
         for (const auto &id : m_extractionSelectors)
@@ -2278,7 +2293,7 @@ void BrowserController::finishRequest(const xdzip::reader::Event &event) {
                                    m_activeTarget->revision == m_targetRevision &&
                                    m_activeTarget->session == m_session &&
                                    m_extractionIntent.value("session").toString() == m_session;
-        finishTargetCheck(error, m_result.leftovers);
+        finishTargetCheck(error, m_result.leftovers, m_result.targetIdentity);
         if (currentSource && (error == "source_changed" || error == "stale_session")) {
             invalidateSnapshot();
             m_message = explain(error);
@@ -2485,6 +2500,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_hasPayload = true;
     } else if (event.kind == EventKind::TargetChecked) {
         m_result.leftovers = event.total;
+        m_result.targetIdentity = QString::fromStdString(std::string(event.target_identity));
         m_hasPayload = true;
     } else if (event.kind == EventKind::Selected) {
         if (m_result.kind != RequestKind::FreezeSelection || event.selectors.size() > 100000) {

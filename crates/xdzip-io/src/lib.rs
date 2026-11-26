@@ -10,6 +10,7 @@ mod private;
 mod target;
 #[cfg(test)]
 mod tests;
+mod volume;
 #[cfg(windows)]
 #[allow(unsafe_code)]
 mod windows_origin;
@@ -19,6 +20,7 @@ pub use target::{
     ArchiveUpdate, CommitReceipt, ExistingFile, Grant, ScratchSpace, SetCommitError, Stage,
     Workspace,
 };
+pub use volume::VolumeDirectory;
 #[cfg(windows)]
 pub use windows_origin::OriginZone;
 
@@ -56,18 +58,24 @@ fn open_regular(path: &std::path::Path, nofollow: bool) -> std::io::Result<std::
         // FILE_FLAG_OPEN_REPARSE_POINT classifies the leaf itself, never its target.
         options.custom_flags(0x00200000);
     }
-    let file = options.open(path)?;
+    classify_regular(options.open(path)?, nofollow)
+}
+
+fn classify_regular(file: std::fs::File, nofollow: bool) -> std::io::Result<std::fs::File> {
+    let metadata = file.metadata()?;
     #[cfg(windows)]
     if nofollow {
         use std::os::windows::fs::MetadataExt;
-        if file.metadata()?.file_attributes() & 0x400 != 0 {
+        if metadata.file_attributes() & 0x400 != 0 {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidInput,
                 "reparse point is not fixed metadata",
             ));
         }
     }
-    if !file.metadata()?.is_file() {
+    #[cfg(not(windows))]
+    let _ = nofollow;
+    if !metadata.is_file() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::InvalidInput,
             "source is not a regular file",

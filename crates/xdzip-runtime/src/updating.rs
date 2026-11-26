@@ -115,6 +115,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
     let path = job.source.display_path();
     let mut snapshot = creation::initial(
         &creation::Job {
+            target_identity: None,
             options: creation::Options {
                 inputs: vec![],
                 target: path.parent().unwrap_or(path).to_string_lossy().into(),
@@ -633,6 +634,13 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             tree.validate(&stopped).map_err(|e| e.code())?;
         }
         job.source.validate().map_err(|_| "source_changed")?;
+        #[cfg(windows)]
+        if let Some(zone) = job.source.origin_zone().map_err(|error| match error {
+            xdzip_codec_api::ScanError::SourceChanged => "source_changed",
+            _ => "source_io",
+        })? {
+            stage.preserve_origin(zone).map_err(output)?;
+        }
         control.begin_commit()?;
         s.status = Status::Committing;
         emit(&mut s, start, publish);

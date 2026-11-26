@@ -329,6 +329,7 @@ mod tests {
             allow_high_ratio: false,
         };
         let extract = submit(&client, || Command::Extract {
+            target_identity: None,
             session,
             options: options.clone(),
         });

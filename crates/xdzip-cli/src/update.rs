@@ -524,16 +524,18 @@ fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value>
     {
         return Err("non_monotonic_build".into());
     }
-    let source = crate::ensure_directory(
+    let source_grant = crate::ensure_directory_grant(
         &crate::ensure_directory(&root.join("cache"))?
             .join(format!("unpack-{}", installation::random_id()?)),
     )?;
+    let source = source_grant.display_path().to_path_buf();
     let mut runtime = crate::runtime::Runtime::new(false, false, false)?;
     runtime.open(archive.to_str().ok_or("non_utf8_path")?.to_owned())?;
     let result = runtime.task(
         "extract",
         xdzip_runtime::service::Command::Extract {
             session: runtime.session,
+            target_identity: Some(source_grant.identity()),
             options: xdzip_runtime::extraction::Options {
                 target: source.to_str().ok_or("non_utf8_path")?.to_owned(),
                 all: true,
@@ -546,6 +548,7 @@ fn activate(root: &Path, archive: &Path, candidate: &Candidate) -> Result<Value>
             },
         },
     )?;
+    drop(source_grant);
     if result.exit != 0 {
         return Err("invalid_update_payload".into());
     }

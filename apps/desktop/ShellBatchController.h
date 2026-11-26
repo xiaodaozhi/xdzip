@@ -44,7 +44,8 @@ class ShellBatchController : public QObject {
     Q_INVOKABLE void cancel();
     Q_INVOKABLE void openTarget(int index);
     Q_INVOKABLE void configureExtraction(const QString &target, int layout, int conflict,
-                                         bool highRatio, bool openAfter);
+                                         bool highRatio, bool openAfter,
+                                         const QString &identity = {});
     Q_INVOKABLE void configuringCreation();
   signals:
     void changed();
@@ -69,7 +70,7 @@ class ShellBatchController : public QObject {
     QList<QStringList> m_jobs;
     QVariantList m_results;
     QSet<QString> m_groups;
-    QString m_task, m_target;
+    QString m_task, m_target, m_targetIdentity;
     int m_index = 0, m_layout = 2, m_conflict = 0;
     bool m_scheduled = false, m_cancelled = false, m_highRatio = false, m_openAfter = false;
     bool m_chooseTarget = false;

@@ -1,6 +1,6 @@
 //! Windows owns dialog layout, DPI, fonts and accessibility. Pointers are borrowed only for synchronous native calls.
 #![allow(unsafe_code)]
-use super::{Control, extract};
+use super::{Control, authorize_target, extract};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Condvar, LazyLock, Mutex};
 use windows_sys::Win32::Foundation::{HWND, LPARAM, WPARAM};
@@ -250,6 +250,10 @@ pub(super) fn show(source: &Path) -> i32 {
     let Some(target) = target() else {
         return 0;
     };
+    let Ok(target_identity) = authorize_target(&target) else {
+        message(&sfx_text("sfx.failed"), &sfx_text("sfx.invalid"));
+        return 1;
+    };
     let Some(policy) = conflict(&target) else {
         return 0;
     };
@@ -273,7 +277,7 @@ pub(super) fn show(source: &Path) -> i32 {
         drop(ready);
         let result = extract(
             &source,
-            Some(&target),
+            Some((target.as_path(), target_identity)),
             policy,
             &worker_state.control,
             |snapshot| {

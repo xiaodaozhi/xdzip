@@ -2,7 +2,7 @@
 use crate::{FileIdentity, FileVersion};
 use cap_fs_ext::{DirExt, FollowSymlinks, OpenOptionsFollowExt};
 use cap_std::fs::{Dir, OpenOptions};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
@@ -92,6 +92,7 @@ pub struct InputTree {
     directory_index: BTreeMap<(usize, PathBuf), usize>,
     excluded: Vec<(PathBuf, FileIdentity)>,
     names: BTreeSet<String>,
+    overlapping: BTreeMap<PathBuf, Vec<Child>>,
     name_bytes: usize,
     total_bytes: u64,
     visited: usize,
@@ -196,35 +197,51 @@ impl InputTree {
                 return Err(InputError::Unsafe);
             }
             let p = parent_resolved(p)?;
-            let m = std::fs::symlink_metadata(&p).map_err(|_| InputError::Io)?;
+            let name = p.file_name().ok_or(InputError::Unsafe)?;
+            let parent = Dir::open_ambient_dir(
+                p.parent().ok_or(InputError::Unsafe)?,
+                cap_std::ambient_authority(),
+            )
+            .map_err(|_| InputError::Io)?;
+            let m = parent.symlink_metadata(name).map_err(|_| InputError::Io)?;
             if m.file_type().is_symlink() || (!m.is_file() && !m.is_dir()) {
                 return Err(InputError::Unsafe);
             }
             #[cfg(windows)]
             {
-                use std::os::windows::fs::MetadataExt;
+                use cap_std::fs::MetadataExt;
                 if m.file_attributes() & 0x400 != 0 {
-                    return Err(InputError::Unsafe);
-                }
-            }
-            if m.is_dir() && !excluded.is_empty() {
-                let parent = Dir::open_ambient_dir(
-                    p.parent().ok_or(InputError::Unsafe)?,
-                    cap_std::ambient_authority(),
-                )
-                .map_err(|_| InputError::Changed)?;
-                let directory = parent
-                    .open_dir_nofollow(p.file_name().ok_or(InputError::Unsafe)?)
-                    .map_err(|_| InputError::Changed)?;
-                let identity = id(&directory)?;
-                if excluded.iter().any(|(_, expected)| *expected == identity) {
                     return Err(InputError::Unsafe);
                 }
             }
             if excluded.iter().any(|(e, _)| e == &p) {
                 return Err(InputError::Unsafe);
             }
-            selected.insert(p, m.is_dir());
+            if Self::ignores_metadata(policy, name, m.is_dir()) {
+                // Retain it for overlapping input selection without opening an ignored object.
+                selected.insert(p, (m.is_dir(), None));
+                continue;
+            }
+            // Bind the first admitted object, before the sorted traversal can reopen it.
+            let identity = if m.is_dir() {
+                let dir = parent
+                    .open_dir_nofollow(name)
+                    .map_err(|_| InputError::Changed)?;
+                let identity = id(&dir)?;
+                if excluded.iter().any(|(_, expected)| *expected == identity) {
+                    return Err(InputError::Unsafe);
+                }
+                identity
+            } else {
+                FileIdentity::read(&file(&parent, Path::new(name))?).map_err(|_| InputError::Io)?
+            };
+            let admitted = (m.is_dir(), Some(identity));
+            if selected
+                .insert(p, admitted)
+                .is_some_and(|old| old != admitted)
+            {
+                return Err(InputError::Changed);
+            }
         }
         let mut tree = Self {
             roots: vec![],
@@ -233,24 +250,57 @@ impl InputTree {
             directory_index: BTreeMap::new(),
             excluded,
             names: BTreeSet::new(),
+            overlapping: BTreeMap::new(),
             name_bytes: 0,
             total_bytes: 0,
             visited: 0,
             policy,
         };
-        let mut root_ids = BTreeMap::new();
-        for (path, directory) in &selected {
+        let mut top_level = Vec::new();
+        for (path, &(directory, identity)) in &selected {
             check(stop)?;
-            if path
-                .ancestors()
-                .skip(1)
-                .any(|ancestor| selected.get(ancestor) == Some(&true))
-            {
+            let Some(identity) = identity else {
                 continue;
+            };
+            let mut covered = false;
+            let mut filtered = false;
+            let mut filtered_on_walk = false;
+            for ancestor in path.ancestors().skip(1) {
+                filtered_on_walk |= ancestor
+                    .file_name()
+                    .is_some_and(|name| Self::ignores_metadata(policy, name, true))
+                    || tree
+                        .excluded
+                        .iter()
+                        .any(|(excluded, _)| excluded == ancestor);
+                if let Some(&(true, ancestor_identity)) = selected.get(ancestor) {
+                    covered = true;
+                    filtered = filtered_on_walk || ancestor_identity.is_none();
+                }
             }
-            if tree.ignores_metadata(path.file_name().ok_or(InputError::Name)?, *directory) {
-                continue;
+            if covered {
+                if !filtered {
+                    let name = path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .ok_or(InputError::Name)?
+                        .to_owned();
+                    tree.overlapping
+                        .entry(path.parent().ok_or(InputError::Unsafe)?.into())
+                        .or_default()
+                        .push(Child {
+                            name,
+                            directory,
+                            identity,
+                        });
+                }
+            } else {
+                top_level.push((path, directory, identity));
             }
+        }
+        let mut root_ids = BTreeMap::new();
+        for (path, directory, identity) in top_level {
+            check(stop)?;
             let parent = path.parent().ok_or(InputError::Unsafe)?;
             let root = if let Some(index) = root_ids.get(parent) {
                 *index
@@ -276,7 +326,10 @@ impl InputTree {
                 .ok_or(InputError::Name)?
                 .to_owned();
             let relative = PathBuf::from(&name);
-            tree.visit(root, relative, name, *directory, stop)?;
+            tree.visit(root, relative, name, directory, identity, stop)?;
+        }
+        if !tree.overlapping.is_empty() {
+            return Err(InputError::Changed);
         }
         if tree.entries.is_empty() {
             return Err(InputError::Empty);
@@ -315,8 +368,8 @@ impl InputTree {
         }
         Ok(dir)
     }
-    fn ignores_metadata(&self, name: &std::ffi::OsStr, directory: bool) -> bool {
-        self.policy != ScanPolicy::Portable
+    fn ignores_metadata(policy: ScanPolicy, name: &std::ffi::OsStr, directory: bool) -> bool {
+        policy != ScanPolicy::Portable
             && ((!directory && name == ".DS_Store")
                 || (directory && (name == "__MACOSX" || name == "_MACOSX")))
     }
@@ -326,7 +379,7 @@ impl InputTree {
         relative: &Path,
         dir: &Dir,
         stop: &dyn Fn() -> bool,
-    ) -> Result<(Vec<Child>, bool), InputError> {
+    ) -> Result<(Vec<Child>, bool, PathBuf), InputError> {
         let mut children = Vec::new();
         let mut filtered_metadata = false;
         let absolute = self.roots[root]
@@ -369,7 +422,7 @@ impl InputTree {
                     return Err(InputError::Unsafe);
                 }
             }
-            if self.ignores_metadata(std::ffi::OsStr::new(&name), m.is_dir()) {
+            if Self::ignores_metadata(self.policy, std::ffi::OsStr::new(&name), m.is_dir()) {
                 filtered_metadata = true;
                 continue;
             }
@@ -387,7 +440,7 @@ impl InputTree {
             });
         }
         children.sort_by(|a, b| a.name.cmp(&b.name));
-        Ok((children, filtered_metadata))
+        Ok((children, filtered_metadata, absolute))
     }
     fn visit(
         &mut self,
@@ -395,6 +448,7 @@ impl InputTree {
         relative: PathBuf,
         name: String,
         directory: bool,
+        expected: FileIdentity,
         stop: &dyn Fn() -> bool,
     ) -> Result<bool, InputError> {
         check(stop)?;
@@ -435,6 +489,9 @@ impl InputTree {
             file(&parent, Path::new(leaf))?
         };
         let version = FileVersion::read(&f).map_err(|_| InputError::Io)?;
+        if version.identity != expected {
+            return Err(InputError::Changed);
+        }
         let size = if directory { 0 } else { version.length };
         self.total_bytes = self
             .total_bytes
@@ -456,7 +513,14 @@ impl InputTree {
         if directory {
             let dir = self.open_dir(root, &relative)?;
             let identity = id(&dir)?;
-            let (children, filtered_metadata) = self.children(root, &relative, &dir, stop)?;
+            if identity != expected {
+                return Err(InputError::Changed);
+            }
+            let (children, filtered_metadata, absolute) =
+                self.children(root, &relative, &dir, stop)?;
+            if let Some(selected) = self.overlapping.remove(&absolute) {
+                verify_selected_children(&dir, &children, selected, stop)?;
+            }
             self.directory_index
                 .insert((root, relative.clone()), self.directories.len());
             self.directories.push(Directory {
@@ -474,6 +538,7 @@ impl InputTree {
                     relative.join(&child.name),
                     format!("{name}/{}", child.name),
                     child.directory,
+                    child.identity,
                     stop,
                 )?;
             }
@@ -532,6 +597,47 @@ impl InputTree {
             read: 0,
         })
     }
+}
+
+fn verify_selected_children(
+    dir: &Dir,
+    children: &[Child],
+    selected: Vec<Child>,
+    stop: &dyn Fn() -> bool,
+) -> Result<(), InputError> {
+    let mut identities = None;
+    for expected in selected {
+        check(stop)?;
+        if let Ok(index) = children.binary_search_by(|child| child.name.cmp(&expected.name)) {
+            if children[index] != expected {
+                return Err(InputError::Changed);
+            }
+            continue;
+        }
+        // Native lookup can admit an alternate spelling for a directory entry.
+        // Confirm that spelling against the same parent and frozen walk.
+        let listed = identities.get_or_insert_with(|| {
+            children
+                .iter()
+                .map(|child| (child.directory, child.identity))
+                .collect::<HashSet<_>>()
+        });
+        if !listed.contains(&(expected.directory, expected.identity)) {
+            return Err(InputError::Changed);
+        }
+        let identity = if expected.directory {
+            id(&dir
+                .open_dir_nofollow(&expected.name)
+                .map_err(|_| InputError::Changed)?)?
+        } else {
+            FileIdentity::read(&file(dir, Path::new(&expected.name))?)
+                .map_err(|_| InputError::Io)?
+        };
+        if identity != expected.identity {
+            return Err(InputError::Changed);
+        }
+    }
+    Ok(())
 }
 /// Read-only stream that checks the frozen version on EOF.
 pub struct InputReader {

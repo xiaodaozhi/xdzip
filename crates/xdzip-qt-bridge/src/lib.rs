@@ -54,6 +54,7 @@ mod ffi {
         kind: CommandKind,
         session: u64,
         path: String,
+        target_identity: String,
         directory: String,
         text: String,
         offset: u64,
@@ -186,6 +187,7 @@ mod ffi {
         update_allowed: bool,
         edit_restriction: u8,
         format: String,
+        target_identity: String,
         folder_name: String,
         source_group: String,
         query: u64,
@@ -434,6 +436,13 @@ impl CommandClient {
         {
             return admission(Err(Rejection::Invalid));
         }
+        let target_identity = if command.target_identity.is_empty() {
+            None
+        } else if let Some(identity) = service::TargetIdentity::decode(&command.target_identity) {
+            Some(identity)
+        } else {
+            return admission(Err(Rejection::Invalid));
+        };
         let value = match command.kind {
             ffi::CommandKind::FreezeSelection => Command::FreezeSelection {
                 session: command.session,
@@ -528,18 +537,21 @@ impl CommandClient {
                 else {
                     return admission(Err(Rejection::Invalid));
                 };
-                Command::Create(xdzip_runtime::creation::Options {
-                    inputs: command.inputs,
-                    target: command.path,
-                    name: command.text,
-                    method: command.method,
-                    level: command.level,
-                    conflict,
-                    volume_bytes: command.volume_bytes,
-                    solid: command.solid,
-                    encrypt_headers: command.encrypt_headers,
-                    password,
-                })
+                Command::Create(
+                    xdzip_runtime::creation::Options {
+                        inputs: command.inputs,
+                        target: command.path,
+                        name: command.text,
+                        method: command.method,
+                        level: command.level,
+                        conflict,
+                        volume_bytes: command.volume_bytes,
+                        solid: command.solid,
+                        encrypt_headers: command.encrypt_headers,
+                        password,
+                    },
+                    target_identity,
+                )
             }
             ffi::CommandKind::Open => Command::Open(command.path),
             ffi::CommandKind::OpenWithPassword => Command::OpenWithPassword {
@@ -583,6 +595,7 @@ impl CommandClient {
                 };
                 Command::Extract {
                     session: command.session,
+                    target_identity,
                     options: xdzip_runtime::extraction::Options {
                         target: command.path,
                         all: command.all,
@@ -598,6 +611,7 @@ impl CommandClient {
             ffi::CommandKind::CheckTarget => Command::CheckTarget {
                 session: command.session,
                 path: command.path,
+                target_identity,
             },
             ffi::CommandKind::CloseSession => Command::CloseSession(command.session),
             ffi::CommandKind::Snapshot => Command::Snapshot,
@@ -810,9 +824,10 @@ impl EventReceiver {
                 event.kind = ffi::EventKind::TaskAccepted;
                 event.task.id = id;
             }
-            service::Payload::TargetChecked(leftovers) => {
+            service::Payload::TargetChecked(leftovers, identity) => {
                 event.kind = ffi::EventKind::TargetChecked;
                 event.total = leftovers;
+                event.target_identity = identity.encode();
             }
             service::Payload::Task(task) => {
                 event.kind = ffi::EventKind::TaskUpdate;
@@ -848,6 +863,7 @@ fn empty_event() -> ffi::Event {
         update_allowed: false,
         edit_restriction: 4,
         format: String::new(),
+        target_identity: String::new(),
         folder_name: String::new(),
         source_group: String::new(),
         query: 0,
@@ -1034,6 +1050,7 @@ mod tests {
                 kind,
                 session,
                 path,
+                target_identity: String::new(),
                 directory: String::new(),
                 text: String::new(),
                 offset: 0,
@@ -1147,6 +1164,7 @@ mod tests {
             kind: ffi::CommandKind::Open,
             session: 0,
             path: "x".repeat(4097),
+            target_identity: String::new(),
             directory: String::new(),
             text: String::new(),
             offset: 0,

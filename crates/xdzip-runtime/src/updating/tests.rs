@@ -45,7 +45,10 @@ impl Fixture {
         };
         let mut result = None;
         creation::run(
-            creation::Job { options },
+            creation::Job {
+                target_identity: None,
+                options,
+            },
             1,
             &Control::default(),
             &mut |s| {
@@ -86,6 +89,25 @@ fn execute(job: Job, control: &Control, mut hook: impl FnMut(&Snapshot)) -> Snap
     });
     result.unwrap()
 }
+
+#[cfg(windows)]
+#[test]
+fn zip_update_preserves_the_archive_origin_zone() {
+    let fixture = Fixture::new();
+    let path = fixture.archive("zip");
+    let mut stream = path.as_os_str().to_owned();
+    stream.push(":Zone.Identifier:$DATA");
+    let marker = b"[ZoneTransfer]\r\nZoneId=3\r\n";
+    fs::write(&stream, marker).unwrap();
+
+    let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+    let job = fixture.job(&archive, "", ConflictPolicy::Ask);
+    drop(archive);
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    assert_eq!(fs::read(&stream).unwrap(), marker);
+}
+
 #[test]
 fn three_formats_preserve_old_content_and_add_to_current_directory() {
     for extension in ["zip", "tar", "tar.gz"] {
@@ -1184,6 +1206,7 @@ fn extended_archive(
     let mut result = None;
     creation::run(
         creation::Job {
+            target_identity: None,
             options: creation::Options {
                 inputs: vec![host.to_string_lossy().into_owned()],
                 target: fixture.0.to_string_lossy().into_owned(),

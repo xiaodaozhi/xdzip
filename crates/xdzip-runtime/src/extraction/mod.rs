@@ -494,6 +494,7 @@ impl Archive {
             session: self.key.session.get(),
             links_pending,
             temporary: None,
+            target_identity: None,
             open_path: String::new(),
         })
     }

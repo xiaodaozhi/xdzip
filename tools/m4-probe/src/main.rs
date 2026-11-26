@@ -69,7 +69,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // The product mailbox is deliberately nonblocking; startup contention is
     // retryable and does not mean the requested archive parameters are invalid.
     loop {
-        match client.submit(service::Command::Create(options.clone())) {
+        match client.submit(service::Command::Create(options.clone(), None)) {
             Ok(_) => break,
             Err(service::Rejection::Busy) if start.elapsed().as_secs() < 2 => {
                 std::thread::yield_now()

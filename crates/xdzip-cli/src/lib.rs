@@ -73,6 +73,10 @@ fn volume(value: Option<&String>) -> Result<u64> {
 }
 /// Create only user-requested missing directories through the existing safe grant.
 pub(crate) fn ensure_directory(path: &Path) -> Result<PathBuf> {
+    Ok(ensure_directory_grant(path)?.display_path().to_path_buf())
+}
+
+fn ensure_directory_grant(path: &Path) -> Result<std::sync::Arc<xdzip_io::Grant>> {
     let path = absolute(path)?;
     let mut base = path.clone();
     let mut missing = vec![];
@@ -100,7 +104,7 @@ pub(crate) fn ensure_directory(path: &Path) -> Result<PathBuf> {
             .subdirectory(&name)
             .map_err(|_| Failure::new("unsafe_target"))?;
     }
-    Ok(path)
+    Ok(grant)
 }
 
 fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Response> {
@@ -152,13 +156,14 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
             // Resolution completes before creating even the requested output directory.
             let (selected, _) = runtime.select(members, ids, String::new())?;
             let target =
-                ensure_directory(Path::new(matches.get_one::<String>("directory").unwrap()))?;
+                ensure_directory_grant(Path::new(matches.get_one::<String>("directory").unwrap()))?;
             runtime.task(
                 name,
                 Command::Extract {
                     session: runtime.session,
+                    target_identity: Some(target.identity()),
                     options: extraction::Options {
-                        target: path_text(&target)?,
+                        target: path_text(target.display_path())?,
                         all: selected.is_empty(),
                         selected,
                         directory: String::new(),
@@ -283,18 +288,25 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 .to_owned();
             runtime.task(
                 "create",
-                Command::Create(creation::Options {
-                    inputs,
-                    target: path_text(target)?,
-                    name: filename,
-                    method,
-                    level: numeric_level,
-                    conflict: policy(matches),
-                    volume_bytes: volume(matches.get_one::<String>("volume-size"))?,
-                    solid: matches.get_flag("solid"),
-                    encrypt_headers: matches.get_flag("encrypt-names"),
-                    password,
-                }),
+                Command::Create(
+                    creation::Options {
+                        inputs,
+                        target: path_text(target)?,
+                        name: filename,
+                        method,
+                        level: numeric_level,
+                        conflict: policy(matches),
+                        volume_bytes: volume(matches.get_one::<String>("volume-size"))?,
+                        solid: matches.get_flag("solid"),
+                        encrypt_headers: matches.get_flag("encrypt-names"),
+                        password,
+                    },
+                    Some(
+                        xdzip_io::Grant::for_creation(target)
+                            .map_err(|_| "unsafe_target")?
+                            .identity(),
+                    ),
+                ),
             )
         }
         _ => Err(Failure::usage("unknown_command")),
