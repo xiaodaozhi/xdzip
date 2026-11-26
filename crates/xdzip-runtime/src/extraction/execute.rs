@@ -465,6 +465,10 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                     &path,
                     &control.cancel,
                 )?;
+                let bytes = data.len() as u64;
+                if stats.written_bytes + bytes > MAX_TASK_BYTES {
+                    return Err("task_quota");
+                }
                 let (committed, cancelled) = loop {
                     stats.current = path.display();
                     control.begin_commit()?;
@@ -495,7 +499,6 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                     break (committed, cancelled);
                 };
                 let receipt = committed?;
-                let bytes = data.len() as u64;
                 stats.committed_files += 1;
                 if !job.links_pending {
                     stats.decoded_bytes += entry.size;
