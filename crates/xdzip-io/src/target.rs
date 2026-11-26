@@ -188,6 +188,17 @@ impl Grant {
             Ok(())
         }
     }
+    fn output_parent(
+        &self,
+        path: &PortablePath,
+        claimed: Option<FileIdentity>,
+    ) -> Result<Parent, OutputError> {
+        let parent = self.parent(path, claimed.is_none())?;
+        if claimed.is_some_and(|id| parent.identities.last() != Some(&id)) {
+            return Err(OutputError::TargetChanged);
+        }
+        Ok(parent)
+    }
     /// Create only verified ordinary parent directories. Existing directories are never replaced.
     pub fn ensure_directory(&self, path: &PortablePath) -> Result<(), OutputError> {
         let parent = self.parent(path, true)?;
@@ -205,6 +216,61 @@ impl Grant {
             .map_err(|_| OutputError::UnsafeTarget)?;
         private::check(&directory_file(&child)?, true)?;
         self.revalidate_parent(path, &parent)
+    }
+    /// Claim a new directory using the actual parent's name lookup rules. Never reuse a leaf.
+    pub fn claim_directory(
+        &self,
+        path: &PortablePath,
+        parent_identity: Option<FileIdentity>,
+    ) -> Result<FileIdentity, OutputError> {
+        let parent = self.output_parent(path, parent_identity)?;
+        let leaf = path.parts().last().expect("validated leaf");
+        parent
+            .dir
+            .create_dir_with(leaf, &private_builder())
+            .map_err(failure)?;
+        self.created_directories.fetch_add(1, Ordering::Relaxed);
+        self.checked_directory(path, &parent, leaf)
+    }
+    /// Reopen a claimed directory without following links and verify its recorded identity.
+    pub fn check_claimed_directory(
+        &self,
+        path: &PortablePath,
+        identity: FileIdentity,
+    ) -> Result<(), OutputError> {
+        let parent = self.parent(path, false)?;
+        let leaf = path.parts().last().expect("validated leaf");
+        if self.checked_directory(path, &parent, leaf)? != identity {
+            return Err(OutputError::TargetChanged);
+        }
+        Ok(())
+    }
+    fn checked_directory(
+        &self,
+        path: &PortablePath,
+        parent: &Parent,
+        leaf: &str,
+    ) -> Result<FileIdentity, OutputError> {
+        let dir = parent.dir.open_dir_nofollow(leaf).map_err(failure)?;
+        let file = directory_file(&dir)?;
+        private::check(&file, true)?;
+        self.revalidate_parent(path, parent)?;
+        FileIdentity::read(&file).map_err(failure)
+    }
+    /// Look up a leaf without following it or creating missing parent directories.
+    pub fn leaf_metadata(
+        &self,
+        path: &PortablePath,
+    ) -> Result<Option<cap_std::fs::FileType>, OutputError> {
+        let parent = self.parent(path, false)?;
+        let leaf = path.parts().last().expect("validated leaf");
+        let kind = match parent.dir.symlink_metadata(leaf) {
+            Ok(m) => Some(m.file_type()),
+            Err(e) if e.kind() == io::ErrorKind::NotFound => None,
+            Err(e) => return Err(failure(e)),
+        };
+        self.revalidate_parent(path, &parent)?;
+        Ok(kind)
     }
     /// Number of visible directories actually created through this grant tree.
     pub fn created_directories(&self) -> u64 {
@@ -262,7 +328,15 @@ impl Grant {
     }
     /// Examine an existing ordinary leaf, refusing links, special objects and hard links.
     pub fn existing(&self, path: &PortablePath) -> Result<Option<ExistingFile>, OutputError> {
-        let parent = self.parent(path, true)?;
+        self.existing_with_parent(path, None)
+    }
+    /// Refuse to create or reuse a different parent when its claimed identity is supplied.
+    pub fn existing_with_parent(
+        &self,
+        path: &PortablePath,
+        parent_identity: Option<FileIdentity>,
+    ) -> Result<Option<ExistingFile>, OutputError> {
+        let parent = self.output_parent(path, parent_identity)?;
         let result = self.existing_at(&parent, path.parts().last().expect("validated leaf"))?;
         self.revalidate_parent(path, &parent)?;
         Ok(result)
@@ -634,13 +708,23 @@ impl Workspace {
     /// Filesystems lacking the primitive fail without a copy/delete fallback.
     pub fn commit(
         &mut self,
-        mut stage: Stage,
+        stage: Stage,
         path: &PortablePath,
         overwrite: Option<&ExistingFile>,
     ) -> Result<CommitReceipt, OutputError> {
+        self.commit_with_parent(stage, path, overwrite, None)
+    }
+    /// Publish through an already claimed parent, failing if its native identity changed.
+    pub fn commit_with_parent(
+        &mut self,
+        mut stage: Stage,
+        path: &PortablePath,
+        overwrite: Option<&ExistingFile>,
+        parent_identity: Option<FileIdentity>,
+    ) -> Result<CommitReceipt, OutputError> {
         stage.finish()?;
         self.validate_stage(&stage)?;
-        let parent = self.grant.parent(path, true)?;
+        let parent = self.grant.output_parent(path, parent_identity)?;
         let leaf = path.parts().last().expect("validated leaf");
         self.grant.revalidate_parent(path, &parent)?;
         let existing = self.grant.existing_at(&parent, leaf)?;

@@ -3,6 +3,7 @@ pub(crate) mod auxiliary;
 mod control;
 mod execute;
 mod links;
+mod names;
 #[cfg(test)]
 mod opening_tests;
 #[cfg(test)]
@@ -201,8 +202,10 @@ pub struct PasswordPrompt {
 /// Actual completed file observation, independent of UI strings and icons.
 #[derive(Clone, Debug)]
 pub struct Outcome {
-    /// Escaped relative name, capped at 1024 UTF-8 bytes for display.
+    /// Escaped relative name, capped at 1024 bytes for ordinary outcomes or 4096 for mappings.
     pub name: String,
+    /// Original relative path for an output published under a different name.
+    pub original_name: Option<String>,
     /// Actual file's admitted byte size.
     pub size: u64,
     /// Stable status: completed, skipped or unfinished.
@@ -309,9 +312,9 @@ pub struct Snapshot {
     pub prompt: Option<Prompt>,
     /// Present only while waiting for the latest one-use password response.
     pub password_prompt: Option<PasswordPrompt>,
-    /// Recent actual file outcomes, at most 128 records, shared by progress snapshots.
+    /// Actual file outcomes and rename mappings, at most 128 records, shared by progress snapshots.
     pub details: std::sync::Arc<Vec<Outcome>>,
-    /// Number of older records omitted from this bounded display history.
+    /// Number of records omitted from this bounded display history, which prioritizes mappings.
     pub omitted_details: u64,
     /// True if the result needs an external reader: numbered split ZIP.
     pub external_reader: bool,
@@ -326,20 +329,39 @@ impl Snapshot {
         status: &'static str,
         error: &'static str,
     ) {
+        self.record_outcome(name, None, size, status, error);
+    }
+
+    pub(crate) fn record_mapping(&mut self, original: &str, output: &str, size: u64) {
+        self.record_outcome(output, Some(original.into()), size, "completed", "");
+    }
+
+    fn record_outcome(
+        &mut self,
+        name: &str,
+        original_name: Option<String>,
+        size: u64,
+        status: &'static str,
+        error: &'static str,
+    ) {
         let records = std::sync::Arc::make_mut(&mut self.details);
         if records.len() == 128 {
-            records.remove(0);
             self.omitted_details += 1;
-        }
-        let mut limited = String::new();
-        for ch in name.chars() {
-            if limited.len() + ch.len_utf8() > 1024 {
-                break;
+            let ordinary = records.iter().position(|row| row.original_name.is_none());
+            match ordinary {
+                Some(index) => {
+                    records.remove(index);
+                }
+                None if original_name.is_some() || status == "unfinished" => {
+                    records.remove(0);
+                }
+                None => return,
             }
-            limited.push(ch);
         }
+        let limit = if original_name.is_some() { 4096 } else { 1024 };
         records.push(Outcome {
-            name: limited,
+            name: name[..name.floor_char_boundary(name.len().min(limit))].into(),
+            original_name,
             size,
             status,
             error,
@@ -370,7 +392,7 @@ impl Archive {
                 .export_manifest(&options, cancel);
         }
         self.source.validate().map_err(|_| "source_changed")?;
-        let planned = plan::prepare(self, options, cancel)?;
+        let planned = plan::prepare(self, options, cancel, true)?;
         let mut entries = std::collections::BTreeMap::<String, ExportEntry>::new();
         let mut bytes = 0usize;
         for item in planned {
@@ -419,7 +441,7 @@ impl Archive {
         }
         self.export_manifest(&options, cancel)?;
         let cache = std::path::PathBuf::from(&options.target);
-        let mut job = self.extraction_job(options, cancel)?;
+        let mut job = self.extraction_job_with_names(options, cancel, true)?;
         let ids = self.source.identities().map_err(|_| "source_changed")?;
         let grant = xdzip_io::Grant::temporary(&cache, &ids).map_err(|e| match e {
             xdzip_io::OutputError::Limit => "resource_limit",
@@ -434,21 +456,30 @@ impl Archive {
     /// Freeze selectors and input identity without creating a destination object.
     pub(crate) fn extraction_job(
         &self,
+        options: Options,
+        cancel: &Cancellation,
+    ) -> Result<Job, &'static str> {
+        self.extraction_job_with_names(options, cancel, false)
+    }
+
+    fn extraction_job_with_names(
+        &self,
         mut options: Options,
         cancel: &Cancellation,
+        fixed_names: bool,
     ) -> Result<Job, &'static str> {
         if self.disk.is_some() {
             options.selected = self.resolve_query_selectors(&options.selected, cancel)?;
             return self
                 .task_view(&options.selected, options.all, &options.directory, cancel)?
-                .extraction_job(options, cancel);
+                .extraction_job_with_names(options, cancel, fixed_names);
         }
         if self.payload_subset && self.rows.iter().any(|e| e.link) {
             return Err("unsupported_link");
         }
         self.source.validate().map_err(|_| "source_changed")?;
         let source = self.source.fork().map_err(|_| "source_changed")?;
-        let planned = plan::prepare(self, &options, cancel)?;
+        let planned = plan::prepare(self, &options, cancel, fixed_names)?;
         let links_pending = planned
             .iter()
             .any(|p| self.rows[p.index].link && self.rows[p.index].encrypted);

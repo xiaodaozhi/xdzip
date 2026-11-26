@@ -159,11 +159,12 @@ Item {
         function test_shell_extract_layout(data) {
             Ui.Theme.fontScale = data.scale;
             extract.shellMode = true;
-            extract.present();
+            extract.configure();
             verify(waitForRendering(extract.contentItem));
             const layout = findChild(extract, "extractShellLayout");
             const policy = findChild(extract, "extractConflictPolicy");
             verify(layout && policy);
+            compare(policy.currentIndex, 2);
             compare(layout.density, policy.density);
             compare(layout.font.pixelSize, policy.font.pixelSize);
             compare(layout.height, policy.height);

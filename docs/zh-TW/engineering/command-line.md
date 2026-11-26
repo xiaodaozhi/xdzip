@@ -45,7 +45,7 @@ xdzip gui archive.zip
 
 指定 `--limit` 或 `--offset` 均啟用分頁。偏移量從 0 開始，最大為 1,000,000。只指定 `--limit` 時從 0 開始，只指定 `--offset` 時每頁最多返回 128 條。`--limit` 的取值為 1～4,096。JSON 的 `data` 包含 `offset`、`total` 和可為空的 `next_offset`，`summary.entries` 是實際返回的行數。普通單檔案 ZIP／ZIP64 可索引一百萬條，未分頁的列舉在總量超過十萬條時失敗。兩種模式下，序列化後的 JSON 行與格式化文字合計均限 16 MiB。超限返回 `resource_limit`，不返回部分結果。分頁不改變物理 ID，詳見[大歸檔索引](large-index.md)。
 
-extract 預設輸出到目前目錄，`-C` 指定缺失目錄時，從最近已存在的安全父目錄逐級獲得授權，不使用無條件遞迴建目錄。目標、源身份、連結、Unicode／大小寫碰撞、暫存、校驗及提交繼續遵守[安全解壓](zip-safe-extraction.md)和[檔名編碼](filename-encoding.md)。預設詢問重名；`--conflict ask|skip|rename|overwrite` 顯式選擇策略。`--allow-high-ratio` 只確認高壓縮比，不取消硬資源限制。
+extract 預設輸出到目前目錄，`-C` 指定缺失目錄時，從最近已存在的安全父目錄逐級獲得授權，不使用無條件遞迴建目錄。目標、源身份、連結、Unicode／大小寫碰撞、暫存、校驗及提交繼續遵守[安全解壓](zip-safe-extraction.md)和[檔名編碼](filename-encoding.md)。解壓縮遇到同名時預設使用新名稱，`--conflict ask|skip|rename|overwrite` 顯式選擇策略。`--allow-high-ratio` 只確認高壓縮比，不取消硬資源限制。
 
 `create` 按輸出[字尾](format-registry.md)選擇建立配置，要求目標父目錄已經存在。`--level store|fast|normal|best` 按所選配置校驗。普通 TAR 和 ISO 可省略級別，或顯式使用 `store`。LHA（`.lzh` 或 `.lha`）的 `fast`、`normal`、`best` 對應 LH5 的 1、6、9 級。ZIP 和 7z 支援 `--encrypt`、`--volume-size`。7z 還可按配置使用 `--encrypt-names`、`--solid`。分卷大小接受正整數字節數，或帶 `KiB`、`MiB`、`GiB` 字尾的值。不適用於所選配置的引數會在寫入前被拒絕。
 

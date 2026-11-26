@@ -45,7 +45,7 @@ pub fn command(chinese: bool) -> Command {
             .arg(Arg::new("members").num_args(0..).help("精确包内路径 / Exact member paths"))
             .arg(value("directory", "目标目录 / Destination directory").short('C').default_value("."))
             .arg(value("entry-id", "物理条目 ID / Physical entry ID").action(ArgAction::Append).value_parser(clap::value_parser!(u64)))
-            .arg(conflict()).arg(flag("password-stdin", "从标准输入读取密码 / Read password from stdin"))
+            .arg(conflict().default_value("rename")).arg(flag("password-stdin", "从标准输入读取密码 / Read password from stdin"))
             .arg(flag("allow-high-ratio", "允许高压缩比，保留硬限制 / Allow high ratios within hard limits")))
         .subcommand(Command::new("create").visible_alias("c").about("创建压缩包 / Create an archive").arg(archive()).arg(inputs()).arg(conflict())
             .arg(value("level", "压缩级别 / Compression level").value_parser(["store", "fast", "normal", "best"]).default_value("normal"))
