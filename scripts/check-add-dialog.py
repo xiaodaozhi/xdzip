@@ -26,6 +26,11 @@ def qt_cases(directory):
                     assert abs(nodes[key]['x'] - REFERENCE['content_inset']) <= 1, (name, key)
                     assert abs(nodes[key]['width'] - (491 - 2 * REFERENCE['content_inset'])) <= 1, (name, key)
                 assert nodes['updateHeading']['fontPixelSize'] == math.floor(20 * factor + .5), name
+                note = nodes['updateConflictNote']
+                assert note['visible'] and note['text'], name
+                assert note['fontPixelSize'] == math.floor(REFERENCE['note_size'] * factor + .5), name
+                assert note['contentWidth'] <= note['width'] + .5, name
+                assert note['contentHeight'] <= note['height'] + .5, name
                 assert nodes['updateInputPanel']['color'].upper() == PALETTE['dark' if dark else 'light']['operationCard'].upper(), name
                 assert nodes['updateInputSize-0']['text'] == '11 B', name
                 assert nodes['updateRemoveInput-0']['width'] == 28, name
@@ -39,7 +44,6 @@ def qt_cases(directory):
                 if factor == 1:
                     assert abs(nodes['updateInputRow-0']['height'] - REFERENCE['input_row_height']) <= 1, name
                     assert abs(nodes['startUpdate']['height'] - REFERENCE['footer_action_height']) <= 1, name
-                    assert nodes['updateConflictPolicyBackground']['radius'] == 5, name
                 cases.append({'name': name, 'width': capture['width'], 'height': capture['height'], 'dpr': capture['dpr'], 'platform': capture['platform'], 'renderer': capture.get('requestedQuickBackend')})
     return cases
 
