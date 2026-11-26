@@ -13,11 +13,11 @@
       "extensions": [
         {"suffix": ".zip", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"},
         {"suffix": ".sfx.exe", "drop": false, "shell": false, "windows_icon": null, "macos_icon": null},
-        {"suffix": ".zipx", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
-        {"suffix": ".xpi", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
-        {"suffix": ".apk", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
-        {"suffix": ".ipa", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null},
-        {"suffix": ".cbz", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": null}
+        {"suffix": ".zipx", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"},
+        {"suffix": ".xpi", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"},
+        {"suffix": ".apk", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"},
+        {"suffix": ".ipa", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"},
+        {"suffix": ".cbz", "drop": true, "shell": true, "windows_icon": "zip", "macos_icon": "zip"}
       ]
     },
     {
@@ -40,7 +40,7 @@
       "creation_suffixes": [".tar.gz", ".tgz"], "shell_mime_types": ["application/x-compressed-tar"],
       "extensions": [
         {"suffix": ".tar.gz", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "tar-gz"},
-        {"suffix": ".tgz", "drop": true, "shell": true, "windows_icon": "tgz", "macos_icon": null}
+        {"suffix": ".tgz", "drop": true, "shell": true, "windows_icon": "tgz", "macos_icon": "tar-gz"}
       ]
     },
     {
@@ -73,8 +73,8 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-bzip2", "application/x-bzip", "application/bzip2"],
       "extensions": [
-        {"suffix": ".bz2", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"},
-        {"suffix": ".bz", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".bz2", "drop": true, "shell": true, "windows_icon": "bz2", "macos_icon": "bz2"},
+        {"suffix": ".bz", "drop": true, "shell": true, "windows_icon": "bz2", "macos_icon": "bz2"}
       ]
     },
     {
@@ -85,10 +85,10 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-bzip2-compressed-tar", "application/x-bzip-compressed-tar"],
       "extensions": [
-        {"suffix": ".tar.bz2", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"},
-        {"suffix": ".tar.bz", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"},
-        {"suffix": ".tbz", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"},
-        {"suffix": ".tbz2", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".tar.bz2", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "tar-bz2"},
+        {"suffix": ".tar.bz", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "tar-bz2"},
+        {"suffix": ".tbz", "drop": true, "shell": true, "windows_icon": "tar-bz2", "macos_icon": "tar-bz2"},
+        {"suffix": ".tbz2", "drop": true, "shell": true, "windows_icon": "tar-bz2", "macos_icon": "tar-bz2"}
       ]
     },
     {
@@ -99,7 +99,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-lzma"],
       "extensions": [
-        {"suffix": ".lzma", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".lzma", "drop": true, "shell": true, "windows_icon": "lzma", "macos_icon": "lzma"}
       ]
     },
     {
@@ -110,8 +110,8 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-lzma-compressed-tar"],
       "extensions": [
-        {"suffix": ".tar.lzma", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"},
-        {"suffix": ".tlz", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".tar.lzma", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "tar-lzma"},
+        {"suffix": ".tlz", "drop": true, "shell": true, "windows_icon": "tar-lzma", "macos_icon": "tar-lzma"}
       ]
     },
     {
@@ -122,7 +122,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/lzip", "application/x-lzip"],
       "extensions": [
-        {"suffix": ".lz", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".lz", "drop": true, "shell": true, "windows_icon": "lz", "macos_icon": "lz"}
       ]
     },
     {
@@ -133,7 +133,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-lzip-compressed-tar"],
       "extensions": [
-        {"suffix": ".tar.lz", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"}
+        {"suffix": ".tar.lz", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "lz"}
       ]
     },
     {
@@ -171,8 +171,8 @@
           "suffix": ".xz",
           "drop": true,
           "shell": true,
-          "windows_icon": "archive",
-          "macos_icon": "archive"
+          "windows_icon": "xz",
+          "macos_icon": "xz"
         }
       ]
     },
@@ -213,14 +213,14 @@
           "drop": true,
           "shell": true,
           "windows_icon": null,
-          "macos_icon": "archive"
+          "macos_icon": "tar-xz"
         },
         {
           "suffix": ".txz",
           "drop": true,
           "shell": true,
-          "windows_icon": "archive",
-          "macos_icon": "archive"
+          "windows_icon": "tar-xz",
+          "macos_icon": "tar-xz"
         }
       ]
     },
@@ -232,7 +232,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".lz4"], "shell_mime_types": ["application/x-lz4"],
       "extensions": [
-        {"suffix": ".lz4", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".lz4", "drop": true, "shell": true, "windows_icon": "lz4", "macos_icon": "lz4"}
       ]
     },
     {
@@ -243,7 +243,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".tar.lz4"], "shell_mime_types": ["application/x-lz4-compressed-tar"],
       "extensions": [
-        {"suffix": ".tar.lz4", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"}
+        {"suffix": ".tar.lz4", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "lz4"}
       ]
     },
     {
@@ -253,7 +253,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".zst"], "shell_mime_types": ["application/zstd"],
       "extensions": [
-        {"suffix": ".zst", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".zst", "drop": true, "shell": true, "windows_icon": "zst", "macos_icon": "zst"}
       ]
     },
     {
@@ -263,8 +263,8 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".tar.zst", ".tzst"], "shell_mime_types": ["application/x-zstd-compressed-tar"],
       "extensions": [
-        {"suffix": ".tar.zst", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"},
-        {"suffix": ".tzst", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": null}
+        {"suffix": ".tar.zst", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "tar-zst"},
+        {"suffix": ".tzst", "drop": true, "shell": true, "windows_icon": "tar-zst", "macos_icon": "tar-zst"}
       ]
     },
     {
@@ -274,7 +274,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-compress"],
       "extensions": [
-        {"suffix": ".z", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".z", "drop": true, "shell": true, "windows_icon": "z", "macos_icon": "z"}
       ]
     },
     {
@@ -284,8 +284,8 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
-        {"suffix": ".tar.z", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "archive"},
-        {"suffix": ".taz", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": null}
+        {"suffix": ".tar.z", "drop": true, "shell": true, "windows_icon": null, "macos_icon": "tar-z"},
+        {"suffix": ".taz", "drop": true, "shell": true, "windows_icon": "tar-z", "macos_icon": "tar-z"}
       ]
     },
     {
@@ -295,8 +295,8 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["text/x-uuencode"],
       "extensions": [
-        {"suffix": ".uu", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"},
-        {"suffix": ".uue", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".uu", "drop": true, "shell": true, "windows_icon": "uu", "macos_icon": "uu"},
+        {"suffix": ".uue", "drop": true, "shell": true, "windows_icon": "uu", "macos_icon": "uu"}
       ]
     },
     {
@@ -306,7 +306,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
-        {"suffix": ".xxe", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".xxe", "drop": true, "shell": true, "windows_icon": "xxe", "macos_icon": "xxe"}
       ]
     },
     {
@@ -317,7 +317,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-brotli"],
       "extensions": [
-        {"suffix": ".br", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": null}
+        {"suffix": ".br", "drop": true, "shell": true, "windows_icon": "br", "macos_icon": "br"}
       ]
     },
     {
@@ -339,7 +339,7 @@
       "read_encryption": ["aescrypt-v0", "aescrypt-v1", "aescrypt-v2", "aescrypt-v3"], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
-        {"suffix": ".aes", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": null}
+        {"suffix": ".aes", "drop": true, "shell": true, "windows_icon": "aes", "macos_icon": "aes"}
       ]
     },
     {
@@ -349,8 +349,8 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [".lzh", ".lha"], "shell_mime_types": ["application/x-lha", "application/x-lharc"],
       "extensions": [
-        {"suffix": ".lha", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"},
-        {"suffix": ".lzh", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".lha", "drop": true, "shell": true, "windows_icon": "lzh", "macos_icon": "lzh"},
+        {"suffix": ".lzh", "drop": true, "shell": true, "windows_icon": "lzh", "macos_icon": "lzh"}
       ]
     },
     {
@@ -360,7 +360,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
-        {"suffix": ".pma", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".pma", "drop": true, "shell": true, "windows_icon": "pma", "macos_icon": "pma"}
       ]
     },
     {
@@ -370,7 +370,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-arj", "application/x-arj-compressed"],
       "extensions": [
-        {"suffix": ".arj", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".arj", "drop": true, "shell": true, "windows_icon": "arj", "macos_icon": "arj"}
       ]
     },
     {
@@ -380,7 +380,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
-        {"suffix": ".arc", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".arc", "drop": true, "shell": true, "windows_icon": "arc", "macos_icon": "arc"}
       ]
     },
     {
@@ -390,7 +390,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
-        {"suffix": ".bh", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".bh", "drop": true, "shell": true, "windows_icon": "bh", "macos_icon": "bh"}
       ]
     },
     {
@@ -400,7 +400,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
-        {"suffix": ".alz", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".alz", "drop": true, "shell": true, "windows_icon": "alz", "macos_icon": "alz"}
       ]
     },
     {
@@ -410,7 +410,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": [],
       "extensions": [
-        {"suffix": ".egg", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".egg", "drop": true, "shell": true, "windows_icon": "egg", "macos_icon": "egg"}
       ]
     },
     {
@@ -420,7 +420,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-pea"],
       "extensions": [
-        {"suffix": ".pea", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".pea", "drop": true, "shell": true, "windows_icon": "pea", "macos_icon": "pea"}
       ]
     },
     {
@@ -440,7 +440,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-asar"],
       "extensions": [
-        {"suffix": ".asar", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".asar", "drop": true, "shell": true, "windows_icon": "asar", "macos_icon": "asar"}
       ]
     },
     {
@@ -450,7 +450,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/vnd.debian.binary-package"],
       "extensions": [
-        {"suffix": ".deb", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".deb", "drop": true, "shell": true, "windows_icon": "deb", "macos_icon": "deb"}
       ]
     },
     {
@@ -482,7 +482,7 @@
       "read_encryption": [], "write_encryption": [], "read_volumes": [], "write_volumes": [],
       "creation_suffixes": [], "shell_mime_types": ["application/x-ole-storage"],
       "extensions": [
-        {"suffix": ".msi", "drop": true, "shell": true, "windows_icon": "archive", "macos_icon": "archive"}
+        {"suffix": ".msi", "drop": true, "shell": true, "windows_icon": "msi", "macos_icon": "msi"}
       ]
     },
     {

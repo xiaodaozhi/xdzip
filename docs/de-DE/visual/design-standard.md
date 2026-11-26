@@ -87,13 +87,7 @@ Erstellungs-, Hinzufüge-, Extraktions-, Aufgaben-/Ergebnis-, Konflikt- und Eins
 
 [operation.header](../../../specs/visual/layout-scale.json) ist die einzige Parameterquelle; Fensterzuordnungen in [window-registry.json](../../../specs/visual/window-registry.json). Dies ersetzt fensterspezifische Symbolplätze, zentrierte 24-Einheiten-Über-Marke und fensterspezifische Headerhöhen; historische Bilder, Hashes und Messungen bleiben unverändert. Nur-Text-Header für Passwort, Vorprüfung und Beenden oder Neustart erhalten keine erfundenen Dekorsymbole und behalten Sicherheitsinteraktionen. Hauptfenster- und Menüdichte werden weiterhin getrennt gemessen.
 
-Reißverschlussillustrationen der Operationsfenster teilen Geometrie und Inventar aus scripts/zipper_assets.py: 2 ineinandergreifende Reihen abgerundeter Zähne, kontrastarmes Band, separater Schieber und offene Zuglasche. Zähne und Metall verwenden zurückhaltende Glanzlichter; proportional innerhalb der Assets skalieren und Farben passend zum Hintergrund wählen, ohne Dokumentsilhouetten, Symbolplätze oder UI-Dichte zu ändern. Neue Verbraucher müssen in ZIPPER_ICONS registriert werden; Assetprüfungen kontrollieren Hell-/Dunkelvollständigkeit und kompatible Inline-Gradienten-IDs.
-
-| Aktuelles Symbol | Reißverschlussfarben und interne Anordnung |
-| --- | --- |
-| archive-add | Silberweiß; blaues Dokument und Hinzufügen-Badge erhalten |
-| existing-archive | Silberweiß; für die höhere Dokumentsilhouette proportional vergrößern und zentrieren |
-| archive-warning | Warmweißes Metall und braunes Band mit bernsteinfarbenem Warndokument |
+Die Illustrationen für Vorgänge verwenden das gefaltete Papier und das XD-Abzeichen des Archivsymbols. Kleine Abzeichen zeigen Aktionen und Ergebnisse an. PDF verwendet dieselbe Papierform mit einem roten PDF-Abzeichen. Die Skalierung folgt der 24-Einheiten-Zeichenfläche und den vorhandenen Symbolplätzen.
 
 file-archive behält sein einfaches flaches Dateikategoriesymbol mit ockerfarbenen horizontalen Zähnen und rechteckiger Zuglasche sowie derselben Symbolfarbe in beiden Themen; Quelle und SVG-/PNG-Exporte behalten diesen Stil.
 

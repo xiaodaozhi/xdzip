@@ -508,23 +508,24 @@ class InstallerTests(unittest.TestCase):
         # Run the actual product's configuration before Qt discovery so this
         # metadata contract also runs on hosts without an installed Qt SDK.
         configure=(ROOT/'apps/desktop/CMakeLists.txt').read_text(encoding='utf-8').split('find_package(Qt6',1)[0]
-        expected_documents = {
-            'zip': ('zip', ['public.zip-archive']),
-            'tar': ('tar', ['public.tar-archive']),
-            'tgz': ('tar-gz', ['org.gnu.gnu-zip-tar-archive']),
-            'gz': ('gz', ['org.gnu.gnu-zip-archive']),
-            '7z': ('7z', ['org.7-zip.7-zip-archive']),
-            'rar': ('rar', ['com.rarlab.rar-archive']),
-            'cab': ('cab', ['com.microsoft.cab', 'com.microsoft.cab-archive']),
-            'msi': ('archive', ['org.xdzip.msi']),
-            'iso': ('iso', ['public.iso-image']),
-            'udf': ('udf', None),
-            **dict.fromkeys(('zipx', 'xpi', 'apk', 'ipa', 'cbz'), ('zip', None)),
-            **dict.fromkeys(('bz2', 'bz', 'tbz', 'tbz2', 'lzma', 'tlz', 'lz', 'xz', 'txz'),
-                            ('archive', None)),
+        expected_content_types = {
+            'zip': ['public.zip-archive'],
+            'tar': ['public.tar-archive'],
+            'tgz': ['org.gnu.gnu-zip-tar-archive'],
+            'gz': ['org.gnu.gnu-zip-archive'],
+            '7z': ['org.7-zip.7-zip-archive'],
+            'rar': ['com.rarlab.rar-archive'],
+            'cab': ['com.microsoft.cab', 'com.microsoft.cab-archive'],
+            'msi': ['org.xdzip.msi'],
+            'iso': ['public.iso-image'],
         }
-        for fixture in ASSOCIATION_FIXTURES:
-            expected_documents.setdefault(fixture.rsplit('.', 1)[1], ('archive', None))
+        registry = json.loads((ROOT/'specs/engineering/archive-formats.json').read_text(encoding='utf-8'))
+        macos_icons = {item['suffix'][1:]: item['macos_icon'] for fmt in registry['formats']
+                       for item in fmt['extensions'] if item['macos_icon']}
+        expected_documents = {
+            extension: (macos_icons[extension], expected_content_types.get(extension))
+            for extension in (fixture.rsplit('.', 1)[1] for fixture in ASSOCIATION_FIXTURES)
+        }
         with tempfile.TemporaryDirectory() as directory:
             base=Path(directory);script=base/'render.cmake'
             template=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').as_posix()

@@ -156,10 +156,11 @@ class RegistryTests(unittest.TestCase):
 
     def test_shared_macos_artwork_is_inventoried_once(self):
         output = REGISTRY.render(self.source)['scripts/archive_formats_generated.py']
-        self.assertIn("'archive'", output)
         import ast
         icons = ast.literal_eval(output.split('MACOS_ICONS = ', 1)[1].split('\n', 1)[0])
-        self.assertEqual(icons.count('archive'), 1)
+        self.assertEqual(icons.count('zip'), 1)
+        self.assertEqual(icons.count('bz2'), 1)
+        self.assertIn('tar-bz2', icons)
 
     def test_unattended_launch_excludes_only_password_opening_fixture(self):
         namespace = {}

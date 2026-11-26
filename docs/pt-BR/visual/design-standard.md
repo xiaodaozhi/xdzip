@@ -87,13 +87,7 @@ Janelas de criação, adição, extração, tarefa ou resultado, conflito e conf
 
 [operation.header](../../../specs/visual/layout-scale.json) é a única fonte de parâmetros; mapeamentos de janelas em [window-registry.json](../../../specs/visual/window-registry.json). Isso substitui espaços de ícones por janela, marca Sobre centralizada de 24 unidades e alturas de cabeçalho específicas; imagens, hashes e medidas históricos permanecem inalterados. Cabeçalhos apenas de texto para senha, verificação prévia e saída ou reinício não recebem ícones decorativos inventados e mantêm interações de segurança. A densidade da janela principal e do menu continua medida separadamente.
 
-As ilustrações de zíper das janelas de operação compartilham geometria e inventário de scripts/zipper_assets.py: 2 fileiras de dentes arredondados encaixados, fita de baixo contraste, cursor separado e puxador aberto. Dentes e metal usam reflexos discretos; escale proporcionalmente dentro dos recursos e escolha cores conforme o fundo sem alterar silhuetas de documento, espaços de ícones ou densidade da interface. Novos consumidores devem ser registrados em ZIPPER_ICONS; verificações de recursos conferem integridade claro/escuro e identificadores compatíveis de gradientes integrados.
-
-| Ícone atual | Cores do zíper e disposição interna |
-| --- | --- |
-| archive-add | Branco prateado; manter documento azul e selo de adição |
-| existing-archive | Branco prateado; ampliar proporcionalmente e centralizar para a silhueta mais alta do documento |
-| archive-warning | Metal branco quente e fita marrom com documento de aviso âmbar |
+As ilustrações de operações usam o papel com canto dobrado e o selo XD do ícone de arquivo. Selos menores indicam ações e resultados. PDF usa o mesmo papel com um selo vermelho. A escala segue a tela de 24 unidades e os espaços de ícones existentes.
 
 file-archive mantém seu símbolo plano simples de categoria de arquivo com dentes horizontais ocres e puxador retangular, usando a mesma cor de símbolo nos dois temas; sua fonte e exportações SVG e PNG mantêm esse estilo.
 

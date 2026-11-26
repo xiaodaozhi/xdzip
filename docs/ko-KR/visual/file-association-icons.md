@@ -67,7 +67,7 @@ python scripts/build-design-assets.py --metadata-only --refresh-association-icon
 
 `XDZIP_CHROMIUM`으로 기존 Chromium/Edge 경로를 지정할 수 있습니다. SVG 마스터, 작은 크기 소스, 사양은 버전 관리하며 자산 소스는 기본 [manifest.json](../../../design/assets/manifest.json)에 등록합니다. 생성 진입점은 [build-association-icons.py](../../../scripts/build-association-icons.py), 구성 정의는 [association_icon_assets.py](../../../scripts/association_icon_assets.py)에 있습니다.
 
-내보낸 산출물에는 형식마다 16~1024픽셀의 일반 및 macOS PNG와 ICO, ICNS가 있습니다. 형식 레지스트리에서 관리하는 제품 ICO와 ICNS는 `file-associations/`의 벡터 소스 옆에 있습니다. ZIP 컨테이너는 마이그레이션 전 원래 바이트를 유지하고 나머지는 해당 내보내기에서 생성됩니다. 일반 빌드는 브라우저 없이 이 컨테이너를 직접 읽습니다. 임시 PNG, 전체 내보내기, 연락 시트와 확인 기록은 `build/` 또는 `dist/`에 남깁니다.
+형식 레지스트리의 각 형식과 지원 확장자에는 대응하는 그래픽이 있습니다. 별칭은 같은 레이블 아이콘을 공유할 수 있습니다. 형식 레이블 아래는 평평한 종이 면입니다. 16~1024픽셀 PNG와 ICO, ICNS를 내보낼 수 있습니다. 제품 빌드는 버전 관리되는 플랫폼 아이콘을 직접 읽습니다. Linux는 시스템 MIME 아이콘을 사용합니다.
 
 <a name="xdzip-verification-and-acceptance"></a>
 
