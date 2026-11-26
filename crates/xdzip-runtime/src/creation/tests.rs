@@ -223,6 +223,14 @@ fn iso_creation_refuses_unsupported_names_and_cancel_without_partial_output() {
                 Status::Failed
             }
         );
+        assert_eq!(
+            result.error,
+            if cancel {
+                "cancelled"
+            } else {
+                "entry_name_unrepresentable"
+            }
+        );
         assert_eq!(result.committed_files, 0);
         assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 0);
     }
@@ -1056,20 +1064,28 @@ fn duplicate_selection_and_added_children_are_detected_without_recursive_redisco
     assert_eq!(tree.validate(&|| false), Err(xdzip_io::InputError::Changed));
 }
 #[test]
-fn colliding_names_and_link_inputs_fail_before_publication() {
+fn duplicate_archive_names_and_link_inputs_fail_before_publication() {
     let f = Fixture::new();
-    std::fs::write(f.0.join("输入/a.txt"), b"a").unwrap();
-    std::fs::write(f.0.join("输入/A.TXT"), b"b").unwrap();
-    // On case-insensitive filesystems the second path is the same ordinary file.
-    let names: Vec<_> = std::fs::read_dir(f.0.join("输入"))
-        .unwrap()
-        .map(|e| e.unwrap().file_name())
-        .collect();
-    if names.iter().any(|n| n == "a.txt") && names.iter().any(|n| n == "A.TXT") {
-        let result = execute(f.job(8), &Control::default(), |_| {});
-        assert_eq!(result.error, "input_collision");
-        assert!(!f.output().exists());
-    }
+    let first = f.0.join("first");
+    let second = f.0.join("second");
+    std::fs::create_dir(&first).unwrap();
+    std::fs::create_dir(&second).unwrap();
+    let first = first.join("same.txt");
+    let second = second.join("same.txt");
+    std::fs::write(&first, b"first").unwrap();
+    std::fs::write(&second, b"second").unwrap();
+    std::fs::write(f.output(), b"existing archive").unwrap();
+    let mut job = f.job(8);
+    job.options.inputs = vec![
+        first.to_string_lossy().into_owned(),
+        second.to_string_lossy().into_owned(),
+    ];
+    job.options.conflict = ConflictPolicy::Overwrite;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.error, "input_collision");
+    assert_eq!(result.committed_files, 0);
+    assert_eq!(std::fs::read(f.output()).unwrap(), b"existing archive");
+    assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
     #[cfg(unix)]
     {
         std::os::unix::fs::symlink(f.0.join("输入/文件.txt"), f.0.join("link")).unwrap();
@@ -1079,6 +1095,188 @@ fn colliding_names_and_link_inputs_fail_before_publication() {
             execute(job, &Control::default(), |_| {}).error,
             "unsafe_input"
         );
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn native_archive_names_round_trip_and_report_only_output_renames() {
+    use std::collections::{BTreeMap, BTreeSet};
+    use std::fs;
+
+    fn read_tree(root: &Path) -> (BTreeSet<String>, BTreeMap<String, Vec<u8>>) {
+        let mut directories = BTreeSet::new();
+        let mut files = BTreeMap::new();
+        let mut pending = vec![root.to_path_buf()];
+        while let Some(directory) = pending.pop() {
+            for entry in fs::read_dir(directory).unwrap() {
+                let entry = entry.unwrap();
+                let path = entry.path();
+                let name = path
+                    .strip_prefix(root)
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .to_owned();
+                let kind = entry.file_type().unwrap();
+                if kind.is_dir() {
+                    directories.insert(name);
+                    pending.push(path);
+                } else {
+                    assert!(kind.is_file(), "{path:?}");
+                    files.insert(name, fs::read(path).unwrap());
+                }
+            }
+        }
+        (directories, files)
+    }
+
+    let fixture = Fixture::new();
+    let shared = [
+        ("Case.txt", b"upper".as_slice()),
+        ("case.txt", b"lower"),
+        ("café.txt", b"composed"),
+        ("cafe\u{301}.txt", b"decomposed"),
+        ("Docs/upper.txt", b"first branch"),
+        ("docs/lower.txt", b"second branch"),
+        ("Résumé/a.txt", b"third branch"),
+        ("Re\u{301}sume\u{301}/b.txt", b"fourth branch"),
+        ("Album<|>/\"label\".txt", b"permitted punctuation"),
+    ];
+    let extra = [
+        ("rating?.txt", b"question".as_slice()),
+        ("rating*.txt", b"asterisk"),
+        ("emoji-😀.txt", b"supplementary"),
+    ];
+    let formats = [
+        ("zip", 8, 6),
+        ("7z", 32, 6),
+        ("tar", 0, 6),
+        ("tar.gz", 8, 6),
+        ("tar.xz", 32, 6),
+        ("tar.lz4", 256, 6),
+        ("tar.zst", 93, 6),
+        ("lzh", 259, 6),
+        ("iso", 260, 0),
+    ];
+    let expected_renames = BTreeMap::from([
+        ("Case.txt", "Case (1).txt"),
+        ("Docs", "Docs (1)"),
+        ("Docs/upper.txt", "Docs (1)/upper.txt"),
+    ]);
+
+    for (extension, method, level) in formats {
+        let source = fixture.0.join(format!("source-{extension}"));
+        fs::create_dir(&source).unwrap();
+        fs::create_dir(source.join("Empty")).unwrap();
+        let mut expected_files = BTreeMap::new();
+        let mut expected_dirs = BTreeSet::from([String::from("Empty")]);
+        for &(name, payload) in shared
+            .iter()
+            .chain(extra.iter().filter(|_| extension != "iso"))
+        {
+            if let Some((parent, _)) = name.rsplit_once('/') {
+                fs::create_dir_all(source.join(parent)).unwrap();
+                expected_dirs.insert(parent.to_owned());
+            }
+            fs::write(source.join(name), payload).unwrap();
+            expected_files.insert(name.to_owned(), payload.to_vec());
+        }
+        let mut job = fixture.job(method);
+        job.options.inputs = fs::read_dir(&source)
+            .unwrap()
+            .map(|entry| entry.unwrap().path().to_str().unwrap().to_owned())
+            .collect();
+        job.options.name = format!("round-trip.{extension}");
+        job.options.level = level;
+        assert!(job.options.bounded(), "{extension}");
+        let result = execute(job, &Control::default(), |_| {});
+        assert_eq!(
+            result.status,
+            Status::Succeeded,
+            "{extension}: {}",
+            result.error
+        );
+        let cancel = Cancellation::default();
+        let archive = crate::Archive::open(Path::new(&result.target), &cancel).unwrap();
+        let expected_names: BTreeSet<_> = expected_files
+            .keys()
+            .cloned()
+            .chain(expected_dirs.iter().map(|name| format!("{name}/")))
+            .collect();
+        let names: BTreeSet<_> = archive
+            .rows
+            .iter()
+            .map(|row| std::str::from_utf8(row.name_bytes()).unwrap().to_owned())
+            .collect();
+        assert_eq!(archive.rows.len(), expected_names.len(), "{extension}");
+        assert_eq!(names, expected_names, "{extension}");
+
+        for occupied in [false, true] {
+            let destination = fixture.0.join(format!("extract-{extension}-{occupied}"));
+            fs::create_dir(&destination).unwrap();
+            let mut files = expected_files.clone();
+            let mut directories = expected_dirs.clone();
+            if occupied {
+                fs::write(destination.join("Case.txt"), b"existing file").unwrap();
+                fs::create_dir(destination.join("Docs")).unwrap();
+                fs::write(destination.join("Docs/old.txt"), b"existing tree").unwrap();
+                for (&original, &output) in &expected_renames {
+                    if let Some(content) = files.remove(original) {
+                        files.insert(output.to_owned(), content);
+                    } else {
+                        assert!(directories.remove(original));
+                        directories.insert(output.to_owned());
+                    }
+                }
+                files.insert("Case.txt".into(), b"existing file".to_vec());
+                files.insert("Docs/old.txt".into(), b"existing tree".to_vec());
+                directories.insert("Docs".into());
+            }
+            let options = crate::extraction::Options {
+                target: destination.to_str().unwrap().to_owned(),
+                all: true,
+                selected: vec![],
+                directory: String::new(),
+                create_folder: false,
+                shell_layout: 0,
+                conflict: ConflictPolicy::Rename,
+                allow_high_ratio: false,
+            };
+            let mut final_state = None;
+            crate::extraction::run(
+                archive.extraction_job(options, &cancel).unwrap(),
+                1,
+                &Control::default(),
+                &mut |snapshot| final_state = Some(snapshot),
+            );
+            let final_state = final_state.unwrap();
+            assert_eq!(
+                final_state.status,
+                Status::Succeeded,
+                "{extension}: {}",
+                final_state.error
+            );
+            assert_eq!(final_state.committed_files, expected_files.len() as u64);
+            assert_eq!(final_state.skipped_files, 0);
+            assert_eq!(final_state.omitted_details, 0);
+            let mut mappings: Vec<_> = final_state
+                .details
+                .iter()
+                .filter_map(|item| Some((item.original_name.as_deref()?, item.name.as_str())))
+                .collect();
+            mappings.sort_unstable();
+            let expected: Vec<_> = if occupied {
+                expected_renames
+                    .iter()
+                    .map(|(original, output)| (*original, *output))
+                    .collect()
+            } else {
+                vec![]
+            };
+            assert_eq!(mappings, expected, "{extension}");
+            assert_eq!(read_tree(&destination), (directories, files), "{extension}");
+        }
     }
 }
 

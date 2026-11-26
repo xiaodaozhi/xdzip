@@ -421,6 +421,7 @@ QString BrowserController::explain(const QString &code) {
     const QHash<QString, QString> taskErrors = {
         {"move_same_directory", qtTrId("move.same")},
         {"entry_name_invalid", qtTrId("entry.edit.invalidName")},
+        {"entry_name_unrepresentable", qtTrId("archive.create.nameUnrepresentable")},
         {"entry_name_unchanged", qtTrId("entry.edit.unchangedName")},
         {"entry_name_exists", qtTrId("entry.edit.nameExists")},
         {"empty_tar_suffix", qtTrId("entry.edit.emptyTarSuffix")},

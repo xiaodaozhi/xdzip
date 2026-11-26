@@ -154,6 +154,8 @@ fn rejects_unrepresentable_names_collisions_and_missing_parents_before_output() 
     for input in [
         Input::new(&[("emoji-😀.txt", false, b"")]),
         Input::new(&[("semi;colon", false, b"")]),
+        Input::new(&[("question?.txt", false, b"")]),
+        Input::new(&[("asterisk*.txt", true, b"")]),
         Input::new(&[("../unsafe", false, b"")]),
         Input::new(&[("missing/file", false, b"")]),
         Input::new(&[("same", false, b""), ("same", true, b"")]),
@@ -200,7 +202,7 @@ fn size_depth_options_and_pre_cancel_are_rejected_without_writing() {
             &Cancellation::default(),
             &mut |_| {}
         ),
-        Err(EncodeError::Limit)
+        Err(EncodeError::Name)
     );
     assert!(output.is_empty());
     let mut input = Input::new(&[("huge", false, b"")]);

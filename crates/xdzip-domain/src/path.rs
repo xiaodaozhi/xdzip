@@ -10,9 +10,14 @@ pub fn components(raw: &[u8], directory: bool) -> Option<Vec<&str>> {
     parse_components(raw, directory, true)
 }
 
-/// Parse archive names for ordinary extraction, deferring only filename punctuation.
-pub fn extraction_components(raw: &[u8], directory: bool) -> Option<Vec<&str>> {
+/// Validate archive-relative syntax while retaining ordinary filename punctuation.
+pub fn archive_components(raw: &[u8], directory: bool) -> Option<Vec<&str>> {
     parse_components(raw, directory, false)
+}
+
+/// Parse names for ordinary extraction, deferring filename punctuation to the destination.
+pub fn extraction_components(raw: &[u8], directory: bool) -> Option<Vec<&str>> {
+    archive_components(raw, directory)
 }
 
 fn parse_components(raw: &[u8], directory: bool, portable: bool) -> Option<Vec<&str>> {

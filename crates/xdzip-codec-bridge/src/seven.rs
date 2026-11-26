@@ -21,7 +21,7 @@ fn encode_wire(error: EncodeError) -> u8 {
     match error {
         EncodeError::Source => 1,
         EncodeError::Output => 8,
-        EncodeError::Invalid => 2,
+        EncodeError::Invalid | EncodeError::Name => 2,
         EncodeError::Unsupported => 3,
         EncodeError::Limit => 4,
         EncodeError::Cancelled => 5,

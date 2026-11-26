@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 /// Frozen format-visible record, independent of host paths or GUI objects.
 #[derive(Clone, Debug)]
 pub struct EncodeEntry {
-    /// Validated portable relative name without a directory slash.
+    /// Validated archive-relative name without a directory slash.
     pub name: String,
     /// Explicit ordinary directory record.
     pub directory: bool,
@@ -23,6 +23,8 @@ pub enum EncodeError {
     Output,
     /// Input size, encoding or format invariants were violated.
     Invalid,
+    /// The format cannot store an input's name exactly.
+    Name,
     /// Requested method or level is not supported.
     Unsupported,
     /// A configured resource budget was exceeded before publication.
