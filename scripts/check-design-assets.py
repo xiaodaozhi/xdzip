@@ -282,6 +282,12 @@ def main() -> None:
                 if entry['kind'] == 'vector-reconstruction' and entry['theme'] == theme} == vector_files
         assert {entry['file'] for entry in manifest['assets']
                 if entry['kind'] == 'vector-rasterization' and entry['theme'] == theme} == raster_files
+        vectors = ROOT / 'svg' / theme
+        archive_layers = [ET.tostring(layer) for layer in ET.parse(vectors / 'archive.svg').getroot()]
+        for name in ('windows-document', 'document-conflict'):
+            icon = ET.parse(vectors / f'{name}.svg').getroot()
+            assert [ET.tostring(layer) for layer in icon[:-1]] == archive_layers, (
+                f'{theme}/{name} must preserve the shared document and XD mark underneath its corner badge')
     coverage = check_reference_coverage(manifest, by_file)
     components = manifest.get('component_reference_coverage', [])
     assert components == component_reference_coverage(), 'Incomplete component reference coverage'
