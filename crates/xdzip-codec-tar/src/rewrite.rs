@@ -81,7 +81,7 @@ fn renamed_header(
             item.is_err() || item.is_ok_and(|field| std::str::from_utf8(field.1).is_err())
         })
     {
-        return Err(EncodeError::Unsupported);
+        return Err(EncodeError::Name);
     }
     let value = format!(" path={name}\n");
     let mut size = value.len() + 1;

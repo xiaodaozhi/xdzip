@@ -182,7 +182,8 @@ impl Archive {
             | (u8::from(
                 format == xdzip_codec_api::Format::SevenZip
                     && rows.iter().any(|row| {
-                        xdzip_domain::path::components(row.name_bytes(), row.directory).is_none()
+                        xdzip_domain::path::archive_components(row.name_bytes(), row.directory)
+                            .is_none()
                     }),
             ) << 2);
         let edit_restriction = edit_restriction

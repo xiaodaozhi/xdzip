@@ -177,6 +177,10 @@ fn explanation(code: &str, chinese: bool) -> &'static str {
             "多个输入名称在归档内冲突，请先调整名称",
             "Input names conflict in the archive. Rename one before continuing",
         ),
+        "name_collision" | "entry_name_exists" => (
+            "压缩包内已有相同路径的条目",
+            "An entry with the same archive path already exists",
+        ),
         "protected_source" => (
             "不能覆盖本次操作的输入文件",
             "An input file cannot be overwritten",

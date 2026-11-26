@@ -81,7 +81,7 @@ struct Directory {
 enum ScanPolicy {
     Portable,
     ArchiveUpdate,
-    ArchiveCreation,
+    NamedArchive,
 }
 
 /// Host-owned source authority and frozen directory topology. It retains only root handles.
@@ -159,7 +159,7 @@ impl InputTree {
     ) -> Result<Self, InputError> {
         Self::scan_with_policy(paths, excluded, stop, ScanPolicy::Portable)
     }
-    /// Freeze archive update or single-file stream inputs, excluding macOS metadata.
+    /// Freeze portable archive inputs, excluding macOS metadata.
     /// Existing archives and ordinary file publication use the unfiltered scan.
     pub fn scan_for_archive(
         paths: &[PathBuf],
@@ -168,13 +168,13 @@ impl InputTree {
     ) -> Result<Self, InputError> {
         Self::scan_with_policy(paths, excluded, stop, ScanPolicy::ArchiveUpdate)
     }
-    /// Freeze inputs to a new named archive, preserving original member names.
-    pub fn scan_for_creation(
+    /// Freeze inputs to a named archive, preserving original member names.
+    pub fn scan_for_named_archive(
         paths: &[PathBuf],
         excluded: Vec<(PathBuf, FileIdentity)>,
         stop: &dyn Fn() -> bool,
     ) -> Result<Self, InputError> {
-        Self::scan_with_policy(paths, excluded, stop, ScanPolicy::ArchiveCreation)
+        Self::scan_with_policy(paths, excluded, stop, ScanPolicy::NamedArchive)
     }
     fn scan_with_policy(
         paths: &[PathBuf],
@@ -402,7 +402,7 @@ impl InputTree {
             return Err(InputError::Limit);
         }
         self.visited += 1;
-        let exact = self.policy == ScanPolicy::ArchiveCreation;
+        let exact = self.policy == ScanPolicy::NamedArchive;
         let parse = if exact {
             archive_components
         } else {

@@ -4,7 +4,7 @@ use super::*;
 /// A same-directory rename or a deletion of the entire selection.
 #[derive(Clone, Debug)]
 pub enum EntryEdit {
-    /// Rename one file or directory using a portable leaf name.
+    /// Rename one file or directory using an archive member name.
     Rename(String),
     /// Delete selected entries, including descendants of selected directories.
     Delete,
@@ -51,7 +51,7 @@ impl EntryEditOptions {
 
 /// Check syntax only. The worker still checks the destination and source identity.
 pub fn valid_entry_name(name: &str) -> bool {
-    !name.contains('/') && PortablePath::parse(name).is_some()
+    !name.contains('/') && archive_components(name.as_bytes(), false).is_some()
 }
 
 pub(super) struct Selection {
@@ -132,7 +132,7 @@ impl Archive {
             let name = std::str::from_utf8(name)
                 .map_err(|_| "unsafe_name")?
                 .trim_end_matches('/');
-            PortablePath::parse(name).ok_or("unsafe_name")?;
+            archive_components(name.as_bytes(), false).ok_or("unsafe_name")?;
             name.strip_prefix(source)
                 .filter(|n| !n.is_empty() && !n.contains('/'))
                 .ok_or("invalid_selection")?;
@@ -175,7 +175,8 @@ impl Archive {
                     return Err("invalid_selection");
                 }
                 let full = format!("{source}{name}");
-                if !valid_entry_name(&name) || PortablePath::parse(&full).is_none() {
+                if !valid_entry_name(&name) || archive_components(full.as_bytes(), false).is_none()
+                {
                     return Err("entry_name_invalid");
                 }
                 if roots.contains_key(full.as_str()) {
@@ -227,14 +228,12 @@ impl Edit {
         planner: &mut Planner<'_>,
         additions: &mut Additions<'_>,
     ) -> Result<(), &'static str> {
-        if let Some(destination) = &self.destination {
-            // An implicit destination directory is a conflict too. A spelling-only
-            // rename may reuse the canonical key belonging to its own source root.
-            if let Some((original, _, _)) = planner.names.get(&key(destination))
-                && !self.selection.roots.contains_key(original)
-            {
-                return Err("entry_name_exists");
-            }
+        if self
+            .destination
+            .as_ref()
+            .is_some_and(|name| planner.names.contains_key(name))
+        {
+            return Err("entry_name_exists");
         }
         for (index, row) in planner.rows.iter().enumerate() {
             planner.control.cancel.check().map_err(|_| "cancelled")?;
@@ -246,7 +245,7 @@ impl Edit {
             };
             if let Some(destination) = &self.destination {
                 let path = format!("{destination}{}", &name[root.len()..]);
-                PortablePath::parse(&path).ok_or("entry_name_invalid")?;
+                archive_components(path.as_bytes(), false).ok_or("entry_name_invalid")?;
                 planner.renames[index] = Some(if row.directory {
                     format!("{path}/")
                 } else {

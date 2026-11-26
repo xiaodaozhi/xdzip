@@ -9,7 +9,7 @@ Consulta la [instalación](install.md) para conocer las configuraciones compatib
 | Instalar XDZip y elegir la aplicación predeterminada para archivos comprimidos | [Instalar y abrir archivos comprimidos](install.md) |
 | Buscar, ordenar o seleccionar entradas, o ver un archivo | [Explorar y previsualizar](browse.md) |
 | Extraer todo o una selección, también desde el gestor de archivos | [Extraer archivos](extract.md) |
-| Comprimir archivos y añadir, sustituir o mover entradas | [Crear y modificar archivos comprimidos](create-and-modify.md) |
+| Comprimir archivos y añadir, renombrar o mover entradas | [Crear y modificar archivos comprimidos](create-and-modify.md) |
 | Usar contraseñas o archivos divididos en volúmenes | [Contraseñas y volúmenes divididos](passwords-and-volumes.md) |
 | Verificar archivos comprimidos y revisar el progreso, la cancelación y los resultados | [Verificaciones, tareas y resultados](checks-and-tasks.md) |
 | Ajustar el idioma, la apariencia o el icono de notificación e instalar actualizaciones | [Configuración y actualizaciones](settings-and-updates.md) |

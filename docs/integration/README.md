@@ -12,7 +12,7 @@ In a fresh, private, writable working directory, create a folder named `docs` co
 
 ```sh
 xdzip create sample.zip docs --level normal --json
-xdzip add sample.zip notes.txt --into docs --conflict skip --json
+xdzip add sample.zip notes.txt --into docs --json
 xdzip test sample.zip --json
 ```
 

@@ -33,6 +33,7 @@ impl Fixture {
             method: match extension {
                 "tar" => 0,
                 "7z" => 32,
+                "lzh" => 259,
                 _ => 8,
             },
             level: 6,
@@ -133,7 +134,7 @@ fn three_formats_preserve_old_content_and_add_to_current_directory() {
     }
 }
 #[test]
-fn conflicts_skip_rename_replace_and_prompt_cancellation_preserve_original() {
+fn exact_addition_conflicts_refuse_all_legacy_policies_before_publication() {
     for policy in [
         ConflictPolicy::Skip,
         ConflictPolicy::Rename,
@@ -148,33 +149,22 @@ fn conflicts_skip_rename_replace_and_prompt_cancellation_preserve_original() {
         let job = archive
             .update_job(
                 Options {
-                    inputs: vec![f.0.join("add/原文件.txt").to_string_lossy().into()],
+                    inputs: ["新文件.txt", "原文件.txt"]
+                        .map(|name| f.0.join("add").join(name).to_string_lossy().into())
+                        .into(),
                     directory: "1".into(),
                     conflict: policy,
                 },
                 &Cancellation::default(),
             )
             .unwrap();
-        let control = Control::default();
-        let result = execute(job, &control, |s| {
-            if s.status == Status::Waiting {
-                control.cancel();
-            }
+        drop(archive);
+        let result = execute(job, &Control::default(), |s| {
+            assert_ne!(s.status, Status::Waiting);
         });
-        if policy == ConflictPolicy::Ask {
-            assert_eq!(result.status, Status::Cancelled);
-            assert_eq!(fs::read(&path).unwrap(), old);
-        } else {
-            assert_eq!(result.status, Status::Succeeded, "{}", result.error);
-            assert_eq!(
-                result.files,
-                if policy == ConflictPolicy::Rename {
-                    2
-                } else {
-                    1
-                }
-            );
-        }
+        assert_eq!(result.status, Status::Failed);
+        assert_eq!(result.error, "name_collision");
+        assert_eq!(fs::read(&path).unwrap(), old);
     }
 }
 #[test]
@@ -1007,7 +997,7 @@ fn entry_edits_reject_wrong_selection_invalid_names_and_conflicts() {
         archive.edit_entries_job(options, &cancel).err(),
         Some("invalid_selection")
     );
-    for name in ["Existing.txt", "空目录"] {
+    for name in ["existing.txt", "空目录"] {
         let options = edit_options(
             &archive,
             "资料/",
@@ -1077,6 +1067,21 @@ fn deleting_last_child_keeps_an_implicit_source_folder_and_rejects_cancelled_or_
                 .id
         )
     };
+    let duplicate = fixture.0.join("add/existing");
+    fs::create_dir(&duplicate).unwrap();
+    let job = archive
+        .update_job(
+            Options {
+                inputs: vec![duplicate.to_string_lossy().into_owned()],
+                directory: String::new(),
+                conflict: ConflictPolicy::Ask,
+            },
+            &cancel,
+        )
+        .unwrap();
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.error, "name_collision");
+    assert_eq!(fs::read(&path).unwrap(), bytes);
     let implicit = id("implicit/");
     let options = EntryEditOptions {
         selected: vec![implicit.clone()],
@@ -1225,7 +1230,7 @@ fn extended_payload() -> Vec<u8> {
 }
 
 #[test]
-fn extended_formats_rename_move_add_replace_and_delete_transactionally() {
+fn extended_formats_rename_move_add_and_delete_transactionally() {
     use xdzip_codec_stream::controlled::Filter;
     let cancel = Cancellation::default();
     for (name, format, filter) in [
@@ -1267,8 +1272,10 @@ fn extended_formats_rename_move_add_replace_and_delete_transactionally() {
         assert_eq!(result.status, Status::Succeeded, "{name}: {}", result.error);
 
         let extra = fixture.0.join("add/extra.txt");
-        for expected in [b"extra bytes".as_slice(), b"replacement bytes".as_slice()] {
-            fs::write(&extra, expected).unwrap();
+        let added_content = b"extra bytes";
+        for incoming in [added_content.as_slice(), b"refused duplicate".as_slice()] {
+            let original = fs::read(&path).unwrap();
+            fs::write(&extra, incoming).unwrap();
             let archive = Archive::open(&path, &cancel).unwrap();
             let job = archive
                 .update_job(
@@ -1282,10 +1289,15 @@ fn extended_formats_rename_move_add_replace_and_delete_transactionally() {
                 .unwrap();
             drop(archive);
             let result = execute(job, &Control::default(), |_| {});
-            assert_eq!(result.status, Status::Succeeded, "{name}: {}", result.error);
+            if incoming == added_content {
+                assert_eq!(result.status, Status::Succeeded, "{name}: {}", result.error);
+            } else {
+                assert_eq!(result.error, "name_collision", "{name}");
+                assert_eq!(fs::read(&path).unwrap(), original);
+            }
             let archive = Archive::open(&path, &cancel).unwrap();
             let contents = crate::native_backend_tests::known_contents(&archive);
-            assert_eq!(contents["project/target/extra.txt"], expected);
+            assert_eq!(contents["project/target/extra.txt"], added_content);
             assert_eq!(contents["project/target/renamed.bin"], extended_payload());
             assert_eq!(contents.len(), 2);
         }
@@ -1320,6 +1332,296 @@ fn extended_formats_rename_move_add_replace_and_delete_transactionally() {
         assert_eq!(archive.format, format, "{name}");
         assert!(archive.rows.is_empty(), "{name}");
     }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn native_edit_names_round_trip_through_add_rename_and_extraction() {
+    use std::collections::BTreeSet;
+
+    let cancel = Cancellation::default();
+    for extension in ["zip", "tar.gz", "7z", "lzh"] {
+        let f = Fixture::new();
+        let path = f.archive(extension);
+        let mut expected_files =
+            BTreeMap::from([("资料/原文件.txt".into(), b"original bytes".to_vec())]);
+        let mut expected_dirs = BTreeSet::from(["资料".to_owned(), "资料/空目录".to_owned()]);
+        let mut inputs = Vec::new();
+        for (group, entries) in [
+            (
+                "left",
+                [
+                    ("Case.txt", b"upper file".as_slice()),
+                    ("café.txt", b"composed file"),
+                    ("Docs/upper.txt", b"upper directory"),
+                    ("Résumé/a.txt", b"composed directory"),
+                    ("rating*.txt", b"literal star"),
+                ],
+            ),
+            (
+                "right",
+                [
+                    ("case.txt", b"lower file".as_slice()),
+                    ("cafe\u{301}.txt", b"decomposed file"),
+                    ("docs/lower.txt", b"lower directory"),
+                    ("Re\u{301}sume\u{301}/b.txt", b"decomposed directory"),
+                    ("rating?.txt", b"literal question mark"),
+                ],
+            ),
+        ] {
+            let source = f.0.join(group);
+            fs::create_dir(&source).unwrap();
+            for (name, bytes) in entries {
+                if let Some((parent, _)) = name.rsplit_once('/') {
+                    fs::create_dir_all(source.join(parent)).unwrap();
+                    expected_dirs.insert(parent.into());
+                }
+                fs::write(source.join(name), bytes).unwrap();
+                expected_files.insert(name.to_owned(), bytes.to_vec());
+            }
+            inputs.extend(fs::read_dir(source).unwrap().map(|entry| {
+                entry
+                    .unwrap()
+                    .path()
+                    .into_os_string()
+                    .into_string()
+                    .unwrap()
+            }));
+        }
+        let archive = Archive::open(&path, &cancel).unwrap();
+        let add = archive
+            .update_job(
+                Options {
+                    inputs,
+                    directory: String::new(),
+                    conflict: ConflictPolicy::Ask,
+                },
+                &cancel,
+            )
+            .unwrap();
+        drop(archive);
+        let result = execute(add, &Control::default(), |_| {});
+        assert_eq!(
+            result.status,
+            Status::Succeeded,
+            "{extension}: {}",
+            result.error
+        );
+        let mut archive = Archive::open(&path, &cancel).unwrap();
+        assert_eq!(
+            crate::native_backend_tests::known_contents(&archive),
+            expected_files,
+            "{extension}"
+        );
+
+        for (directory, selected, name) in [
+            ("", "Case.txt", "CASE.txt"),
+            ("", "Docs/", "DOCS"),
+            ("资料/", "资料/原文件.txt", "label<\"|>*?.txt"),
+        ] {
+            let options = edit_options(
+                &archive,
+                directory,
+                &[selected],
+                EntryEdit::Rename(name.into()),
+            );
+            archive = apply_entry_edit(&path, options, archive);
+        }
+        for (original, renamed) in [
+            ("Case.txt", "CASE.txt"),
+            ("Docs/upper.txt", "DOCS/upper.txt"),
+            ("资料/原文件.txt", "资料/label<\"|>*?.txt"),
+        ] {
+            let bytes = expected_files.remove(original).unwrap();
+            expected_files.insert(renamed.into(), bytes);
+        }
+        assert!(expected_dirs.remove("Docs"));
+        expected_dirs.insert("DOCS".into());
+        let expected_names: BTreeSet<_> = expected_files
+            .keys()
+            .cloned()
+            .chain(expected_dirs.iter().map(|name| format!("{name}/")))
+            .collect();
+        assert_eq!(archive.rows.len(), expected_names.len());
+        assert_eq!(
+            archive
+                .rows
+                .iter()
+                .map(|row| std::str::from_utf8(row.name_bytes()).unwrap().to_owned())
+                .collect::<BTreeSet<_>>(),
+            expected_names,
+            "{extension}"
+        );
+        assert_eq!(
+            crate::native_backend_tests::known_contents(&archive),
+            expected_files,
+            "{extension}"
+        );
+
+        let before = fs::read(&path).unwrap();
+        let duplicate = edit_options(
+            &archive,
+            "",
+            &["CASE.txt"],
+            EntryEdit::Rename("case.txt".into()),
+        );
+        let result = execute(
+            archive.edit_entries_job(duplicate, &cancel).unwrap(),
+            &Control::default(),
+            |_| {},
+        );
+        assert_eq!(result.error, "entry_name_exists");
+        assert_eq!(fs::read(&path).unwrap(), before);
+
+        let destination = f.0.join("output");
+        fs::create_dir_all(destination.join("DOCS")).unwrap();
+        fs::write(destination.join("DOCS/existing.txt"), b"existing directory").unwrap();
+        fs::write(destination.join("CASE.txt"), b"existing file").unwrap();
+        let options = crate::extraction::Options {
+            target: destination.to_str().unwrap().to_owned(),
+            all: true,
+            selected: vec![],
+            directory: String::new(),
+            create_folder: false,
+            shell_layout: 0,
+            conflict: ConflictPolicy::Rename,
+            allow_high_ratio: false,
+        };
+        let mut final_state = None;
+        crate::extraction::run(
+            archive.extraction_job(options, &cancel).unwrap(),
+            3,
+            &Control::default(),
+            &mut |snapshot| final_state = Some(snapshot),
+        );
+        let completed = final_state.unwrap();
+        assert_eq!(
+            completed.status,
+            Status::Succeeded,
+            "{extension}: {}",
+            completed.error
+        );
+        assert_eq!(completed.committed_files, expected_files.len() as u64);
+        assert_eq!(completed.skipped_files, 0);
+        assert_eq!(completed.omitted_details, 0);
+        let mut renamed: Vec<_> = completed
+            .details
+            .iter()
+            .filter_map(|item| Some((item.original_name.as_deref()?, item.name.as_str())))
+            .collect();
+        renamed.sort_unstable();
+        assert_eq!(
+            renamed,
+            [
+                ("CASE.txt", "CASE (1).txt"),
+                ("DOCS", "DOCS (1)"),
+                ("DOCS/upper.txt", "DOCS (1)/upper.txt"),
+            ]
+        );
+        let mut observed = BTreeSet::new();
+        let mut pending = vec![destination.clone()];
+        while let Some(directory) = pending.pop() {
+            for item in fs::read_dir(directory).unwrap() {
+                let item = item.unwrap();
+                let path = item.path();
+                let relative = path.strip_prefix(&destination).unwrap().to_str().unwrap();
+                let name = if item.file_type().unwrap().is_dir() {
+                    pending.push(path.clone());
+                    format!("{relative}/")
+                } else {
+                    relative.to_owned()
+                };
+                observed.insert(name);
+            }
+        }
+        expected_names.into_iter().for_each(|name| {
+            let renamed = match name.as_str() {
+                "CASE.txt" => "CASE (1).txt",
+                "DOCS/" => "DOCS (1)/",
+                "DOCS/upper.txt" => "DOCS (1)/upper.txt",
+                _ => &name,
+            };
+            assert!(observed.remove(renamed), "{extension}: {renamed}");
+            if let Some(payload) = expected_files.get(&name) {
+                assert_eq!(
+                    &fs::read(destination.join(renamed)).unwrap(),
+                    payload,
+                    "{renamed}"
+                );
+            }
+        });
+        assert_eq!(
+            observed,
+            BTreeSet::from([
+                "CASE.txt".into(),
+                "DOCS/".into(),
+                "DOCS/existing.txt".into()
+            ])
+        );
+        assert_eq!(
+            fs::read(destination.join("CASE.txt")).unwrap(),
+            b"existing file"
+        );
+        assert_eq!(
+            fs::read(destination.join("DOCS/existing.txt")).unwrap(),
+            b"existing directory"
+        );
+    }
+}
+
+#[test]
+fn unrepresentable_zip_rename_preserves_legacy_comment_and_archive_bytes() {
+    let f = Fixture::new();
+    let path = f.0.join("legacy-comment.zip");
+    let entries = EmptyFiles(vec![EncodeEntry {
+        name: "old.txt".into(),
+        directory: false,
+        size: 0,
+        modified_unix: 0,
+    }]);
+    let cancel = Cancellation::default();
+    let mut original = Vec::new();
+    codec(Format::Zip)
+        .encode(
+            &entries,
+            &mut original,
+            EncodeSettings {
+                method: "store",
+                level: 6,
+                solid: false,
+                encrypt_headers: false,
+                password: None,
+            },
+            &cancel,
+            &mut |_| {},
+        )
+        .unwrap();
+
+    let central = original
+        .windows(4)
+        .position(|bytes| bytes == b"PK\x01\x02")
+        .unwrap();
+    let end = original.len() - 22;
+    assert_eq!(&original[end..end + 4], b"PK\x05\x06");
+    original[7] &= !8;
+    original[central + 9] &= !8;
+    original[central + 32..central + 34].copy_from_slice(&1u16.to_le_bytes());
+    original[end + 12..end + 16].copy_from_slice(&((end - central + 1) as u32).to_le_bytes());
+    original.insert(end, 0x82);
+    fs::write(&path, &original).unwrap();
+    let archive = Archive::open(&path, &cancel).unwrap();
+    let options = edit_options(
+        &archive,
+        "",
+        &["old.txt"],
+        EntryEdit::Rename("new?.txt".into()),
+    );
+    let job = archive.edit_entries_job(options, &cancel).unwrap();
+    drop(archive);
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Failed);
+    assert_eq!(result.error, "entry_name_unrepresentable");
+    assert_eq!(fs::read(&path).unwrap(), original);
 }
 
 #[test]

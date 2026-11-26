@@ -3507,10 +3507,6 @@ QtObject {
         QVERIFY(fixture.isValid());
         const auto source = fixture.filePath("editable.zip");
         QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"), source));
-        QFile beforeFile(source);
-        QVERIFY(beforeFile.open(QIODevice::ReadOnly));
-        const auto before = beforeFile.readAll();
-        beforeFile.close();
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
@@ -3529,13 +3525,36 @@ QtObject {
         sessions.openPath(source);
         QTRY_VERIFY(old->ready() && !old->busy());
         QVERIFY(old->m_model.rowAt(0));
-        QFile input(fixture.filePath(old->m_model.rowAt(0)->cells[0]));
+        const auto member = old->m_model.rowAt(0)->cells[0];
+        QVERIFY(QDir(fixture.path()).mkdir("destination"));
+        QFile input(fixture.filePath("destination/" + member));
         QVERIFY(input.open(QIODevice::WriteOnly));
-        QVERIFY(input.write("replacement for retained update") > 0);
+        QVERIFY(input.write("existing move destination") > 0);
         input.close();
+        QSignalSpy accepted(old, &BrowserController::updateStarted);
+        old->startUpdate({fixture.filePath("destination")}, old->sessionId(), old->directoryId(),
+                         0);
+        QTRY_COMPARE(accepted.count(), 1);
+        QTRY_VERIFY(old->ready() && !old->busy() && old->activeTaskCount() == 0);
+        QCOMPARE(old->tasks().first().toMap().value("status").toString(), "succeeded");
+        QFile beforeFile(source);
+        QVERIFY(beforeFile.open(QIODevice::ReadOnly));
+        const auto before = beforeFile.readAll();
+        beforeFile.close();
+        int fileRow = -1, directoryRow = -1;
+        for (int i = 0; i < old->m_model.rowCount(); ++i) {
+            const auto name = old->m_model.rowAt(i)->cells[0];
+            if (name == member)
+                fileRow = i;
+            if (name == "destination")
+                directoryRow = i;
+        }
+        QVERIFY(fileRow >= 0 && directoryRow >= 0);
         const auto oldId =
             window->property("sessionTabs").toList().first().toMap().value("id").toString();
-        old->startUpdate({input.fileName()}, old->sessionId(), old->directoryId(), 0);
+        old->selectOnlyRow(fileRow);
+        const auto drag = old->beginInternalDrag(fileRow);
+        old->moveInternalDrag(drag, old->directoryForRow(directoryRow));
         QTRY_VERIFY_WITH_TIMEOUT(!old->tasks().isEmpty() &&
                                      old->tasks().first().toMap().value("status") == "waiting",
                                  10000);
@@ -13475,23 +13494,17 @@ QtObject {
         QVERIFY(controller->sessionId() != session);
         QTRY_VERIFY(controller->requestClose());
     }
-    void pageCancelEndsHiddenAdditionConflict_data() {
+    void additionConflictsRetainArchive_data() {
         QTest::addColumn<QString>("language");
         QTest::addColumn<double>("scale");
-        QTest::addColumn<bool>("hidden");
-        QTest::addColumn<QString>("cancelRoute");
-        QTest::newRow("zh-page-hidden") << QString("zh-CN") << 1. << true << QString("page");
-        QTest::newRow("zh-page-visible-large")
-            << QString("zh-CN") << 1.5 << false << QString("page");
-        QTest::newRow("en-task-visible") << QString("en-US") << 1. << false << QString("task");
-        QTest::newRow("en-controller-hidden-large")
-            << QString("en-US") << 1.5 << true << QString("controller");
+        for (const QString language : {"zh-CN", "en-US"})
+            for (double scale : {1.0, 1.25, 1.5})
+                QTest::newRow(qPrintable(language + '-' + QString::number(scale)))
+                    << language << scale;
     }
-    void pageCancelEndsHiddenAdditionConflict() {
+    void additionConflictsRetainArchive() {
         QFETCH(QString, language);
         QFETCH(double, scale);
-        QFETCH(bool, hidden);
-        QFETCH(QString, cancelRoute);
         QVERIFY(initializeUiText(language));
         const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QTemporaryDir fixture;
@@ -13513,102 +13526,44 @@ QtObject {
         const auto restoreTheme = qScopeGuard([&] { preferences->cancelPreview(); });
         controller->openPath(source);
         QTRY_VERIFY(controller->ready() && !controller->busy());
-        const auto session = controller->sessionId();
         QVERIFY(controller->m_model.rowAt(0));
         QFile input(fixture.filePath(controller->m_model.rowAt(0)->cells[0]));
         QVERIFY(input.open(QIODevice::WriteOnly));
-        QVERIFY(input.write("replacement bytes") > 0);
+        QVERIFY(input.write("refused duplicate bytes") > 0);
         input.close();
+
         QVERIFY(QTest::qWaitForWindowExposed(window));
-        auto *zone = findVisual(window->contentItem(), "archiveAddDropArea");
-        QVERIFY(zone);
-        const auto point =
-            zone->mapToScene(QPointF(zone->width() / 2, zone->height() / 2)).toPoint();
-        QMimeData mime;
-        mime.setUrls({QUrl::fromLocalFile(input.fileName())});
-        QDragEnterEvent enter(point, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
-        QCoreApplication::sendEvent(window, &enter);
-        QVERIFY(enter.isAccepted());
-        QDropEvent drop(point, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
-        QCoreApplication::sendEvent(window, &drop);
-        QVERIFY(drop.isAccepted());
         auto *addition = window->findChild<QQuickWindow *>("updateWindow");
+        QVERIFY(addition);
+        QVERIFY(QMetaObject::invokeMethod(addition, "configure",
+                                          Q_ARG(QVariant, QStringList{input.fileName()})));
         QTRY_VERIFY(addition->isVisible());
+        QTRY_VERIFY(QTest::qWaitForWindowExposed(addition));
+        auto *note = findVisual(addition->contentItem(), "updateConflictNote");
         auto *start = findVisual(addition->contentItem(), "startUpdate");
-        QVERIFY(start);
-        QTRY_VERIFY(start->isEnabled() && !controller->busy());
+        QVERIFY(note && start);
+        QTRY_VERIFY(start->isEnabled());
+        QCOMPARE(operationClientSize(addition).width(), 491);
+        QCOMPARE(note->property("text").toString(), qtTrId("update.hint"));
+        QVERIFY(note->property("contentWidth").toReal() <= note->width() + 0.5);
+        QVERIFY(note->property("contentHeight").toReal() <= note->height() + 0.5);
+        if (!qEnvironmentVariableIsEmpty("XDZIP_OPERATION_VISUAL_AUDIT"))
+            QVERIFY(visual_audit::save(addition,
+                                       qEnvironmentVariable("XDZIP_OPERATION_VISUAL_AUDIT"),
+                                       language + '-' + QString::number(scale)));
+
+        QSignalSpy accepted(controller, &BrowserController::updateStarted);
         QTest::mouseClick(
             addition, Qt::LeftButton, Qt::NoModifier,
             start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
-        auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
-        QTRY_VERIFY2(
-            conflict->isVisible(),
-            qPrintable(QString("canDecide=%1, task=%2, owned=%3/%4, dismissed=%5")
-                           .arg(conflict->property("canDecide").toBool())
-                           .arg(QString::fromUtf8(QJsonDocument::fromVariant(controller->tasks())
-                                                      .toJson(QJsonDocument::Compact)))
-                           .arg(conflict->property("promptTaskId").toString(),
-                                conflict->property("promptIdentity").toString(),
-                                conflict->property("dismissedPrompt").toString())));
-        QTRY_VERIFY(!controller->busy() && controller->activeTaskCount() == 1);
-        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "waiting");
-        QVERIFY(controller->browsingBusy());
-        QCOMPARE(controller->archiveOperation(), QString("add"));
-        auto *workspace = findVisual(window->contentItem(), "archiveWorkspace");
-        auto *overlay = findVisual(window->contentItem(), "archiveOperationOverlay");
-        auto *card = findVisual(window->contentItem(), "archiveOperationCard");
-        QVERIFY(workspace && overlay && card);
-        QVERIFY(workspace->isVisible() && !workspace->isEnabled() && overlay->isVisible());
-        QVERIFY(controller->m_model.rowCount() > 0);
-        QCOMPARE(overlay->property("backdropColor").value<QColor>(), QColor(Qt::transparent));
-        QCOMPARE(
-            findVisual(window->contentItem(), "archiveOperationTitle")->property("text").toString(),
-            qtTrId("archive.operation.adding"));
-        QVERIFY(card->width() <= 360 && card->height() <= overlay->height());
-        auto *cancel = findVisual(window->contentItem(), "archiveOperationCancel");
-        QVERIFY(cancel);
-        QCOMPARE(cancel->property("text").toString(), qtTrId("archive.operation.cancelAdd"));
-        QTRY_VERIFY(cancel->isVisible() && cancel->isEnabled());
-        const auto task = controller->tasks().first().toMap();
-        auto *progress = window->findChild<QQuickWindow *>("taskWindow");
-        if (hidden) {
-            conflict->close();
-            progress->close();
-            emit controller->tasksChanged();
-            QVERIFY(!conflict->isVisible());
-        }
-        if (!qEnvironmentVariableIsEmpty("XDZIP_OPERATION_VISUAL_AUDIT"))
-            QVERIFY(visual_audit::save(window, qEnvironmentVariable("XDZIP_OPERATION_VISUAL_AUDIT"),
-                                       language + QString::number(scale)));
-        if (cancelRoute == "controller") {
-            controller->cancelTask(task.value("id").toString());
-        } else {
-            auto *owner = window;
-            if (cancelRoute == "task") {
-                owner = progress;
-                cancel = findVisual(progress->contentItem(), "cancelButton");
-                QVERIFY(cancel && cancel->isEnabled());
-            }
-            QTest::mouseClick(
-                owner, Qt::LeftButton, Qt::NoModifier,
-                cancel->mapToScene(QPointF(cancel->width() / 2, cancel->height() / 2)).toPoint());
-        }
-        QVERIFY(!conflict->isVisible());
-        QVERIFY(progress->property("stopping").toBool() || progress->property("terminal").toBool());
-        QVERIFY(!controller->decideTask(task.value("id").toString(),
-                                        task.value("promptId").toString(), 3, true));
-        QVERIFY(QMetaObject::invokeMethod(conflict, "presentPrompt", Q_ARG(bool, true)));
-        QVERIFY(!conflict->isVisible());
-        QTRY_VERIFY(controller->activeTaskCount() == 0 && controller->ready() &&
-                    !controller->busy() && !controller->browsingBusy());
-        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "cancelled");
-        QVERIFY(controller->browserQueryAvailable());
-        QVERIFY(!overlay->isVisible());
-        QVERIFY(workspace->isVisible() && workspace->isEnabled());
-        QVERIFY(controller->archiveOperation().isEmpty());
-        QVERIFY(controller->sessionId() != session);
-        controller->selectOnlyRow(0);
-        QCOMPARE(controller->selectedCount(), 1);
+        QTRY_COMPARE(accepted.count(), 1);
+        QTRY_VERIFY(controller->activeTaskCount() == 0 && !controller->busy() &&
+                    controller->browserQueryAvailable());
+        const auto result = controller->tasks().first().toMap();
+        QCOMPARE(result.value("status").toString(), "failed");
+        QCOMPARE(result.value("errorCode").toString(), "name_collision");
+        QCOMPARE(result.value("error").toString(), qtTrId("entry.edit.nameExists"));
+        QVERIFY(!window->findChild<QQuickWindow *>("conflictWindow")->isVisible());
         QVERIFY(original.open(QIODevice::ReadOnly));
         QCOMPARE(original.readAll(), before);
     }

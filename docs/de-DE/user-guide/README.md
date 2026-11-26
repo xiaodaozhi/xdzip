@@ -9,7 +9,7 @@ Die [Installationsanleitung](install.md) nennt die unterstützten Konfiguratione
 | XDZip installieren und die Standard-App für Archive wählen | [Installieren und Archive öffnen](install.md) |
 | Archiveinträge suchen, sortieren, auswählen oder eine Datei ansehen | [Durchsuchen und Vorschau](browse.md) |
 | Alle oder ausgewählte Dateien entpacken, auch aus dem Dateimanager | [Dateien entpacken](extract.md) |
-| Dateien komprimieren, Einträge hinzufügen, ersetzen oder im Archiv verschieben | [Archive erstellen und ändern](create-and-modify.md) |
+| Dateien komprimieren und Archiveinträge hinzufügen, umbenennen oder verschieben | [Archive erstellen und ändern](create-and-modify.md) |
 | Passwörter und mehrteilige Archive verwenden | [Passwörter und mehrteilige Archive](passwords-and-volumes.md) |
 | Archive prüfen und Fortschritt, Abbruch und Ergebnisse ansehen | [Prüfungen, Aufgaben und Ergebnisse](checks-and-tasks.md) |
 | Sprache, Darstellung und Infobereich einstellen sowie Updates installieren | [Einstellungen und Updates](settings-and-updates.md) |

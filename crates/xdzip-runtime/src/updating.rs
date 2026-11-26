@@ -10,13 +10,12 @@ use std::{
     sync::Arc,
     time::{Instant, UNIX_EPOCH},
 };
-use unicode_normalization::UnicodeNormalization;
 use xdzip_codec_api::{
     Cancellation, Entry,
     encode::*,
     payload::{DecodeError, DecodedSink},
 };
-use xdzip_domain::path::PortablePath;
+use xdzip_domain::path::archive_components;
 use xdzip_io::{ArchiveUpdate, InputTree};
 
 mod entries;
@@ -32,7 +31,7 @@ pub struct Options {
     pub inputs: Vec<String>,
     /// Current archive directory ID; empty denotes the archive root.
     pub directory: String,
-    /// Conflict policy within the archive, never authorization to overwrite host inputs.
+    /// Legacy addition option and internal move policy. Additions reject exact duplicates.
     pub conflict: ConflictPolicy,
 }
 impl Options {
@@ -78,9 +77,6 @@ impl Job {
                 Operation::Edit(edit) => edit.bytes(),
             }
     }
-}
-fn key(name: &str) -> String {
-    name.nfd().flat_map(char::to_lowercase).collect()
 }
 impl Archive {
     pub(crate) fn can_update(&self) -> bool {
@@ -208,57 +204,49 @@ fn emit(s: &mut Snapshot, start: Instant, publish: &mut dyn FnMut(Snapshot)) {
     s.elapsed_ms = start.elapsed().as_millis() as u64;
     publish(s.clone());
 }
-// The namespace includes implicit directories, so a file cannot replace an
-// ancestor or hide descendants. Canonical aliases keep the original spelling.
+// Each exact path has one kind and at most one physical record. Implicit
+// ancestors also occupy paths, so a file cannot hide existing descendants.
+type Names = BTreeMap<String, (bool, Option<usize>)>;
+
 fn insert_name(
-    map: &mut BTreeMap<String, (String, bool, Option<usize>)>,
+    map: &mut Names,
     budget: &mut usize,
     name: &str,
     directory: bool,
     index: Option<usize>,
 ) -> Result<(), &'static str> {
-    let parts: Vec<_> = name.split('/').collect();
-    for end in 1..=parts.len() {
-        let spelling = parts[..end].join("/");
-        let is_dir = end < parts.len() || directory;
-        let k = key(&spelling);
-        if let Some((old, kind, record)) = map.get_mut(&k) {
-            if *kind != is_dir
-                || old != &spelling
-                || (end == parts.len() && record.is_some() && index.is_some())
-            {
+    for end in name
+        .match_indices('/')
+        .map(|(end, _)| end)
+        .chain([name.len()])
+    {
+        let path = &name[..end];
+        let is_dir = end < name.len() || directory;
+        let incoming = if end == name.len() { index } else { None };
+        if let Some((kind, record)) = map.get_mut(path) {
+            if *kind != is_dir || (record.is_some() && incoming.is_some()) {
                 return Err("name_collision");
             }
-            if end == parts.len() && index.is_some() {
-                *record = index;
+            if incoming.is_some() {
+                *record = incoming;
             }
         } else {
-            *budget = budget
-                .checked_add(k.len() + spelling.len())
-                .ok_or("resource_limit")?;
+            *budget = budget.checked_add(path.len()).ok_or("resource_limit")?;
             if map.len() >= 100_000 || *budget > 16 * 1024 * 1024 {
                 return Err("resource_limit");
             }
-            map.insert(
-                k,
-                (
-                    spelling,
-                    is_dir,
-                    if end == parts.len() { index } else { None },
-                ),
-            );
+            map.insert(path.to_owned(), (is_dir, incoming));
         }
     }
     Ok(())
 }
 struct Resolved {
     name: String,
-    directory_exists: bool,
     directory_record: bool,
 }
 struct Planner<'a> {
     rows: &'a [Entry],
-    names: BTreeMap<String, (String, bool, Option<usize>)>,
+    names: Names,
     namespace_bytes: usize,
     keep: Vec<bool>,
     renames: Vec<Option<String>>,
@@ -276,34 +264,13 @@ impl Planner<'_> {
         directory: bool,
         size: u64,
     ) -> Result<Option<Resolved>, &'static str> {
-        // Normalize directory spellings against already admitted ancestors.
-        let parts: Vec<_> = name.split('/').map(str::to_string).collect();
-        let mut actual = String::new();
-        for part in &parts[..parts.len() - 1] {
-            if !actual.is_empty() {
-                actual.push('/');
-            }
-            actual.push_str(part);
-            if let Some((spelling, dir, _)) = self.names.get(&key(&actual)) {
-                if !dir {
-                    return Err("name_collision");
-                }
-                actual = spelling.clone();
-            }
-        }
-        name = if actual.is_empty() {
-            parts.last().unwrap().clone()
-        } else {
-            format!("{actual}/{}", parts.last().unwrap())
-        };
-        if let Some((old, existing_directory, original)) = self.names.get(&key(&name)).cloned() {
+        if let Some(&(existing_directory, original)) = self.names.get(&name) {
             if existing_directory != directory {
                 return Err("name_collision");
             }
             if directory {
                 return Ok(Some(Resolved {
-                    name: old,
-                    directory_exists: true,
+                    name,
                     directory_record: original.is_some(),
                 }));
             }
@@ -337,7 +304,6 @@ impl Planner<'_> {
                 ConflictPolicy::Overwrite => {
                     let i = original.ok_or("name_collision")?;
                     self.keep[i] = false;
-                    name = old;
                 }
                 ConflictPolicy::Rename => {
                     let stem = name.clone();
@@ -353,7 +319,7 @@ impl Planner<'_> {
                             .filter(|(a, _)| !a.ends_with('/') && !a.is_empty())
                             .map_or((leaf, String::new()), |(a, b)| (a, format!(".{b}")));
                         let candidate = format!("{parent}{base} ({number}){ext}");
-                        if !self.names.contains_key(&key(&candidate)) {
+                        if !self.names.contains_key(&candidate) {
                             fresh = Some(candidate);
                             break;
                         }
@@ -363,8 +329,8 @@ impl Planner<'_> {
                 ConflictPolicy::Ask => return Err("invalid_decision"),
             }
         }
-        PortablePath::parse(&name).ok_or("unsafe_name")?;
-        if !self.names.contains_key(&key(&name)) {
+        archive_components(name.as_bytes(), false).ok_or("unsafe_name")?;
+        if !self.names.contains_key(&name) {
             insert_name(
                 &mut self.names,
                 &mut self.namespace_bytes,
@@ -376,7 +342,6 @@ impl Planner<'_> {
 
         Ok(Some(Resolved {
             name,
-            directory_exists: false,
             directory_record: false,
         }))
     }
@@ -401,7 +366,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         workspace = Some(authority.workspace(id).map_err(output)?);
         let w = workspace.as_mut().expect("created workspace");
         let tree = if matches!(job.operation, Operation::Add) {
-            let tree = InputTree::scan_for_archive(
+            let tree = InputTree::scan_for_named_archive(
                 &job.options
                     .inputs
                     .iter()
@@ -435,7 +400,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             let name = std::str::from_utf8(row.name_bytes())
                 .map_err(|_| "unsafe_name")?
                 .trim_end_matches('/');
-            PortablePath::parse(name).ok_or("unsafe_name")?;
+            archive_components(name.as_bytes(), false).ok_or("unsafe_name")?;
             insert_name(
                 &mut planner.names,
                 &mut planner.namespace_bytes,
@@ -456,19 +421,20 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         } else if let Some(tree) = &tree {
             for (index, entry) in tree.entries().iter().enumerate() {
                 control.cancel.check().map_err(|_| "cancelled")?;
-                let Some(resolved) = planner.resolve(
-                    format!("{}{}", job.prefix, entry.name),
-                    entry.directory,
-                    entry.size,
-                )?
-                else {
-                    continue;
-                };
-                if entry.directory && resolved.directory_exists {
-                    continue;
+                let name = format!("{}{}", job.prefix, entry.name);
+                archive_components(name.as_bytes(), false).ok_or("unsafe_name")?;
+                if planner.names.contains_key(&name) {
+                    return Err("name_collision");
                 }
+                insert_name(
+                    &mut planner.names,
+                    &mut planner.namespace_bytes,
+                    &name,
+                    entry.directory,
+                    None,
+                )?;
                 additions.entries.push(EncodeEntry {
-                    name: resolved.name,
+                    name,
                     directory: entry.directory,
                     size: entry.size,
                     modified_unix: entry
@@ -596,6 +562,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                         EncodeError::Output => {
                             output_error.get().map(output).unwrap_or("output_io")
                         }
+                        EncodeError::Name => "entry_name_unrepresentable",
                         EncodeError::Unsupported => "unsupported_feature",
                         EncodeError::Limit => "resource_limit",
                         _ => "integrity_error",

@@ -362,7 +362,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let tree = if format.descriptor().container == "single-file" {
             InputTree::scan_for_archive(&paths, excluded, &stopped)
         } else {
-            InputTree::scan_for_creation(&paths, excluded, &stopped)
+            InputTree::scan_for_named_archive(&paths, excluded, &stopped)
         }
         .map_err(|e| e.code())?;
         stats.files = tree.entries().iter().filter(|e| !e.directory).count() as u64;

@@ -14,7 +14,7 @@ En un directorio de trabajo nuevo, privado y con permiso de escritura, crea una 
 
 ```sh
 xdzip create sample.zip docs --level normal --json
-xdzip add sample.zip notes.txt --into docs --conflict skip --json
+xdzip add sample.zip notes.txt --into docs --json
 xdzip test sample.zip --json
 ```
 

@@ -70,11 +70,12 @@ impl Archive {
         if source == target {
             return Err("move_same_directory");
         }
-        let target_key = key(target.trim_end_matches('/'));
         let roots = self.selection_roots(&options.selected, source, cancel)?;
         if roots.iter().any(|(name, directory)| {
-            let canonical = key(name);
-            *directory && (target_key == canonical || target_key.starts_with(&(canonical + "/")))
+            *directory
+                && target
+                    .strip_prefix(*name)
+                    .is_some_and(|rest| rest.starts_with('/'))
         }) {
             return Err("move_selected_directory");
         }
@@ -112,12 +113,8 @@ pub(super) fn plan(
     // in the final output namespace before staging any rewritten bytes.
     planner
         .names
-        .retain(|_, (name, _, _)| moves.selection.root_for(name).is_none());
-    planner.namespace_bytes = planner
-        .names
-        .iter()
-        .map(|(key, (name, _, _))| key.len() + name.len())
-        .sum();
+        .retain(|name, _| moves.selection.root_for(name).is_none());
+    planner.namespace_bytes = planner.names.keys().map(String::len).sum();
     let mut merged = Vec::new();
     for (index, row) in job.rows.iter().enumerate() {
         planner.control.cancel.check().map_err(|_| "cancelled")?;

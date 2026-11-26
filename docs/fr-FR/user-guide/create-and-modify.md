@@ -15,7 +15,7 @@
 
 ## Ajouter, remplacer ou déplacer des fichiers
 
-Ouvrez une archive ZIP/ZIPX, 7z, LHA/LZH ou TAR (avec ou sans compression) compatible et accédez au dossier de destination dans l’archive. Déposez des fichiers ou dossiers locaux sur la liste ou la grille, puis vérifiez et confirmez l’ajout. Les options de conflit permettent notamment de remplacer certains fichiers ordinaires de l’archive. Pour déplacer une entrée existante, faites-la glisser vers un autre dossier de la même archive et confirmez. Faire glisser un élément hors de la fenêtre exporte une copie. [Glisser-déposer selon le système](../engineering/archive-transfers.md)
+Ouvrez une archive ZIP/ZIPX, 7z, LHA/LZH ou TAR (avec ou sans compression) compatible et accédez au dossier de destination dans l’archive. Déposez des fichiers ou dossiers locaux sur la liste ou la grille, puis vérifiez et confirmez l’ajout. Un chemin identique interrompt l’ajout et préserve l’archive d’origine. Pour déplacer une entrée existante, faites-la glisser vers un autre dossier de la même archive et confirmez. Faire glisser un élément hors de la fenêtre exporte une copie. [Glisser-déposer selon le système](../engineering/archive-transfers.md)
 
 La création et l’ajout omettent les fichiers `.DS_Store` et les dossiers `__MACOSX` et `_MACOSX`. La possibilité de modifier une archive dépend de son format, de son contenu et de sa source. La procédure habituelle ne permet pas de modifier les archives chiffrées, fractionnées ou indexées sur disque. Si la modification est indisponible, extrayez dans un nouveau dossier et créez une nouvelle archive. [Règles de modification et de glisser-déposer](../engineering/archive-transfers.md)
 

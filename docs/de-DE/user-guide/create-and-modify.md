@@ -15,7 +15,7 @@
 
 ## Dateien hinzufügen, ersetzen oder verschieben
 
-Öffnen Sie ein geeignetes Archiv im Format ZIP/ZIPX, 7z, LHA/LZH, TAR oder komprimiertes TAR und wechseln Sie darin zum Zielordner. Ziehen Sie lokale Dateien oder Ordner auf die Liste oder das Raster und prüfen und bestätigen Sie das Hinzufügen. Zu den Konfliktoptionen gehört das Ersetzen geeigneter regulärer Dateien im Archiv. Ziehen Sie einen vorhandenen Eintrag zum Verschieben in einen anderen Ordner desselben Archivs und bestätigen Sie. Beim Ziehen aus dem Fenster wird eine Kopie exportiert. [Ziehen und Ablegen je nach Plattform](../engineering/archive-transfers.md)
+Öffnen Sie ein geeignetes Archiv im Format ZIP/ZIPX, 7z, LHA/LZH, TAR oder komprimiertes TAR und wechseln Sie darin zum Zielordner. Ziehen Sie lokale Dateien oder Ordner auf die Liste oder das Raster und prüfen und bestätigen Sie das Hinzufügen. Ein identischer Archivpfad bricht das Hinzufügen ab und erhält das ursprüngliche Archiv. Ziehen Sie einen vorhandenen Eintrag zum Verschieben in einen anderen Ordner desselben Archivs und bestätigen Sie. Beim Ziehen aus dem Fenster wird eine Kopie exportiert. [Ziehen und Ablegen je nach Plattform](../engineering/archive-transfers.md)
 
 Beim Erstellen und Hinzufügen werden `.DS_Store`-Dateien und die Verzeichnisse `__MACOSX` und `_MACOSX` ausgelassen. Ob ein Archiv geändert werden kann, hängt von Format, Inhalt und Quelle ab. Verschlüsselte, mehrteilige und auf der Festplatte indizierte Archive lassen sich auf diesem Weg nicht bearbeiten. Ist die Bearbeitung nicht möglich, entpacken Sie in einen neuen Ordner und erstellen Sie ein neues Archiv. [Regeln für Änderungen und Ziehen und Ablegen](../engineering/archive-transfers.md)
 

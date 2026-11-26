@@ -21,7 +21,7 @@
   "changes": [
     "Reuse the C01 hero, three cards, inner panels and shared operation controls.",
     "Creation and addition share file selection, advisory worker metadata, deduplication and accessible removal.",
-    "Existing archive and archive-relative destination are read-only; four conflict policies retain their existing semantics.",
+    "The existing archive and archive-relative destination are read-only. The third card explains that additions stop when an entry name already exists.",
     "Height adapts to content, with scrolling body and fixed footer at large type or on short screens."
   ],
   "scope": "Editable design and product layout contract; generated captures and native acceptance evidence remain outside Git."
