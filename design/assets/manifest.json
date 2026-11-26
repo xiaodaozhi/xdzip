@@ -3035,11 +3035,11 @@
           "assets/light/app-mark.png"
         ]
       },
-      "sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
+      "sha256": "cc5ffe12ebccafc760a57b8deae6c43aeb085d745e734916019995553059663a",
       "source_reference": "reference/brand-titlebar.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip.svg",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "source_revision": "current-logo",
       "visible_bounds": [
         2.0,
@@ -5430,11 +5430,11 @@
           "assets/dark/app-mark.png"
         ]
       },
-      "sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
+      "sha256": "822afc8a556aec6a700be48b8f203121a273c07a8367115d84092707f92945ae",
       "source_reference": "reference/brand-titlebar.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip.svg",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "source_revision": "current-logo",
       "visible_bounds": [
         2.0,
@@ -7811,7 +7811,7 @@
         1024,
         1024
       ],
-      "sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "source_sha256": "5f783b8b64a20db572aba174427e560486525d4aba6de2a6a407cc908b4d8fa0",
       "runtime_usage": {
         "qt_aliases": [],
@@ -7832,9 +7832,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "d045d947993cab25fa0237dbfbc7073a1bb66a4fea4942e1f1d86a85b9353d31",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "51698a74241504de591cad8b8f62473a37fcce5e272c3fa8884608e3bc6429c1",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7854,9 +7854,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "f82dc56350cca47ca009df6a23314696a58769d57854693999acf07cc95994a1",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "5843f3c131af4354f2638c4b64737a0c49d288a9bf4a50aadbec3db903372ec8",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7876,9 +7876,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "3bc68bf1bd75ab0de42091cae3c4d5f71916ee17f852e71163b72b5885e633ae",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "1dc9850624c333f445202227ef7f54043aaf9ca38e192e02b709a42c63bdacca",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7898,9 +7898,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "fc0c8c5a3f31bdec2130ec4bcf8b4dd83cc3c3a3ffca8751c67cbd03a095ef4b",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "32daf4f8d012db066b61b4daff8929c05bf4254f10ef9fb7f4ae21ace561c825",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7920,9 +7920,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "d01b95fa4d7cc84f1152f445658cdf9495b9066696cb5f9eab52697e98fc16f1",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "33691321020af04b88c459b4bbb2c7d0aa23f09ae293b0fc5c9030168508959c",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7942,9 +7942,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "db6a5accb7cb0601b38ccc70d7b619927fe67fb36ecf4a70ea1435c1bb2d3d95",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "118b2479d0933326efdeb3c21b31caf3b35658d84e6fa5532d1cc0ba48af3cb0",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7964,9 +7964,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "3fbd2a93d3df87bd3cc45a5dc9a5c3fe15fbb830ad0a1513259071eb6efaace0",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "0589751a3a6e9f0aa5e48d102bba3badb63c71f9cf01d30f43f6c7bc90433626",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7986,9 +7986,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "143e0faa0ca1f3a3312df89b72da4f6089d57ce04437503f05e0203760646d6a",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "a3d44b3af012d2a02a9e9ee05ea7b2e0231dc908c87f63954074d20130c14216",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [
           "assets/app-icon.png"
@@ -8012,9 +8012,9 @@
       ],
       "format": "png",
       "optical_body_height": 0.9,
-      "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "0db576a5a0d2cedef386edb5cd586e44ee1175e8593e2fe6f6c0649c820b3539",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "raster_profile": "UI detail at 16/24/32; application master at 48–1024",
+      "sha256": "42b6bfeee44d8475fd108b57e61ed66c20cb73e168248fd1ba0283a25b423292",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8038,8 +8038,8 @@
         128,
         256
       ],
-      "sha256": "2ac322b40b531e4d468e8d8c8b2fb4239d67d01aff879ac0562dec6f6a470acf",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "8ea59978733437e41b36868182d4cba5388b6e7f7dd35bea891edd1ccef8115b",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": [
@@ -8071,8 +8071,8 @@
         "ic13": 256,
         "ic14": 512
       },
-      "sha256": "acbe8ad88a5e48bc747123e60bcd2654875b659c6ae4a6b9f5e650bdc038938e",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "fb564017ac77416698195dac6f565e824b5ef5a9144a75909aba70c8f7e3468f",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": [
@@ -8190,7 +8190,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/app-mark.svg",
-      "source_sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
+      "source_sha256": "cc5ffe12ebccafc760a57b8deae6c43aeb085d745e734916019995553059663a",
       "visible_bounds": [
         2.0,
         2.0,
@@ -8198,7 +8198,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "7117aab3a818a33d9aba0b6a33b3be505cad52a2f6eac082698956b548177788"
+      "sha256": "d8b140576dc3512e79fe05bdf069fef368a3b424dab6ec3df0003c836d7e07b2"
     },
     {
       "id": "raster/light/app-mark@2x",
@@ -8220,7 +8220,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/app-mark.svg",
-      "source_sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
+      "source_sha256": "cc5ffe12ebccafc760a57b8deae6c43aeb085d745e734916019995553059663a",
       "visible_bounds": [
         2.0,
         2.0,
@@ -8228,7 +8228,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "0a4645012b4b851b8775332e1e93d51719c9c9f027165c933956d798c64f736d"
+      "sha256": "e9be813ee1823971dc8a4f62e660aea960b70f0cbf9f66e1f2f2122a6cbed581"
     },
     {
       "id": "raster/light/app-mark@3x",
@@ -8250,7 +8250,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/app-mark.svg",
-      "source_sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
+      "source_sha256": "cc5ffe12ebccafc760a57b8deae6c43aeb085d745e734916019995553059663a",
       "visible_bounds": [
         2.0,
         2.0,
@@ -8258,7 +8258,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "8d56d7571f33ba10d312b410ab68f0f9f549e5cacd10282ce7309e895768b768"
+      "sha256": "b8b2b4cbe8411b80ac3c4c064ea335394bd7a189c11662be904915d6c6386eba"
     },
     {
       "id": "raster/light/archive@1x",
@@ -15664,7 +15664,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/app-mark.svg",
-      "source_sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
+      "source_sha256": "822afc8a556aec6a700be48b8f203121a273c07a8367115d84092707f92945ae",
       "visible_bounds": [
         2.0,
         2.0,
@@ -15672,7 +15672,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "7117aab3a818a33d9aba0b6a33b3be505cad52a2f6eac082698956b548177788"
+      "sha256": "d8b140576dc3512e79fe05bdf069fef368a3b424dab6ec3df0003c836d7e07b2"
     },
     {
       "id": "raster/dark/app-mark@2x",
@@ -15694,7 +15694,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/app-mark.svg",
-      "source_sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
+      "source_sha256": "822afc8a556aec6a700be48b8f203121a273c07a8367115d84092707f92945ae",
       "visible_bounds": [
         2.0,
         2.0,
@@ -15702,7 +15702,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "0a4645012b4b851b8775332e1e93d51719c9c9f027165c933956d798c64f736d"
+      "sha256": "e9be813ee1823971dc8a4f62e660aea960b70f0cbf9f66e1f2f2122a6cbed581"
     },
     {
       "id": "raster/dark/app-mark@3x",
@@ -15724,7 +15724,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/app-mark.svg",
-      "source_sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
+      "source_sha256": "822afc8a556aec6a700be48b8f203121a273c07a8367115d84092707f92945ae",
       "visible_bounds": [
         2.0,
         2.0,
@@ -15732,7 +15732,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "8d56d7571f33ba10d312b410ab68f0f9f549e5cacd10282ce7309e895768b768"
+      "sha256": "b8b2b4cbe8411b80ac3c4c064ea335394bd7a189c11662be904915d6c6386eba"
     },
     {
       "id": "raster/dark/archive@1x",
@@ -23385,8 +23385,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "f011d1d15a09bb2a4c81d236c4ee4311fbc9ace76033487d871a71edd792aae9",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "49527133042c65140382d89064695208e37c9b2a5f3ec75ca3ddd5d4904b1bbe",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -23407,8 +23407,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "9686d037a43ae5f797eecdc11a1097d2ebeb6c449d042d19fe776e5aa881ec72",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "9c5e394e7692750daa026fbe8fbc25c63fd55973156328b4e9347869982429ea",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -23429,8 +23429,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "5c0d4e5c2cd81f976bff47ff4312d07b46987dfe93394174616df870469a4a86",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "3f551dd913e4247106dc639be172f255dcb1fda8987b26d99a44c88a56f9b3a7",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -23451,8 +23451,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "d3d87e0c1ea581e782f24f3904675e5a89e30d3cabc4950e784075ceb6b22e01",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "85df8de59e82e85425d1013ba319dc4b7ac8b246617983974654566ad905552e",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -23473,8 +23473,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "e20bd15489dacb0a2d041c09cbf46ffb442ceab5511e722591fe1e609f0eb633",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "48fbf5935203f2f7cba8e2c06a5369601daf3591d8ba9bfc5f2df8c7b8602325",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -23495,8 +23495,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "697270ff4cc800396d3dc7c6d074820f1d24a19320aac14208e86f8450033bec",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "49ad55169ff48d290098ef1bc01915be4d251c870f8cd0f0befb50cfb0a0949e",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -23517,8 +23517,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "736e405908e2799ad1506c606d98d62cbe8f4a32daa890a4ff277c24f82fe6ec",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "7c637b3cbc54612c66db695a1629c3a8a480eb9e92d71e6394a58ac24c83e03c",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -23539,8 +23539,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "722c63a9f88d0010018673d85836c154a9f356249de541fe1220b42aad3290e1",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "8d4da6e87f64d0b76e57b4dc4b8c9a70934d4517df0b651c5fc81972b720649a",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [
           "assets/app-icon-macos.png"
@@ -23565,8 +23565,8 @@
       "format": "png",
       "platform": "macos",
       "optical_body_height": 0.8120300751879699,
-      "sha256": "c4c8f571dba6060d6fe4126a16f3cf2c7d84ec274d96ae7097f40b6f55f6c741",
-      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "sha256": "b94b3da0f1f1fb8ac39e660e834c7ad32ab8ac54112c247c34bf662ba9c18b16",
+      "source_sha256": "2e7a349f8a55d6d4467a8650f7119f31e5f5a6a2a59f3aaf56f83729db08a964",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []

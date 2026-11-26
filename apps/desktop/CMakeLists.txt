@@ -242,6 +242,10 @@ if(WIN32)
     set(XDZIP_RESOURCE_SHELL_PROTOCOL "0")
     configure_file(packaging/windows/app.rc.in "${CMAKE_CURRENT_BINARY_DIR}/xdzip-association.rc" @ONLY)
     target_sources(xdzip-association-launcher PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/xdzip-association.rc")
+    set_source_files_properties(
+        "${CMAKE_CURRENT_BINARY_DIR}/xdzip.rc"
+        "${CMAKE_CURRENT_BINARY_DIR}/xdzip-association.rc"
+        PROPERTIES OBJECT_DEPENDS "${XDZIP_APP_ICON_ICO}")
 endif()
 if(APPLE)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${XDZIP_LANGUAGE_CATALOGS}
