@@ -97,6 +97,29 @@ Item {
             tryVerify(() => open.height > 124 && create.height === open.height);
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
         }
+        function test_formats_settings_hover_data() {
+            return [{tag: "light", dark: false}, {tag: "dark", dark: true}];
+        }
+        function test_formats_settings_hover(data) {
+            Ui.Theme.dark = data.dark;
+            formatsSpy.clear();
+            const button = findChild(page, "welcomeFormatsSettings");
+            page.revealAction(button);
+            verify(waitForRendering(page));
+            mouseMove(page, 0, 0);
+            compare(button.background.color, "#00000000");
+            mouseMove(button, button.width / 2, button.height / 2);
+            tryCompare(button, "hovered", true);
+            compare(button.background.color, Ui.Theme.controlHover);
+            mousePress(button, button.width / 2, button.height / 2);
+            compare(button.background.color, Ui.Theme.controlPressed);
+            mouseRelease(button, button.width / 2, button.height / 2);
+            compare(formatsSpy.count, 1);
+            compare(button.background.color, Ui.Theme.controlHover);
+            mouseMove(page, 0, 0);
+            tryCompare(button, "hovered", false);
+            compare(button.background.color, "#00000000");
+        }
         function test_format_group_summary_data() {
             return [1, 1.25, 1.5].map(scale => ({tag: String(scale), scale: scale}));
         }

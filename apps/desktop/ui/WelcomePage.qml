@@ -267,6 +267,13 @@ Rectangle {
                             objectName: "welcomeFormatsSettings"
                             text: qsTrId("welcome.formatsOpenSettings")
                             labelSize: Theme.welcomeFormatFontSize * Theme.fontScale
+                            background: Rectangle {
+                                objectName: "welcomeFormatsSettingsBackground"
+                                radius: formatsSettingsButton.cornerRadius
+                                color: !formatsSettingsButton.enabled ? "transparent"
+                                    : formatsSettingsButton.down ? Theme.controlPressed
+                                    : formatsSettingsButton.hovered ? Theme.controlHover : "transparent"
+                            }
                             onClicked: root.formatsRequested()
                             onActiveFocusChanged: if (activeFocus)
                                 root.revealAction(formatsSettingsButton)
