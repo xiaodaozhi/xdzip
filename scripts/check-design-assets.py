@@ -88,9 +88,11 @@ def check_reference_coverage(manifest: dict, by_file: dict) -> list[dict]:
     references = {f'reference/{name}.png' for name in REFERENCE_ICONS}
     assert len(coverage) == len(references) == 36, 'Incomplete reference coverage'
     assert {item['reference'] for item in coverage} == references, 'Untracked reference coverage'
+    expected_files = references | {f'reference/{name}.png' for name in TREE_CUTS | OPERATION_CUTS}
     assert {entry['file'] for entry in manifest['assets']
-            if entry['kind'] == 'original-pixel-crop' and entry['usage'] == 'visual-reference-only'} == (
-                references | {f'reference/{name}.png' for name in TREE_CUTS} | {f'reference/{name}.png' for name in OPERATION_CUTS})
+            if entry['kind'] == 'original-pixel-crop' and entry['usage'] == 'visual-reference-only'} == expected_files
+    actual_files = {path.relative_to(ROOT).as_posix() for path in (ROOT / 'reference').rglob('*') if path.is_file()}
+    assert actual_files == expected_files, f'Unexpected or missing reference files: {sorted(actual_files ^ expected_files)}'
     assert manifest.get('operation_reference_coverage') == operation_reference_coverage()
     checked = []
     for item in coverage:

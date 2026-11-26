@@ -304,7 +304,9 @@ def gallery(entries: list[dict]) -> str:
         # A 16px/24px platform PNG is shown at its real resolution, not enlarged
         # into a misleading, blurry 160px sample. Vector masters remain scalable.
         preview_size = min(160, max(item.get('size', [160]))) if Path(item['file']).suffix == '.png' else 160
-        preview = (f'<img width="{preview_size}" height="{preview_size}" src="{item["file"]}" alt="{name}">'
+        preview_height = (round(preview_size * item['size'][1] / item['size'][0])
+                          if item['kind'] == 'brand-reference' else preview_size)
+        preview = (f'<img width="{preview_size}" height="{preview_height}" src="{item["file"]}" alt="{name}">'
                    if Path(item['file']).suffix in ('.svg', '.png', '.jpg', '.jpeg') else '<span class="format">' + name.rsplit('.', 1)[-1].upper() + '</span>')
         dimensions = f'{item["size"][0]} × {item["size"][1]} px' if 'size' in item else item.get('format', '').upper()
         platform_cards.append(f'<figure class="platform-card"><div>{preview}</div><figcaption><a href="{item["file"]}">{name}</a><small>{html.escape(item["kind"])}，{dimensions}</small></figcaption></figure>')
@@ -366,6 +368,9 @@ def main() -> None:
             if item['kind'] == 'association-icon-source' and item['file'] in recorded:
                 # These independently generated vector sources have no tracked
                 # raster receipts; refreshing them must preserve runtime PNGs.
+                recorded[item['file']].update(item)
+            if item['kind'] == 'brand-reference' and item['file'] in recorded:
+                # The composed preview is refreshed independently of runtime icons.
                 recorded[item['file']].update(item)
             if (args.refresh_association_icons and item['kind'] == 'association-icon-platform'
                     and item['file'] in recorded):

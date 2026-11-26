@@ -102,7 +102,7 @@ Branding uses four interwoven bands and an open U-shaped bottom, with geometry m
 
 The current mark retains a slender 2:3 aspect ratio and is not stretched to the old mark's width. Its base uses a rotationally symmetric continuous-curvature curve at all four corners, smoothly increasing curvature from zero on straight edges to the diagonal midpoint, avoiding a beveled middle. Lighting and base share one path; do not overlay strokes of different radii or open highlight lines. Document badges use the same outline definition.
 
-The original boards and the remaining original-pixel cuts are available for design comparison. The historical `brand/identity-reference.png` is included in the design inventory and verified by brand tooling. The application uses its vector master.
+The original boards and preserved pixel crops are available for design comparison. The [brand reference sheet](../../design/assets/brand/identity-reference.png) shows the current application and ZIP document icons at their exported sizes.
 
 Small UI icons retain 24×24 canvases. Platform icons export transparent PNGs at 16/24/32/48/64/128/256/512/1024 pixels. Sizes 16/24/32 simplify illegible text and large-image lighting while retaining the interwoven bands and U-shaped recognition structure. Application and ZIP document icons each provide ICO with seven sizes and ICNS with eleven density representations. Do not infinitely enlarge a 24-unit UI icon for system use or shrink large shadows into small-size noise.
 

@@ -176,14 +176,19 @@ def png_name(stem: str, size: int) -> str:
     return f'{stem}.png' if size == 512 else f'{stem}-{size}.png'
 
 
+IDENTITY_REFERENCE_FILE = 'brand/identity-reference.png'
+IDENTITY_REFERENCE_SOURCES = ('brand/xdzip.ico', 'file-associations/xdzip-zip.ico')
+
+
 def brand_export_specs() -> list[dict]:
     """Metadata consumed by the single canonical asset-manifest builder."""
     entries = [
         {'file': 'brand/mark.svg', 'kind': 'brand-master', 'purpose': 'signature-source',
          'size': list(MARK_VIEWBOX[2:]), 'provenance': 'vector redraw of the revised narrow signature'},
-        {'file': 'brand/identity-reference.png', 'kind': 'brand-reference',
-         'purpose': 'generated-visual-direction', 'usage': 'visual-reference-only',
-         'provenance': 'generated high-fidelity application and document design sheet'},
+        {'file': IDENTITY_REFERENCE_FILE, 'kind': 'brand-reference',
+         'purpose': 'current-application-and-zip-preview', 'usage': 'visual-reference-only',
+         'sources': list(IDENTITY_REFERENCE_SOURCES),
+         'provenance': 'current ICO representations composited at 256, 64, 48, 32 and 24 pixels'},
     ]
     for stem, purpose in [('xdzip', 'application-icon')]:
         source = f'brand/{stem}.svg'

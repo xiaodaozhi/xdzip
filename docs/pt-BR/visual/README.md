@@ -102,7 +102,7 @@ A marca usa quatro faixas entrelaçadas e uma parte inferior aberta em U, com ge
 
 A marca atual mantém proporção esbelta de 2:3 e não é esticada para a largura da marca antiga. Sua base usa curva de curvatura contínua com simetria rotacional nos quatro cantos, aumentando suavemente a curvatura de zero nas bordas retas até o ponto médio diagonal, evitando um centro chanfrado. Iluminação e base compartilham um caminho; não sobreponha traços de raios diferentes ou linhas de brilho abertas. Insígnias de documento usam a mesma definição de contorno.
 
-As pranchas originais e os recortes preservados permitem comparar designs. A referência histórica `brand/identity-reference.png` consta no inventário de design e é validada pelas ferramentas de marca. O aplicativo usa seu original vetorial.
+As pranchas originais e os recortes preservados permitem comparar os designs. A [prancha de referência da marca](../../../design/assets/brand/identity-reference.png) mostra os ícones atuais do aplicativo e dos documentos ZIP nos tamanhos de exportação.
 
 Ícones pequenos de interface mantêm telas 24×24. Ícones de plataforma exportam PNGs transparentes de 16/24/32/48/64/128/256/512/1024 pixels. Tamanhos 16/24/32 simplificam texto ilegível e iluminação de imagem grande, preservando as faixas entrelaçadas e a estrutura reconhecível em U. Ícones do aplicativo e documento ZIP oferecem cada um ICO com sete tamanhos e ICNS com onze representações de densidade. Não amplie indefinidamente um ícone de interface de 24 unidades para uso do sistema nem reduza sombras grandes até virarem ruído em tamanho pequeno.
 

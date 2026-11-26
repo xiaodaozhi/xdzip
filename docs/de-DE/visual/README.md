@@ -102,7 +102,7 @@ Die Marke verwendet vier verflochtene Bänder und einen offenen U-förmigen unte
 
 Das aktuelle Zeichen behält ein schlankes Seitenverhältnis 2:3 und wird nicht auf die Breite des alten Zeichens gestreckt. Seine Basis verwendet an allen vier Ecken eine rotationssymmetrische Kurve mit stetiger Krümmung, die von null an geraden Kanten bis zur diagonalen Mitte gleichmäßig zunimmt und eine abgeschrägte Mitte vermeidet. Beleuchtung und Basis teilen einen Pfad; Striche unterschiedlicher Radien oder offene Glanzlinien nicht überlagern. Dokumentabzeichen verwenden dieselbe Konturdefinition.
 
-Die Originalentwürfe und die erhaltenen Ausschnitte dienen dem Designvergleich. Die historische Referenz `brand/identity-reference.png` ist im Designinventar erfasst und wird von den Markenwerkzeugen geprüft. Die Anwendung verwendet ihren Vektormaster.
+Die Originalentwürfe und die erhaltenen Ausschnitte dienen dem Designvergleich. Die [Markenübersicht](../../../design/assets/brand/identity-reference.png) zeigt die aktuellen Symbole für die Anwendung und für ZIP-Dokumente in ihren Exportgrößen.
 
 Kleine UI-Symbole behalten 24×24-Zeichenflächen. Plattformsymbole exportieren transparente PNGs mit 16/24/32/48/64/128/256/512/1024 Pixeln. Die Größen 16/24/32 vereinfachen unleserlichen Text und Beleuchtung großer Bilder und bewahren verflochtene Bänder und U-förmige Erkennungsstruktur. Anwendungs- und ZIP-Dokumentsymbole bieten jeweils ICO mit sieben Größen und ICNS mit elf Dichtedarstellungen. Ein 24-Einheiten-UI-Symbol nicht unbegrenzt für Systemnutzung vergrößern oder große Schatten zu Kleingrößenrauschen verkleinern.
 

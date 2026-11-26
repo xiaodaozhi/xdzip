@@ -14,14 +14,13 @@ import hashlib
 import io
 import os
 from pathlib import Path
-import shutil
 import struct
 import xml.etree.ElementTree as ET
 
 from PIL import Image, PngImagePlugin
 
-from brand_assets import (EXPORT_SIZES, ICO_SIZES, ICNS_CHUNKS, brand_shapes,
-                          master_svg, mark_svg, png_name)
+from brand_assets import (EXPORT_SIZES, ICO_SIZES, ICNS_CHUNKS, IDENTITY_REFERENCE_FILE,
+                          IDENTITY_REFERENCE_SOURCES, brand_shapes, master_svg, mark_svg, png_name)
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / 'design/assets/brand'
@@ -76,6 +75,20 @@ def icns_bytes(stem: str) -> bytes:
     return b'icns' + struct.pack('>I', len(data) + 8) + data
 
 
+def identity_reference() -> Image.Image:
+    """Show the shipped application and ZIP document icons at native sizes."""
+    sheet = Image.new('RGBA', (768, 448), '#f8fafc')
+    # Each column has one large icon and a row of small size representations.
+    samples = ((256, 0, 164), (64, -108, 356), (48, -32, 356),
+               (32, 40, 356), (24, 108, 356))
+    for source, center in zip(IDENTITY_REFERENCE_SOURCES, (192, 576)):
+        with Image.open(OUTPUT.parent / source) as container:
+            for size, x, y in samples:
+                icon = container.ico.getimage((size, size)).convert('RGBA')
+                sheet.alpha_composite(icon, (center + x - size // 2, y - size // 2))
+    return sheet.convert('RGB')
+
+
 def validate() -> None:
     """Check exact vector sources, PNG receipts, transparency and package records."""
     expected_svgs = {'mark.svg': mark_svg(), 'xdzip.svg': master_svg('application')}
@@ -84,8 +97,6 @@ def validate() -> None:
         if not path.exists() or path.read_text() != expected:
             raise ValueError(f'Stale brand vector: {name}')
         ET.fromstring(expected)
-    with Image.open(OUTPUT / 'identity-reference.png') as reference:
-        reference.verify()
     for stem in ['xdzip']:
         source_hash = digest((OUTPUT / f'{stem}.svg').read_bytes())
         for platform in ('default', 'macos'):
@@ -142,20 +153,20 @@ def validate() -> None:
                 decoded = image.icns.getimage(size)
                 if decoded.size != (size[0] * size[2], size[1] * size[2]):
                     raise ValueError(f'Unreadable ICNS size {size}: {stem}')
-    print('Application brand: 18 transparent PNGs, 7 ICO representations, 11 ICNS chunks; sources and receipts valid')
+    expected_reference = identity_reference()
+    with Image.open(OUTPUT.parent / IDENTITY_REFERENCE_FILE) as reference:
+        if (reference.format != 'PNG' or reference.mode != expected_reference.mode
+                or reference.size != expected_reference.size
+                or reference.tobytes() != expected_reference.tobytes()):
+            raise ValueError('Stale identity reference; run build-brand-assets.py --identity-only')
+    print('Application brand: 18 transparent PNGs, 7 ICO representations, 11 ICNS chunks; sources, receipts and identity reference valid')
 
 
-def build(reference: Path | None) -> None:
+def build() -> None:
     from playwright.sync_api import sync_playwright
 
     OUTPUT.mkdir(parents=True, exist_ok=True)
     (OUTPUT / 'macos').mkdir(exist_ok=True)
-    if reference:
-        if reference.resolve() == (OUTPUT / 'identity-reference.png').resolve():
-            raise ValueError('Reference source and destination must be different')
-        shutil.copyfile(reference, OUTPUT / 'identity-reference.png')
-    if not (OUTPUT / 'identity-reference.png').is_file():
-        raise ValueError('Supply the generated visual direction with --reference on the first build')
     (OUTPUT / 'mark.svg').write_text(mark_svg(), encoding='utf-8', newline='\n')
     for stem, kind in [('xdzip', 'application')]:
         (OUTPUT / f'{stem}.svg').write_text(master_svg(kind), encoding='utf-8', newline='\n')
@@ -184,20 +195,20 @@ def build(reference: Path | None) -> None:
     for stem in ['xdzip']:
         (OUTPUT / f'{stem}.ico').write_bytes(ico_bytes(stem))
         (OUTPUT / f'{stem}.icns').write_bytes(icns_bytes(stem))
-    validate()
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--reference', type=Path, help='Generated brand design sheet; preserved byte-for-byte')
-    parser.add_argument('--check', action='store_true', help='Validate tracked exports without rasterizing')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--identity-only', action='store_true', help='Refresh only the identity preview from the tracked ICOs')
+    mode.add_argument('--check', action='store_true', help='Validate tracked exports without rasterizing')
     args = parser.parse_args()
-    if args.check and args.reference:
-        parser.error('--reference cannot be combined with --check')
-    if args.check:
+    if not args.check:
+        if not args.identity_only:
+            build()
+        identity_reference().save(OUTPUT.parent / IDENTITY_REFERENCE_FILE)
+    if not args.identity_only:
         validate()
-    else:
-        build(args.reference)
 
 
 if __name__ == '__main__':
