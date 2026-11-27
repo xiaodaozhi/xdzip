@@ -223,23 +223,21 @@ pub struct EntryDetails {
     pub comment_truncated: bool,
 }
 
-/// Render known DOS-shaped flags as compact letters, padded to four positions.
+/// Render known DOS-shaped flags as directory/archive, system, hidden, read-only.
 /// The value is advisory and never applied to extracted objects.
 pub fn display_dos_attributes(directory: bool, flags: u32) -> String {
-    let mut out = String::new();
-    for (present, letter) in [
-        (directory || flags & 0x10 != 0, 'D'),
-        (flags & 0x20 != 0, 'A'),
-        (flags & 0x01 != 0, 'R'),
-        (flags & 0x02 != 0, 'H'),
-        (flags & 0x04 != 0, 'S'),
-    ] {
-        if present {
-            out.push(letter);
-        }
+    let mut out = String::with_capacity(5);
+    let is_directory = directory || flags & 0x10 != 0;
+    if is_directory {
+        out.push('D');
     }
-    while out.len() < 4 {
+    if flags & 0x20 != 0 {
+        out.push('A');
+    } else if !is_directory {
         out.push('_');
+    }
+    for (mask, letter) in [(0x04, 'S'), (0x02, 'H'), (0x01, 'R')] {
+        out.push(if flags & mask != 0 { letter } else { '_' });
     }
     out
 }
@@ -258,9 +256,10 @@ mod property_display_tests {
         assert_eq!(display_dos_attributes(false, 0), "____");
         assert_eq!(display_dos_attributes(true, 0), "D___");
         assert_eq!(display_dos_attributes(false, 0x20), "A___");
-        assert_eq!(display_dos_attributes(false, 0x27), "ARHS");
-        assert_eq!(display_dos_attributes(true, 0x27), "DARHS");
-        assert_eq!(display_posix_attributes(false, 0o444), "R___");
+        assert_eq!(display_dos_attributes(false, 0x21), "A__R");
+        assert_eq!(display_dos_attributes(false, 0x27), "ASHR");
+        assert_eq!(display_dos_attributes(true, 0x27), "DASHR");
+        assert_eq!(display_posix_attributes(false, 0o444), "___R");
         assert_eq!(display_posix_attributes(true, 0o755), "D___");
     }
 }

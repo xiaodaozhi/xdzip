@@ -60,7 +60,7 @@ fn windows_info_exposes_egg_specific_attributes() {
             ScanLimits::default(),
         )
         .unwrap();
-    assert_eq!(rows[0].details.attributes.as_deref(), Some("RH__"));
+    assert_eq!(rows[0].details.attributes.as_deref(), Some("__HR"));
 }
 
 #[test]
