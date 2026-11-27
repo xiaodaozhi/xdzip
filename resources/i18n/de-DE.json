@@ -4,6 +4,7 @@
   "name": "Deutsch",
   "messages": {
     "archive.comment.title": "Archivkommentar",
+    "archive.comment.view": "Archivkommentar anzeigen",
     "archive.comment.loading": "Kommentar wird gelesen…",
     "archive.comment.enter": "Archivkommentar eingeben",
     "archive.comment.empty": "Dieses Archiv hat keinen Kommentar.",

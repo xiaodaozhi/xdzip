@@ -13,4 +13,4 @@ Archives open in tabs by default. Change the setting to open them in separate wi
 
 ## View the archive comment
 
-Open a ZIP or RAR archive and choose **More → Archive comment** in the toolbar. You can select and copy the text. For a writable, ordinary ZIP, ZIP64 or ZIPX archive, edit the text and choose **Save**. Clear it and save to remove it. The limit is 65,535 bytes in UTF-8. Split, self-extracting, encrypted and large disk-indexed ZIPs, signed or derived packages, and RAR comments are read-only.
+Open a ZIP or RAR archive and choose **More → View archive comment** in the toolbar. You can select and copy the text. For a writable, ordinary ZIP, ZIP64 or ZIPX archive, edit the text and choose **Save**. Clear it and save to remove it. The limit is 65,535 bytes in UTF-8. Split, self-extracting, encrypted and large disk-indexed ZIPs, signed or derived packages, and RAR comments are read-only.

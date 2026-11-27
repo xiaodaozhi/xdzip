@@ -4,6 +4,7 @@
   "name": "Русский",
   "messages": {
     "archive.comment.title": "Комментарий к архиву",
+    "archive.comment.view": "Просмотреть комментарий к архиву",
     "archive.comment.loading": "Чтение комментария…",
     "archive.comment.enter": "Введите комментарий к архиву",
     "archive.comment.empty": "У этого архива нет комментария.",

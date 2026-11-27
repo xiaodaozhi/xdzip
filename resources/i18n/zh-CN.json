@@ -4,6 +4,7 @@
   "name": "中文 (简体)",
   "messages": {
     "archive.comment.title": "压缩包注释",
+    "archive.comment.view": "查看压缩包注释",
     "archive.comment.loading": "正在读取注释…",
     "archive.comment.enter": "输入压缩包注释",
     "archive.comment.empty": "此压缩包没有注释。",

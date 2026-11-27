@@ -150,7 +150,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.confirmationLogicalWidth",
-      "reason": "使用 491 逻辑宽度的文字布局。标题下显示压缩包文件名，正文支持滚动和键盘选择，保存和关闭使用固定共享底栏。",
+      "reason": "使用 491 逻辑宽度的文字布局。窗口标题由标题栏呈现，正文从可滚动、可键盘选择的编辑区开始，保存和关闭使用固定共享底栏。",
       "design": "design/hifi/screens/archive-comment-edit-light.svg",
       "readonly_design": "design/hifi/screens/archive-comment-read-dark.svg"
     },

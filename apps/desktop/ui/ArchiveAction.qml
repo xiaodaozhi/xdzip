@@ -11,6 +11,7 @@ Button {
     property bool circular: false
     property bool tooltipEnabled: true
     property bool selected: false
+    property bool appearanceEnabled: enabled
     // Reserved presentation for the unavailable extraction action; no dropdown is activated.
     property bool splitIndicator: false
     property bool taskDisclosure: false
@@ -49,7 +50,7 @@ Button {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.alignWhenCentered: false
                 fillMode: Image.PreserveAspectFit
-                opacity: root.enabled ? 1 : 0.6
+                opacity: root.appearanceEnabled ? 1 : 0.6
             }
             Text {
                 id: label
@@ -60,7 +61,7 @@ Button {
                 textFormat: Text.PlainText
                 font.pixelSize: root.labelSize
                 font.weight: root.toolbarStyle ? Font.Medium : Font.Normal
-                color: !root.enabled ? (root.primary ? Theme.accentDisabledText : Theme.textSecondary) : root.primary ? Theme.accentText : Theme.text
+                color: !root.appearanceEnabled ? (root.primary ? Theme.accentDisabledText : Theme.textSecondary) : root.primary ? Theme.accentText : Theme.text
                 verticalAlignment: Text.AlignVCenter
             }
             Item {
@@ -90,7 +91,7 @@ Button {
     background: Rectangle {
         objectName: "actionBackground"
         radius: root.circular ? Math.min(width, height) / 2 : root.toolbarStyle ? Theme.mainToolbarRadius : Theme.mainControlRadius
-        color: root.primary && !root.enabled ? Theme.accentDisabled : root.primary ? (root.down ? Theme.accentPressed : root.hovered ? Theme.accentHover : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.selected ? Theme.selection : root.hovered ? Theme.controlHover : "transparent"
+        color: root.primary && !root.appearanceEnabled ? Theme.accentDisabled : root.primary ? (root.down ? Theme.accentPressed : root.hovered ? Theme.accentHover : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.selected ? Theme.selection : root.hovered ? Theme.controlHover : "transparent"
         border.width: 0
         border.color: Theme.accent
     }

@@ -26,6 +26,7 @@ Rectangle {
     signal archiveCommentRequested
     property bool archiveCommentSupported: false
     property bool canOpenArchiveComment: false
+    property bool preserveActionAppearance: false
     function focusMore() { moreButton.forceActiveFocus(Qt.OtherFocusReason); }
     signal recentArchiveRequested(string path)
     signal revealRequested
@@ -86,6 +87,7 @@ Rectangle {
                     anchors.right: recentButton.left
                     toolbarStyle: true
                     tooltipEnabled: false
+                    appearanceEnabled: root.preserveActionAppearance || enabled
                     leftPadding: Theme.mainToolbarActionInset
                     rightPadding: Math.round(Theme.mainToolbarContentGap * Theme.fontScale) * Theme.mainToolbarRecentLabelGapFactor
                     text: qsTrId("ui.c771248e511f")
@@ -174,6 +176,7 @@ Rectangle {
                 text: qsTrId("ui.50ef2f4cf6a4")
                 asset: "new"
                 enabled: root.canOpen
+                appearanceEnabled: root.preserveActionAppearance || enabled
                 onClicked: root.newRequested()
             }
             Rectangle {
@@ -196,6 +199,7 @@ Rectangle {
                 text: qsTrId("ui.6aa8f49cc992")
                 asset: "archive-test"
                 enabled: root.canTest
+                appearanceEnabled: root.preserveActionAppearance || enabled
                 explanation: qsTrId("desktop.testArchive")
                 onClicked: root.testRequested()
             }
@@ -225,7 +229,7 @@ Rectangle {
                     }
                     CommandMenuItem {
                         objectName: "toolbarArchiveComment"
-                        text: qsTrId("archive.comment.title")
+                        text: qsTrId("archive.comment.view")
                         commandVisible: root.archiveCommentSupported
                         enabled: root.canOpenArchiveComment
                         onTriggered: root.archiveCommentRequested()
@@ -322,6 +326,7 @@ Rectangle {
                 splitIndicator: true
                 explanation: qsTrId("ui.96eaa0499c11")
                 enabled: root.canSearch && root.canSelect
+                appearanceEnabled: root.preserveActionAppearance || enabled
                 onClicked: root.extractRequested(!root.hasSelection)
             }
             ToolButton {

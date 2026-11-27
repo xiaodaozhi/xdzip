@@ -13,4 +13,4 @@ Archive öffnen sich standardmäßig in Tabs. In den Einstellungen können Sie s
 
 ## Archivkommentar anzeigen
 
-Öffnen Sie ein ZIP- oder RAR-Archiv und wählen Sie in der Symbolleiste **Mehr → Archivkommentar**. Sie können den Text auswählen und kopieren. Bearbeiten Sie den Text bei einem gewöhnlichen, beschreibbaren ZIP-, ZIP64- oder ZIPX-Archiv und wählen Sie **Speichern**. Zum Löschen leeren Sie das Feld und speichern es. Die Grenze beträgt 65.535 Bytes in UTF-8. Geteilte, selbstentpackende, verschlüsselte und auf dem Datenträger indizierte ZIPs, signierte oder abgeleitete Pakete und RAR-Kommentare sind schreibgeschützt.
+Öffnen Sie ein ZIP- oder RAR-Archiv und wählen Sie in der Symbolleiste **Mehr → Archivkommentar anzeigen**. Sie können den Text auswählen und kopieren. Bearbeiten Sie den Text bei einem gewöhnlichen, beschreibbaren ZIP-, ZIP64- oder ZIPX-Archiv und wählen Sie **Speichern**. Zum Löschen leeren Sie das Feld und speichern es. Die Grenze beträgt 65.535 Bytes in UTF-8. Geteilte, selbstentpackende, verschlüsselte und auf dem Datenträger indizierte ZIPs, signierte oder abgeleitete Pakete und RAR-Kommentare sind schreibgeschützt.

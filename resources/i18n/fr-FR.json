@@ -4,6 +4,7 @@
   "name": "Français",
   "messages": {
     "archive.comment.title": "Commentaire de l’archive",
+    "archive.comment.view": "Voir le commentaire de l’archive",
     "archive.comment.loading": "Lecture du commentaire…",
     "archive.comment.enter": "Saisir un commentaire",
     "archive.comment.empty": "Cette archive est sans commentaire.",

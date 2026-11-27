@@ -4,6 +4,7 @@
   "name": "한국어",
   "messages": {
     "archive.comment.title": "압축 파일 주석",
+    "archive.comment.view": "압축 파일 주석 보기",
     "archive.comment.loading": "주석을 읽는 중…",
     "archive.comment.enter": "압축 파일 주석 입력",
     "archive.comment.empty": "이 압축 파일에 주석이 없습니다.",

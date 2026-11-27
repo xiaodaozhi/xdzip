@@ -1,16 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="491" height="399" viewBox="0 0 491 399">
-  <rect width="491" height="399" fill="#22262f"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="491" height="335" viewBox="0 0 491 335">
+  <rect width="491" height="335" fill="#22262f"/>
   <g font-family="Arial, sans-serif">
-    <text x="24" y="46" fill="#f0f2f8" font-size="20" font-weight="600">Archive comment</text>
-    <text x="24" y="71" fill="#a7b0c7" font-size="13">project-notes.rar</text>
-    <rect x="24.5" y="88.5" width="442" height="195" rx="8" fill="#202630" stroke="#485469"/>
-    <text x="37" y="113" fill="#f0f2f8" font-size="13">
+    <rect x="24.5" y="24.5" width="442" height="195" rx="8" fill="#202630" stroke="#485469"/>
+    <text x="37" y="49" fill="#f0f2f8" font-size="13">
       <tspan x="37">Project files and supporting documents</tspan>
       <tspan x="37" dy="23">See README.txt for the folder index.</tspan>
     </text>
-    <text x="24" y="309" fill="#a7b0c7" font-size="12">This comment is read-only.</text>
-    <path d="M0 335.5H491" stroke="#343e4e"/>
-    <rect x="380.5" y="349.5" width="85" height="34" rx="8" fill="#28313f" stroke="#485469"/>
-    <text x="423" y="371" text-anchor="middle" fill="#f0f2f8" font-size="13">Close</text>
+    <text x="24" y="245" fill="#a7b0c7" font-size="12">This comment is read-only.</text>
+    <path d="M0 271.5H491" stroke="#343e4e"/>
+    <rect x="380.5" y="285.5" width="85" height="34" rx="8" fill="#28313f" stroke="#485469"/>
+    <text x="423" y="307" text-anchor="middle" fill="#f0f2f8" font-size="13">Close</text>
   </g>
 </svg>

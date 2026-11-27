@@ -4,6 +4,7 @@
   "name": "日本語",
   "messages": {
     "archive.comment.title": "アーカイブのコメント",
+    "archive.comment.view": "アーカイブのコメントを表示",
     "archive.comment.loading": "コメントを読み込み中…",
     "archive.comment.enter": "アーカイブのコメントを入力",
     "archive.comment.empty": "このアーカイブにコメントはありません。",
