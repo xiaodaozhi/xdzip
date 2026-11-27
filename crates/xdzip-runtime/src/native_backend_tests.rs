@@ -14,6 +14,9 @@ use xdzip_codec_api::{
 };
 static NEXT: AtomicU64 = AtomicU64::new(0);
 
+#[path = "../../../tests/support/rar_cmt_time.rs"]
+mod rar_cmt_time;
+
 #[test]
 #[ignore = "requires built isolated worker and verified public RAR comment fixtures"]
 fn rar_comments_reach_query_pages_with_opening_password() {
@@ -84,6 +87,38 @@ fn rar_comments_reach_query_pages_with_opening_password() {
         panic!("expected file row");
     };
     assert_eq!(entry.details.comment, b"FCOM\r\n");
+
+    let fixture = Fixture::new();
+    let path = fixture.0.join("encrypted-cmt-time.rar");
+    std::fs::write(
+        &path,
+        rar_cmt_time::encrypted_comment(b"opaque\x00\x00metadata"),
+    )
+    .unwrap();
+    for (password, expected) in [
+        ("password", b"This is from b.txt".as_slice()),
+        ("wrong", b"".as_slice()),
+    ] {
+        let secret = extraction::Password::new(password.into()).unwrap();
+        let mut archive = Archive::open_with_password(&path, &control, Some(secret)).unwrap();
+        let page = archive
+            .query_page(
+                QueryRequest {
+                    directory: "",
+                    text: "",
+                    sort: 0,
+                    offset: 0,
+                    expected: None,
+                    generation: 1,
+                },
+                &control,
+            )
+            .unwrap();
+        let QueryRow::Physical(entry) = &page.rows[0] else {
+            panic!("expected file row")
+        };
+        assert_eq!(entry.details.comment, expected);
+    }
 }
 
 #[test]
