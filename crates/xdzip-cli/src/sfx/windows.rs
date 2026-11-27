@@ -250,9 +250,12 @@ pub(super) fn show(source: &Path) -> i32 {
     let Some(target) = target() else {
         return 0;
     };
-    let Ok(target_identity) = authorize_target(&target) else {
-        message(&sfx_text("sfx.failed"), &sfx_text("sfx.invalid"));
-        return 1;
+    let target_identity = match authorize_target(&target) {
+        Ok(identity) => identity,
+        Err(code) => {
+            message(&sfx_text("sfx.failed"), &failure_text(code));
+            return 1;
+        }
     };
     let Some(policy) = conflict(&target) else {
         return 0;
@@ -342,6 +345,17 @@ pub(super) fn show(source: &Path) -> i32 {
             let mut summary = sfx_text("sfx.result")
                 .replace("%1", &snapshot.committed_files.to_string())
                 .replace("%2", &snapshot.skipped_files.to_string());
+            if snapshot.status == Status::Succeeded
+                || snapshot.committed_files > 0
+                || snapshot.created_directories > 0
+            {
+                summary.push('\n');
+                summary.push_str(&snapshot.target);
+            }
+            if snapshot.status == Status::Failed {
+                summary.push('\n');
+                summary.push_str(&failure_text(&snapshot.error));
+            }
             if snapshot.cleanup_warning || snapshot.leftovers > 0 || snapshot.outcome_uncertain {
                 summary.push('\n');
                 summary.push_str(&sfx_text("ui.3ca05aed62cc"));
@@ -356,9 +370,22 @@ pub(super) fn show(source: &Path) -> i32 {
             );
             1
         }
-        _ => {
-            message(&sfx_text("sfx.failed"), &sfx_text("sfx.invalid"));
+        failure => {
+            let code = failure.and_then(Result::err).unwrap_or_default();
+            message(&sfx_text("sfx.failed"), &failure_text(code));
             1
         }
     }
+}
+
+fn failure_text(code: &str) -> String {
+    sfx_text(match code {
+        "destination_access_denied" => "desktop.destinationAccessDenied",
+        "destination_missing" => "desktop.destinationMissing",
+        "destination_type" => "desktop.destinationType",
+        "target_changed" => "ui.8c5b6e8cc7b3",
+        "unsupported_filesystem" => "ui.74b624993d20",
+        "unsafe_target" => "ui.123399c0fb8b",
+        _ => "sfx.invalid",
+    })
 }

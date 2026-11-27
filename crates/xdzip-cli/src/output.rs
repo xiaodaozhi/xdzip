@@ -189,6 +189,26 @@ fn explanation(code: &str, chinese: bool) -> &'static str {
             "目标目录未通过安全授权，请检查所有权、权限和链接",
             "Destination authorization failed; check ownership, permissions and links",
         ),
+        "destination_access_denied" => (
+            "当前账户无法在这个位置创建解压文件，请选择可写目录",
+            "This account cannot create extraction output here; choose a writable directory",
+        ),
+        "destination_missing" => (
+            "解压目标或其重定向位置不存在，请重新选择目录",
+            "The extraction destination or its redirected location does not exist; select a directory again",
+        ),
+        "destination_type" => (
+            "这个位置不是受支持的解压目录，请重新选择",
+            "This location is not a supported extraction directory; select a directory again",
+        ),
+        "target_changed" => (
+            "解压目标已变化，请检查目标后重试",
+            "The extraction destination changed; check it before retrying",
+        ),
+        "unsupported_filesystem" => (
+            "目标文件系统不支持本次写入，请选择本机磁盘上的其他目录",
+            "The destination filesystem cannot publish this output; choose another folder on a local disk",
+        ),
         "sfx_stub_missing" | "sfx_stub_invalid" => (
             "自解压组件缺失或损坏，请重新安装完整程序",
             "The self-extraction component is missing or damaged; reinstall the complete application",

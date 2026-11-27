@@ -76,13 +76,14 @@ pub(crate) fn ensure_directory(path: &Path) -> Result<PathBuf> {
     Ok(ensure_directory_grant(path)?.display_path().to_path_buf())
 }
 
-fn ensure_directory_grant(path: &Path) -> Result<std::sync::Arc<xdzip_io::Grant>> {
-    let path = absolute(path)?;
-    let mut base = path.clone();
+fn existing_parent(path: &Path, redirects: bool) -> Result<(PathBuf, Vec<std::ffi::OsString>)> {
+    let mut base = absolute(path)?;
     let mut missing = vec![];
     loop {
         match std::fs::symlink_metadata(&base) {
             Ok(metadata) if metadata.is_dir() && !metadata.is_symlink() => break,
+            Ok(metadata) if redirects && metadata.is_symlink() => break,
+            Ok(_) if redirects => return Err("destination_type".into()),
             Ok(_) => return Err("unsafe_target".into()),
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
                 missing.push(base.file_name().ok_or("unsafe_target")?.to_owned());
@@ -90,9 +91,17 @@ fn ensure_directory_grant(path: &Path) -> Result<std::sync::Arc<xdzip_io::Grant>
                     return Err("unsafe_target".into());
                 }
             }
+            Err(error) if redirects && error.kind() == std::io::ErrorKind::PermissionDenied => {
+                return Err("destination_access_denied".into());
+            }
             Err(_) => return Err("output_io".into()),
         }
     }
+    Ok((base, missing))
+}
+
+fn ensure_directory_grant(path: &Path) -> Result<std::sync::Arc<xdzip_io::Grant>> {
+    let (base, missing) = existing_parent(path, false)?;
     // Parent aliases are handled by Grant's native authorization. Missing child
     // components never use create_dir_all or follow pre-existing links.
     let mut grant =
@@ -105,6 +114,20 @@ fn ensure_directory_grant(path: &Path) -> Result<std::sync::Arc<xdzip_io::Grant>
             .map_err(|_| Failure::new("unsafe_target"))?;
     }
     Ok(grant)
+}
+
+fn extraction_target(path: &Path) -> Result<xdzip_io::ExtractionTarget> {
+    let (base, missing) = existing_parent(path, cfg!(windows))?;
+    let mut target =
+        xdzip_io::ExtractionTarget::open(&base, &[]).map_err(xdzip_io::OutputError::code)?;
+    for component in missing.iter().rev() {
+        let name = component.to_str().ok_or("non_utf8_path")?;
+        let name = xdzip_domain::path::PortablePath::parse(name).ok_or("unsafe_target")?;
+        target = target
+            .create_requested_child(&name)
+            .map_err(xdzip_io::OutputError::code)?;
+    }
+    Ok(target)
 }
 
 fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -> Result<Response> {
@@ -155,15 +178,15 @@ fn execute(name: &str, matches: &ArgMatches, interactive: bool, chinese: bool) -
                 .unwrap_or_default();
             // Resolution completes before creating even the requested output directory.
             let (selected, _) = runtime.select(members, ids, String::new())?;
-            let target =
-                ensure_directory_grant(Path::new(matches.get_one::<String>("directory").unwrap()))?;
+            let path = absolute(Path::new(matches.get_one::<String>("directory").unwrap()))?;
+            let target = extraction_target(&path)?;
             runtime.task(
                 name,
                 Command::Extract {
                     session: runtime.session,
                     target_identity: Some(target.identity()),
                     options: extraction::Options {
-                        target: path_text(target.display_path())?,
+                        target: path_text(&path)?,
                         all: selected.is_empty(),
                         selected,
                         directory: String::new(),

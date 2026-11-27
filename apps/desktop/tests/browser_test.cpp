@@ -12347,7 +12347,7 @@ QtObject {
             10000);
         QCOMPARE(controller->targetCheck().value("path").toString(), QDir::cleanPath(denied));
         QCOMPARE(controller->targetCheck().value("errorCode").toString(),
-                 QStringLiteral("output_io"));
+                 QStringLiteral("destination_access_denied"));
         QVERIFY(!controller->targetMatches(denied));
         QVERIFY(!start->isEnabled());
         QCOMPARE(status->property("text").toString(),
@@ -14667,14 +14667,28 @@ QtObject {
     }
     void archiveToolbarQuickExtractStartsRealTask_data() {
         QTest::addColumn<bool>("selected");
-        QTest::newRow("all-into-named-folder") << false;
-        QTest::newRow("selected-into-parent") << true;
+        QTest::addColumn<bool>("shared");
+        QTest::newRow("all-into-named-folder") << false << false;
+        QTest::newRow("selected-into-parent") << true << false;
+#ifdef Q_OS_WIN
+        QTest::newRow("all-into-shared-parent") << false << true;
+        QTest::newRow("selected-into-shared-parent") << true << true;
+#endif
     }
     void archiveToolbarQuickExtractStartsRealTask() {
         QFETCH(bool, selected);
+        QFETCH(bool, shared);
         QTemporaryDir target;
         QVERIFY(target.isValid());
-        const auto source = target.filePath("sample.zip");
+        auto parent = target.path();
+        if (shared) {
+            QCOMPARE(QProcess::execute("icacls.exe", {parent, "/grant:r", "*S-1-1-0:(OI)(CI)(M)"}),
+                     0);
+            parent = target.filePath("first-use");
+            QVERIFY(QDir().mkdir(parent));
+            QVERIFY(QDir().mkdir(parent + "/sample"));
+        }
+        const auto source = QDir(parent).filePath("sample.zip");
         QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"), source));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -14724,9 +14738,14 @@ QtObject {
         const auto result = controller->tasks().first().toMap();
         QCOMPARE(result.value("status").toString(), "succeeded");
         QCOMPARE(result.value("committedFiles").toInt(), selected ? 1 : 3);
-        const QDir destination(selected ? target.path() : target.filePath("sample"));
+        const QDir destination(shared     ? QDir(parent).filePath("sample (2)")
+                               : selected ? parent
+                                          : QDir(parent).filePath("sample"));
+        QCOMPARE(QDir::fromNativeSeparators(result.value("target").toString()), destination.path());
         QCOMPARE(QFileInfo(destination.filePath("data.bin")).size(), 262144);
         QCOMPARE(QFile::exists(destination.filePath(QStringLiteral("照片/说明.txt"))), !selected);
+        if (shared)
+            QVERIFY(QDir(QDir(parent).filePath("sample")).isEmpty());
         task->close();
         window->close();
     }

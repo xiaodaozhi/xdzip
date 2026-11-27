@@ -123,6 +123,29 @@ def check(binary, worker, output, payload=None, install_fixture=False, default_w
         command()
         assert invoke('missing-command',code=2)['error_code'] == 'invalid_arguments'
         record('version_help_bilingual_and_parse_exit')
+        if os.name == 'nt':
+            archive = work / 'shared-fixture.zip'
+            with zipfile.ZipFile(archive, 'w') as package:
+                package.writestr('one.txt', b'owned data')
+                package.writestr('two.txt', b'other data')
+            parent = work / 'shared-parent'
+            parent.mkdir()
+            subprocess.run(['icacls', str(parent), '/grant:r', '*S-1-1-0:(OI)(CI)(M)'],
+                           capture_output=True, check=True)
+            shared = parent / 'first-use'
+            shared.mkdir()
+            (shared / 'shared-fixture').write_bytes(b'occupied')
+            extracted = invoke('extract', archive, 'one.txt', '-C', shared)
+            result = shared / 'shared-fixture (2)'
+            assert Path(extracted['data']['output']) == result, extracted
+            assert Path(extracted['summary']['target']) == result, extracted
+            assert {item.name: item.read_bytes() for item in result.iterdir()} == {'one.txt': b'owned data'}
+            assert (shared / 'shared-fixture').read_bytes() == b'occupied'
+            requested = shared / 'requested' / 'child'
+            extracted = invoke('extract', archive, '-C', requested)
+            assert Path(extracted['data']['output']) == requested, extracted
+            assert (requested / 'two.txt').read_bytes() == b'other data'
+            record('windows_shared_target_reports_actual_output_and_creates_requested_folders')
         source = work/'输入 files';source.mkdir()
         (source/'你好.txt').write_bytes('归档内容\n'.encode())
         (source/'empty').mkdir()

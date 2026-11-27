@@ -59,6 +59,8 @@ pub(crate) fn secure_temporary_directory(file: &File) -> Result<(), OutputError>
     check(file, true)?;
     windows::secure_temporary_directory(file)
 }
+#[cfg(windows)]
+pub(crate) use windows::{check_protected_directory, protected_directory_descriptor};
 
 #[cfg(windows)]
 pub(crate) fn preserve_archive_access(source: &File, stage: &File) -> Result<(), OutputError> {
@@ -223,7 +225,12 @@ mod windows {
     };
     use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
-    struct Descriptor(PSECURITY_DESCRIPTOR);
+    pub(crate) struct Descriptor(PSECURITY_DESCRIPTOR);
+    impl Descriptor {
+        pub(crate) fn raw(&self) -> *const SECURITY_DESCRIPTOR {
+            self.0.cast()
+        }
+    }
     impl Drop for Descriptor {
         fn drop(&mut self) {
             // SAFETY: GetSecurityInfo or SDDL conversion allocated with LocalAlloc;
@@ -376,11 +383,8 @@ mod windows {
         assert!(policy.same_policy(&FileAccess::read(&File::open(&path).unwrap()).unwrap()));
     }
 
-    pub(super) fn secure_temporary_directory(file: &File) -> Result<(), OutputError> {
-        // Only a freshly created empty directory below an owned grant reaches
-        // this function. Protect its DACL before any plaintext is written. OW is
-        // OWNER RIGHTS, inherited by children; SYSTEM and administrators remain
-        // trusted platform actors. The borrowed handle has WRITE_DAC access.
+    pub(crate) fn protected_directory_descriptor() -> Result<Descriptor, OutputError> {
+        // OWNER RIGHTS applies to the verified owner and is inherited by children.
         let sddl = "D:P(A;OICI;FA;;;OW)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)\0"
             .encode_utf16()
             .collect::<Vec<_>>();
@@ -395,17 +399,39 @@ mod windows {
                 null_mut(),
             )
         };
-        let _descriptor = Descriptor(descriptor);
-        if converted == 0 || descriptor.is_null() {
+        let descriptor = Descriptor(descriptor);
+        if converted == 0 || descriptor.0.is_null() {
             return Err(OutputError::UnsafeTarget);
         }
+        Ok(descriptor)
+    }
+
+    pub(crate) fn check_protected_directory(file: &File) -> Result<(), OutputError> {
+        let access = FileAccess::read(file)?;
+        let mut control = 0;
+        let mut revision = 0;
+        // SAFETY: the live descriptor owns the returned ACL and both output slots are initialized.
+        if unsafe {
+            GetSecurityDescriptorControl(access._descriptor.0, &mut control, &mut revision)
+        } == 0
+            || control & SE_DACL_PROTECTED == 0
+        {
+            return Err(OutputError::UnsafeTarget);
+        }
+        check_policy(&access, true)
+    }
+
+    pub(super) fn secure_temporary_directory(file: &File) -> Result<(), OutputError> {
+        // A freshly created empty directory is protected before writing plaintext.
+        let descriptor = protected_directory_descriptor()?;
         let mut present = 0;
         let mut defaulted = 0;
         let mut acl = null_mut();
         // SAFETY: live native descriptor and initialized output slots. Reject a
         // null/absent DACL explicitly; it would otherwise grant everyone access.
-        if unsafe { GetSecurityDescriptorDacl(descriptor, &mut present, &mut acl, &mut defaulted) }
-            == 0
+        if unsafe {
+            GetSecurityDescriptorDacl(descriptor.0, &mut present, &mut acl, &mut defaulted)
+        } == 0
             || present == 0
             || acl.is_null()
             || unsafe { IsValidAcl(acl) } == 0

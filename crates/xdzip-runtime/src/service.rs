@@ -1063,18 +1063,23 @@ fn execute(
                 path,
                 target_identity,
             } => {
-                let grant = if session == 0 {
-                    xdzip_io::Grant::for_creation(Path::new(&path))
-                } else {
+                let path = Path::new(&path);
+                if session != 0 {
                     let archive = archive
                         .as_ref()
                         .filter(|a| a.key().session.get() == session)
                         .ok_or("stale_session")?;
                     archive.source.validate().map_err(|_| "source_changed")?;
                     let ids = archive.source.identities().map_err(|_| "source_changed")?;
-                    xdzip_io::Grant::open_sources(Path::new(&path), &ids)
+                    let target = xdzip_io::ExtractionTarget::open(path, &ids)
+                        .map_err(xdzip_io::OutputError::code)?;
+                    target
+                        .require_identity(target_identity)
+                        .map_err(xdzip_io::OutputError::code)?;
+                    let leftovers = target.probe().map_err(xdzip_io::OutputError::code)?;
+                    return Ok(Payload::TargetChecked(leftovers as u64, target.identity()));
                 }
-                .map_err(|e| match e {
+                let grant = xdzip_io::Grant::for_creation(path).map_err(|e| match e {
                     xdzip_io::OutputError::UnsafeTarget => "unsafe_target",
                     _ => "output_io",
                 })?;

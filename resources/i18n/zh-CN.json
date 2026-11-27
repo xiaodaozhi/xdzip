@@ -3,6 +3,9 @@
   "locale": "zh-CN",
   "name": "中文 (简体)",
   "messages": {
+    "desktop.destinationAccessDenied": "当前账户无法在这里创建解压文件，请选择可写文件夹。",
+    "desktop.destinationMissing": "解压目标或其重定向位置不存在，请重新选择文件夹。",
+    "desktop.destinationType": "此位置不是受支持的解压文件夹，请选择其他文件夹。",
     "tasks.clearFinished": "清除已结束任务",
     "tasks.check": "检查任务 %1",
     "tasks.add": "添加任务 %1",

@@ -3,6 +3,9 @@
   "locale": "es-ES",
   "name": "Español",
   "messages": {
+    "desktop.destinationAccessDenied": "Esta cuenta no puede crear archivos extraídos aquí. Elige una carpeta con permiso de escritura.",
+    "desktop.destinationMissing": "El destino o la ubicación a la que apunta no existe. Vuelve a elegir una carpeta.",
+    "desktop.destinationType": "Esta ubicación no admite la extracción. Elige otra carpeta.",
     "tasks.clearFinished": "Limpiar tareas terminadas",
     "tasks.check": "Tarea de comprobación %1",
     "tasks.add": "Tarea de adición %1",

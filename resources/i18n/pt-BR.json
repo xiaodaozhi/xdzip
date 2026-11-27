@@ -3,6 +3,9 @@
   "locale": "pt-BR",
   "name": "Português (Brasil)",
   "messages": {
+    "desktop.destinationAccessDenied": "Esta conta não pode criar arquivos extraídos aqui. Escolha uma pasta com permissão de gravação.",
+    "desktop.destinationMissing": "O destino ou o local para o qual ele foi redirecionado não existe. Escolha uma pasta novamente.",
+    "desktop.destinationType": "Este local não permite a extração. Escolha outra pasta.",
     "tasks.clearFinished": "Limpar tarefas concluídas",
     "tasks.check": "Tarefa de verificação %1",
     "tasks.add": "Tarefa de adição %1",

@@ -314,6 +314,138 @@ fn windows_read_only_acl_allows_output_but_mutation_does_not() {
     }
 }
 
+#[cfg(windows)]
+fn set_acl(root: &std::path::Path, action: &str, acl: &str) {
+    let tool = PathBuf::from(std::env::var_os("SystemRoot").unwrap()).join("System32/icacls.exe");
+    let result = std::process::Command::new(tool)
+        .arg(root)
+        .args([action, acl])
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "icacls returned {:?}",
+        result.status.code()
+    );
+}
+
+#[cfg(windows)]
+fn junction(root: &std::path::Path, name: &str, target: &std::path::Path) {
+    let result = std::process::Command::new("cmd")
+        .args(["/d", "/c", "mklink", "/J", name])
+        .arg(target)
+        .current_dir(root)
+        .output()
+        .unwrap();
+    assert!(
+        result.status.success(),
+        "mklink returned {:?}",
+        result.status.code()
+    );
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_shared_extraction_reserves_a_private_numbered_directory() {
+    let root = Owned::new();
+    let outside = Owned::new();
+    set_acl(&root.0, "/grant:r", "*S-1-1-0:(OI)(CI)(M,DC)");
+    let inherited = root.0.join("inherited");
+    fs::create_dir(&inherited).unwrap();
+    let source = inherited.join("sample.zip");
+    fs::write(&source, b"archive").unwrap();
+    fs::write(inherited.join("sample"), b"existing name").unwrap();
+    fs::create_dir(inherited.join("sample (2)")).unwrap();
+    junction(&inherited, "sample (3)", &outside.0);
+    let identity = FileIdentity::read(&File::open(&source).unwrap()).unwrap();
+    assert!(matches!(
+        Grant::open(&inherited, identity),
+        Err(OutputError::UnsafeTarget)
+    ));
+    let target = ExtractionTarget::open(&inherited, &[identity]).unwrap();
+    assert!(target.needs_isolated_folder());
+    assert_eq!(target.probe(), Ok(0));
+    assert_eq!(fs::read_dir(&inherited).unwrap().count(), 4);
+    let output = target
+        .output(Some(&path("sample")), false, || false)
+        .unwrap();
+    assert_eq!(output.display_path(), inherited.join("sample (4)"));
+    assert_eq!(output.created_directories(), 1);
+    assert!(fs::rename(output.display_path(), inherited.join("renamed")).is_err());
+    let mut work = output.workspace(27).unwrap();
+    let mut stage = work.stage().unwrap();
+    stage.write_all(b"verified bytes").unwrap();
+    work.commit(stage, &path("nested/result.txt"), None)
+        .unwrap();
+    work.cleanup().unwrap();
+    assert_eq!(
+        fs::read(output.display_path().join("nested/result.txt")).unwrap(),
+        b"verified bytes"
+    );
+    assert_eq!(output.leftover_count(), Ok(0));
+    assert_eq!(
+        fs::read(inherited.join("sample")).unwrap(),
+        b"existing name"
+    );
+    assert_eq!(fs::read(source).unwrap(), b"archive");
+    assert_eq!(fs::read_dir(&outside.0).unwrap().count(), 0);
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_selected_junction_resolves_to_its_checked_identity() {
+    let parent = Owned::new();
+    let destination = Owned::new();
+    let different = Owned::new();
+    junction(&parent.0, "selected", &destination.0);
+    let alias = parent.0.join("selected");
+    let selected = ExtractionTarget::open(&alias, &[]).unwrap();
+    assert!(!selected.needs_isolated_folder());
+    assert_eq!(selected.probe(), Ok(0));
+    let identity = selected.identity();
+    let grant = selected.output(None, false, || false).unwrap();
+    assert_eq!(grant.display_path(), destination.0);
+    fs::remove_dir(&alias).unwrap();
+    junction(&parent.0, "selected", &different.0);
+    assert_eq!(grant.validate(), Err(OutputError::TargetChanged));
+    let checked = ExtractionTarget::open(&alias, &[]).unwrap();
+    assert_eq!(
+        checked.require_identity(Some(identity)),
+        Err(OutputError::TargetChanged)
+    );
+    drop(checked);
+    fs::remove_dir(&alias).unwrap();
+    let missing = parent.0.join("missing");
+    junction(&parent.0, "selected", &missing);
+    assert!(matches!(
+        ExtractionTarget::open(&alias, &[]),
+        Err(OutputError::TargetMissing)
+    ));
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_extraction_reports_unwritable_and_non_directory_targets() {
+    let root = Owned::new();
+    fs::write(root.0.join("file"), b"unchanged").unwrap();
+    assert!(matches!(
+        ExtractionTarget::open(&root.0.join("file"), &[]),
+        Err(OutputError::TargetType)
+    ));
+    let denied = root.0.join("denied");
+    fs::create_dir(&denied).unwrap();
+    set_acl(&denied, "/deny", "*S-1-1-0:(AD)");
+    let direct = ExtractionTarget::open(&denied, &[]).unwrap();
+    assert_eq!(direct.probe(), Err(OutputError::AccessDenied));
+    drop(direct);
+    set_acl(&denied, "/grant:r", "*S-1-1-0:(OI)(CI)(M)");
+    assert!(matches!(
+        ExtractionTarget::open(&denied, &[]),
+        Err(OutputError::AccessDenied)
+    ));
+    assert_eq!(fs::read_dir(denied).unwrap().count(), 0);
+}
+
 #[test]
 #[cfg(target_os = "linux")]
 fn snap_home_workspace_is_accessible_and_leftovers_are_reported() {

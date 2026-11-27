@@ -9,19 +9,10 @@ use std::time::{Duration, Instant};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink};
 
 use xdzip_domain::path::PortablePath;
-use xdzip_io::{Grant, OutputError};
+use xdzip_io::{ExtractionTarget, Grant, OutputError};
 
 pub(super) fn output(error: OutputError) -> &'static str {
-    match error {
-        OutputError::Io => "output_io",
-        OutputError::NoSpace => "disk_full",
-        OutputError::UnsafeTarget => "unsafe_target",
-        OutputError::TargetChanged => "target_changed",
-        OutputError::Conflict => "output_conflict",
-        OutputError::Unsupported => "unsupported_filesystem",
-        OutputError::Limit => "resource_limit",
-        OutputError::NameRejected => "unsafe_name",
-    }
+    error.code()
 }
 pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
     Snapshot {
@@ -166,30 +157,43 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             None
         };
         let source_ids = job.source.identities().map_err(|_| "source_changed")?;
-        let root = if let Some(temporary) = &job.temporary {
+        let target = if let Some(temporary) = &job.temporary {
             temporary.validate().map_err(output)?;
+            temporary
+                .require_identity(job.target_identity)
+                .map_err(output)?;
+            stats.leftovers = temporary.leftover_count().map_err(output)? as u64;
             temporary.clone()
         } else {
-            Grant::open_sources(Path::new(&job.options.target), &source_ids).map_err(output)?
-        };
-        root.require_identity(job.target_identity).map_err(output)?;
-        grant = Some(root.clone());
-        stats.leftovers = root.leftover_count().map_err(output)? as u64;
-        let smart_wrapper = job.options.shell_layout == 1 && !single_top_directory(&job);
-        let target = if job.options.create_folder || smart_wrapper || job.options.shell_layout == 2
-        {
-            let name = PortablePath::parse(job.source.name()).ok_or("unsafe_folder_name")?;
-            if name.parts().len() != 1 {
-                return Err("unsafe_folder_name");
-            }
-            if job.options.shell_layout != 0 {
-                root.unique_subdirectory(&name).map_err(output)?
+            let root = ExtractionTarget::open(Path::new(&job.options.target), &source_ids)
+                .map_err(output)?;
+            root.require_identity(job.target_identity).map_err(output)?;
+            stats.leftovers = root.leftover_count().map_err(output)? as u64;
+            let isolated = root.needs_isolated_folder();
+            let smart_wrapper = job.options.shell_layout == 1 && !single_top_directory(&job);
+            let wrapper = if isolated
+                || job.options.create_folder
+                || smart_wrapper
+                || job.options.shell_layout == 2
+            {
+                let name =
+                    PortablePath::parse(job.source.name()).filter(|name| name.parts().len() == 1);
+                Some(if isolated {
+                    name.unwrap_or_else(|| {
+                        PortablePath::parse("archive").expect("fixed portable name")
+                    })
+                } else {
+                    name.ok_or("unsafe_folder_name")?
+                })
             } else {
-                root.subdirectory(&name).map_err(output)?
-            }
-        } else {
-            root
+                None
+            };
+            root.output(wrapper.as_ref(), job.options.shell_layout != 0, || {
+                control.cancel.check().is_err()
+            })
+            .map_err(output)?
         };
+        grant = Some(target.clone());
         stats.target = target.display_path().to_string_lossy().into_owned();
         workspace = Some(target.workspace(id).map_err(output)?);
         let workspace = workspace.as_mut().expect("workspace just created");

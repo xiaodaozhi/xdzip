@@ -13,12 +13,15 @@ mod tests;
 mod volume;
 #[cfg(windows)]
 #[allow(unsafe_code)]
+mod windows_extraction;
+#[cfg(windows)]
+#[allow(unsafe_code)]
 mod windows_origin;
 pub use identity::{FileIdentity, FileVersion};
 pub use input::{InputEntry, InputError, InputReader, InputTree};
 pub use target::{
-    ArchiveUpdate, CommitReceipt, ExistingFile, Grant, ScratchSpace, SetCommitError, Stage,
-    Workspace,
+    ArchiveUpdate, CommitReceipt, ExistingFile, ExtractionTarget, Grant, ScratchSpace,
+    SetCommitError, Stage, Workspace,
 };
 pub use volume::VolumeDirectory;
 #[cfg(windows)]
@@ -113,6 +116,16 @@ mod source_tests {
 pub enum OutputError {
     /// Permissions or an ordinary filesystem operation failed.
     Io,
+    /// The account cannot open or create output in the selected destination.
+    AccessDenied,
+    /// The selected destination does not exist or its redirection is broken.
+    TargetMissing,
+    /// The selected destination is neither an ordinary directory nor an admitted alias.
+    TargetType,
+    /// The destination workspace could not be cleaned up after a check.
+    Cleanup,
+    /// Cancellation stopped destination reservation.
+    Cancelled,
     /// Disk space was exhausted.
     NoSpace,
     /// A path is a link, special object, foreign-owned or broadly writable.
@@ -128,10 +141,16 @@ pub enum OutputError {
     /// Transaction or name admission budget was exceeded.
     Limit,
 }
-impl std::fmt::Display for OutputError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(match self {
+impl OutputError {
+    /// Stable failure identifier for host interfaces.
+    pub fn code(self) -> &'static str {
+        match self {
             Self::Io => "output_io",
+            Self::AccessDenied => "destination_access_denied",
+            Self::TargetMissing => "destination_missing",
+            Self::TargetType => "destination_type",
+            Self::Cleanup => "cleanup_error",
+            Self::Cancelled => "cancelled",
             Self::NoSpace => "disk_full",
             Self::UnsafeTarget => "unsafe_target",
             Self::TargetChanged => "target_changed",
@@ -139,7 +158,12 @@ impl std::fmt::Display for OutputError {
             Self::NameRejected => "unsafe_name",
             Self::Unsupported => "unsupported_filesystem",
             Self::Limit => "resource_limit",
-        })
+        }
+    }
+}
+impl std::fmt::Display for OutputError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.code())
     }
 }
 pub(crate) fn leaf_failure(error: std::io::Error, leaf: &str) -> OutputError {

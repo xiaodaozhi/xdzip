@@ -3,6 +3,9 @@
   "locale": "de-DE",
   "name": "Deutsch",
   "messages": {
+    "desktop.destinationAccessDenied": "Dieses Konto kann hier keine entpackten Dateien anlegen. Wählen Sie einen beschreibbaren Ordner.",
+    "desktop.destinationMissing": "Das Ziel oder sein Umleitungsziel ist nicht vorhanden. Wählen Sie erneut einen Ordner.",
+    "desktop.destinationType": "Dieser Speicherort eignet sich nicht zum Entpacken. Wählen Sie einen anderen Ordner.",
     "tasks.clearFinished": "Beendete Aufgaben entfernen",
     "tasks.check": "Prüfaufgabe %1",
     "tasks.add": "Hinzufügeaufgabe %1",

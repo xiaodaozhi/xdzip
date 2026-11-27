@@ -333,14 +333,8 @@ fn fresh_name(
 }
 fn output_code(e: OutputError) -> &'static str {
     match e {
-        OutputError::Io => "output_io",
-        OutputError::NoSpace => "disk_full",
-        OutputError::UnsafeTarget => "unsafe_target",
-        OutputError::TargetChanged => "target_changed",
-        OutputError::Conflict => "output_conflict",
-        OutputError::Unsupported => "unsupported_filesystem",
-        OutputError::Limit => "resource_limit",
-        OutputError::NameRejected => "unsafe_name",
+        OutputError::AccessDenied | OutputError::TargetMissing => "output_io",
+        other => other.code(),
     }
 }
 pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(Snapshot)) {
