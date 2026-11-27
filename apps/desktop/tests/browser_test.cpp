@@ -8632,7 +8632,7 @@ QtObject {
         QVERIFY(content);
         const auto menuLeft = content->mapToScene(QPointF()).x();
         QVERIFY(menuLeft >= 0 && menuLeft + content->width() <= window->width() + .5);
-        for (const int index : {0, 1, 3}) {
+        for (const int index : {0, 1, 4}) {
             QQuickItem *row = nullptr;
             QVERIFY(QMetaObject::invokeMethod(menu, "itemAt", Q_RETURN_ARG(QQuickItem *, row),
                                               Q_ARG(int, index)));
@@ -17221,12 +17221,22 @@ QtObject {
         frames.clear();
         window->requestUpdate();
         QTRY_VERIFY(frames.count() > 0);
+        auto *table = item("archiveTable");
+        auto *bar = item("fileTableHeader");
+        QVERIFY(table && bar);
         for (int column : {3, 4}) {
             auto *header = item(column == 3 ? "sort-column-3" : "sort-column-4");
             QVERIFY(header && header->isVisible() && header->width() > 0);
+            const auto headerCenter = header->mapToItem(bar, QPointF(header->width() / 2, 0)).x();
+            if (headerCenter < 0 || headerCenter >= bar->width()) {
+                const auto offset = table->property("contentX").toDouble();
+                const auto maximum =
+                    qMax(0.0, table->property("contentWidth").toDouble() - table->width());
+                QVERIFY(table->setProperty(
+                    "contentX", qBound(0.0, offset + headerCenter - bar->width() / 2, maximum)));
+            }
             const auto point =
                 header->mapToScene(QPointF(header->width() / 2, header->height() / 2));
-            auto *bar = item("fileTableHeader");
             QVERIFY(bar->contains(bar->mapFromScene(point)));
             click(header);
             QTRY_COMPARE(controller->sortOrder(), column == 3 ? 9 : 11);
