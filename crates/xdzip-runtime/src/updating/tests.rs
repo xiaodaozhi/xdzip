@@ -100,6 +100,21 @@ fn archive_comment_round_trip_changes_only_the_zip_end_fields() {
         if path != source {
             fs::rename(&source, &path).unwrap();
         }
+        #[cfg(windows)]
+        if extension == "zipx" {
+            // Exercise the same transaction with a shared parent and source ACL.
+            for (target, permissions) in [
+                (&fixture.0, "*S-1-1-0:(OI)(CI)(M)"),
+                (&path, "*S-1-1-0:(M)"),
+            ] {
+                let acl = std::process::Command::new("icacls")
+                    .arg(target)
+                    .args(["/grant:r", permissions])
+                    .output()
+                    .unwrap();
+                assert!(acl.status.success());
+            }
+        }
         let mut original = fs::read(&path).unwrap();
         if wide {
             let end_at = original.len() - 22;
