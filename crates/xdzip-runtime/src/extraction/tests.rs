@@ -151,14 +151,7 @@ fn windows_shared_destination_preserves_extraction_results_and_cleanup() {
     client.shutdown();
     assert_eq!(succeeded.status, Status::Succeeded, "{}", succeeded.error);
     let published = target.0.join("stored (2)");
-    assert_eq!(
-        Path::new(&succeeded.target).file_name(),
-        published.file_name()
-    );
-    assert_eq!(
-        std::fs::canonicalize(&succeeded.target).unwrap(),
-        std::fs::canonicalize(&published).unwrap()
-    );
+    assert_eq!(std::path::Path::new(&succeeded.target), published);
     assert_eq!(succeeded.committed_files, 1);
     assert_eq!(succeeded.created_directories, 1);
     let entry = archive.rows.iter().find(|e| !e.directory).unwrap();
