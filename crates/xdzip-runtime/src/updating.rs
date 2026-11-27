@@ -198,6 +198,9 @@ fn output(e: xdzip_io::OutputError) -> &'static str {
         xdzip_io::OutputError::TargetChanged => "source_changed",
         xdzip_io::OutputError::Limit => "resource_limit",
         xdzip_io::OutputError::Unsupported => "unsupported_filesystem",
+        xdzip_io::OutputError::AccessDenied => "destination_access_denied",
+        xdzip_io::OutputError::TargetMissing => "destination_missing",
+        xdzip_io::OutputError::TargetType => "destination_type",
         _ => "output_io",
     }
 }

@@ -287,12 +287,9 @@ fn windows_read_only_acl_allows_output_but_mutation_does_not() {
     let mut workspace = update.workspace(1).unwrap();
     let mut staged = workspace.stage().unwrap();
     staged.write_all(b"replacement bytes").unwrap();
-    assert!(matches!(
-        update.commit(&mut workspace, staged),
-        Err(OutputError::UnsafeTarget)
-    ));
+    update.commit(&mut workspace, staged).unwrap();
     workspace.cleanup().unwrap();
-    assert_eq!(fs::read(&original).unwrap(), b"original shared bytes");
+    assert_eq!(fs::read(&original).unwrap(), b"replacement bytes");
     // Read-only sharing does not authorize mutation. Both effective and
     // inherited write/delete/ACL rights and generic write/all must still
     // reject before creating a staging directory or touching any existing bytes.
@@ -312,6 +309,65 @@ fn windows_read_only_acl_allows_output_but_mutation_does_not() {
         assert_eq!(fs::read(&source).unwrap(), b"protected old bytes");
         assert_eq!(fs::read_dir(&root.0).unwrap().count(), 1);
     }
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_shared_directory_edit_preserves_original_access_and_bytes() {
+    let root = Owned::new();
+    set_acl(&root.0, "/grant:r", "*S-1-1-0:(OI)(CI)(M)");
+    let archive = root.0.join("archive.zip");
+    fs::write(&archive, b"original archive").unwrap();
+    let identity = FileIdentity::read(&File::open(&archive).unwrap()).unwrap();
+    let update = ArchiveUpdate::open(&archive, identity).unwrap();
+    let mut workspace = update.workspace(2).unwrap();
+    let mut staged = workspace.stage().unwrap();
+    staged.write_all(b"verified replacement").unwrap();
+    update.commit(&mut workspace, staged).unwrap();
+    workspace.cleanup().unwrap();
+    assert_eq!(fs::read(&archive).unwrap(), b"verified replacement");
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_archive_edit_rechecks_original_and_redirected_parent() {
+    let root = Owned::new();
+    let other = Owned::new();
+    let aliases = Owned::new();
+    set_acl(&root.0, "/grant:r", "*S-1-1-0:(OI)(CI)(M)");
+    let archive = root.0.join("archive.zip");
+    fs::write(&archive, b"original").unwrap();
+    junction(&aliases.0, "linked", &root.0);
+    let linked = aliases.0.join("linked/archive.zip");
+    let identity = FileIdentity::read(&File::open(&linked).unwrap()).unwrap();
+    let update = ArchiveUpdate::open(&linked, identity).unwrap();
+    let mut workspace = update.workspace(7).unwrap();
+    let mut staged = workspace.stage().unwrap();
+    staged.write_all(b"replacement").unwrap();
+    fs::write(&archive, b"concurrent edit").unwrap();
+    assert!(matches!(
+        update.commit(&mut workspace, staged),
+        Err(OutputError::TargetChanged)
+    ));
+    workspace.cleanup().unwrap();
+    assert_eq!(fs::read(&archive).unwrap(), b"concurrent edit");
+
+    let identity = FileIdentity::read(&File::open(&linked).unwrap()).unwrap();
+    let update = ArchiveUpdate::open(&linked, identity).unwrap();
+    let mut workspace = update.workspace(8).unwrap();
+    let mut staged = workspace.stage().unwrap();
+    staged.write_all(b"replacement").unwrap();
+    fs::remove_dir(aliases.0.join("linked")).unwrap();
+    junction(&aliases.0, "linked", &other.0);
+    assert!(matches!(
+        update.commit(&mut workspace, staged),
+        Err(OutputError::TargetChanged)
+    ));
+    assert_eq!(fs::read(&archive).unwrap(), b"concurrent edit");
+    assert_eq!(fs::read_dir(&other.0).unwrap().count(), 0);
+    fs::remove_dir(aliases.0.join("linked")).unwrap();
+    junction(&aliases.0, "linked", &root.0);
+    workspace.cleanup().unwrap();
 }
 
 #[cfg(windows)]
