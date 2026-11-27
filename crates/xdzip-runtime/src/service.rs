@@ -1391,17 +1391,23 @@ mod tests {
     #[test]
     fn full_admission_cancel_shutdown_and_exactly_once_terminals() {
         let (release, gate) = mpsc::channel();
+        let (started, entered) = mpsc::channel();
         let mut first = true;
         let (client, receiver) = spawn(move |_, _| {
             if first {
                 first = false;
+                started.send(()).unwrap();
                 gate.recv().unwrap();
             }
             Ok(Payload::Snapshot(0))
         })
         .unwrap();
-        let ids: Vec<_> = (0..MAX_OUTSTANDING)
-            .map(|_| submit(&client, || Command::Snapshot))
+        let first_id = submit(&client, || Command::Snapshot);
+        entered
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        let ids: Vec<_> = std::iter::once(first_id)
+            .chain((1..MAX_OUTSTANDING).map(|_| submit(&client, || Command::Snapshot)))
             .collect();
         assert_eq!(client.submit(Command::Snapshot), Err(Rejection::Busy));
         let cancel = client.cancel(ids[0]).unwrap();
