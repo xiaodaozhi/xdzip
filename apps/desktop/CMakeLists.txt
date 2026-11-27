@@ -169,14 +169,15 @@ if(WIN32)
     target_link_libraries(xdzip-desktop-session PRIVATE ole32 shell32 shlwapi)
 elseif(APPLE)
     enable_language(OBJCXX)
-    target_sources(xdzip-desktop-session PRIVATE MacTitlebar.mm MacWindowActivation.mm MacQuitMenu.mm NativeExportMac.mm)
+    target_sources(xdzip-desktop-session PRIVATE MacTitlebar.mm MacWindowActivation.mm MacQuitMenu.mm NativeExportMac.mm MacArchiveLocation.h MacArchiveLocation.mm)
     set_source_files_properties(MacQuitMenu.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
     set_source_files_properties(NativeExportMac.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks;-Werror=protocol")
     set_target_properties(xdzip-desktop-session PROPERTIES OBJCXX_STANDARD 17
         OBJCXX_STANDARD_REQUIRED ON OBJCXX_EXTENSIONS OFF)
     target_link_libraries(xdzip-desktop-session PRIVATE "-framework AppKit" "-framework Security")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(xdzip-desktop-session PRIVATE X11::X11)
+    find_package(Qt6 6.8 REQUIRED COMPONENTS DBus)
+    target_link_libraries(xdzip-desktop-session PRIVATE X11::X11 Qt6::DBus)
 endif()
 
 set(xdzip_update_sources CliRequestBroker.h CliRequestBroker.cpp UpdateController.h UpdateController.cpp

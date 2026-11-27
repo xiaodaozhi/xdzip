@@ -37,6 +37,16 @@ Item {
                     width: 1024
                 },
                 {
+                    tag: "medium",
+                    scale: 1.25,
+                    width: 832
+                },
+                {
+                    tag: "larger",
+                    scale: 1.5,
+                    width: 832
+                },
+                {
                     tag: "large",
                     scale: 2,
                     width: 832
@@ -52,17 +62,20 @@ Item {
             // Wait for the observable layout state, not a platform-dependent fixed delay.
             tryCompare(open, "height", toolbar.controlHeight);
             tryCompare(search, "height", toolbar.controlHeight);
+            tryVerify(() => search.mapToItem(toolbar, search.width, 0).x < toolbar.width);
             const op = open.mapToItem(toolbar, 0, 0);
             const sp = search.mapToItem(toolbar, 0, 0);
             verify(Math.abs(op.y + open.height / 2 - sp.y - search.height / 2) < 0.5, "Open y/height=" + op.y + "/" + open.height + "; search=" + sp.y + "/" + search.height);
             verify(op.x + open.width < sp.x);
-            verify(sp.x + search.width < toolbar.width);
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
             const extract = findChild(toolbar, "archiveExtract");
             tryCompare(extract, "height", toolbar.controlHeight);
             tryVerify(() => extract.mapToItem(toolbar, extract.width, 0).x <= toolbar.width - 11, 5000, "Extract right=" + extract.mapToItem(toolbar, extract.width, 0).x + "; toolbar=" + toolbar.width);
             const icon = findChild(open, "actionIcon");
             const label = findChild(open, "actionLabel");
+            const recent = findChild(toolbar, "toolbarRecentToggle");
+            compare(recent.width, Math.round(22 * data.scale) * 0.8);
+            tryVerify(() => Math.abs(recent.mapToItem(toolbar, 0, 0).x - label.mapToItem(toolbar, label.width, 0).x - Math.round(6 * data.scale) * 0.5) < 0.01);
             tryVerify(() => Math.abs(icon.mapToItem(open, 0, icon.height / 2).y - open.height / 2) < 0.5);
             tryVerify(() => Math.abs(label.mapToItem(open, 0, label.height / 2).y - open.height / 2) < 0.5);
             verify(Math.abs(icon.width - 32 * 1024 / 1548) < 0.01);
@@ -71,6 +84,22 @@ Item {
             verify(findChild(extract, "actionSplitIndicator").visible);
             compare(findChild(extract, "actionLabel").opacity, 1);
             compare(findChild(extract, "actionBackground").opacity, 1);
+        }
+        function test_open_disclosure_hover() {
+            const open = findChild(toolbar, "archiveOpen");
+            const recent = findChild(toolbar, "toolbarRecentToggle");
+            const openBackground = findChild(open, "toolbarOpenBackground");
+            const recentBackground = findChild(recent, "toolbarRecentBackground");
+            mouseMove(toolbar, toolbar.width - 1, 0);
+            tryCompare(recentBackground, "visible", false);
+            mouseMove(open);
+            tryCompare(open, "hovered", true);
+            tryCompare(recentBackground, "visible", true);
+            compare(openBackground.color, Ui.Theme.controlHover);
+            mouseMove(recent);
+            tryCompare(recent, "hovered", true);
+            compare(openBackground.color, Qt.rgba(0, 0, 0, 0));
+            compare(recentBackground.color, Ui.Theme.controlHover);
         }
         function test_real_action_and_search() {
             const open = findChild(toolbar, "archiveOpen");
