@@ -18,6 +18,16 @@ if ($IsWindows) {
     $env:CARGO_HOME = $foundationCargoHome
     $env:RUSTUP_HOME = $foundationRustupHome
     $env:PATH = $env:PATH + ';' + $foundationPath
+
+    # Own the temporary ACL baseline. Individual tests apply shared and denied
+    # permissions explicitly, independent of the runner's profile inheritance.
+    $foundationTemp = Join-Path (Get-Location) ("build/test-tmp/foundation-" + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $foundationTemp -Force | Out-Null
+    $fixtureOwner = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    & icacls.exe $foundationTemp /inheritance:r /grant:r "*${fixtureOwner}:(OI)(CI)F" /grant:r '*S-1-5-18:(OI)(CI)F' | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw 'Could not secure the Foundation temporary directory' }
+    $env:TEMP = $foundationTemp
+    $env:TMP = $foundationTemp
 }
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
