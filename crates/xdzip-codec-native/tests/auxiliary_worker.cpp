@@ -9,7 +9,7 @@ static void fake_run() {
         throw Failure{2};
     if (request.operation == 0) {
         if (mode == 'u' || mode == 'n' || mode == 'w') {
-            metadata(0, L"unknown.bin", mode == 'w' ? 0x80 : 0x40, mode == 'n' ? 1 : 0, 1, 0, 29);
+            metadata(0, L"unknown.bin", mode == 'w' ? 0x20 : 0x40, mode == 'n' ? 1 : 0, 1, 0, 29);
             return;
         }
         if (mode == 's') {

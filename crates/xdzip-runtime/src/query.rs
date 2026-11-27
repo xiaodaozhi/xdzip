@@ -272,7 +272,7 @@ impl Archive {
             .as_ref()
             .map(|q| q.page(offset as usize))
             .transpose()?;
-        let candidates = if let Some(tokens) = tokens {
+        let mut candidates = if let Some(tokens) = tokens {
             tokens
                 .into_iter()
                 .map(|token| {
@@ -303,6 +303,45 @@ impl Archive {
                 })
                 .collect()
         };
+        // Fetch the candidate page in one isolated worker. The existing limit
+        // below still bounds the comments emitted across the application bridge.
+        let mut rar_ids = Vec::new();
+        for row in &candidates {
+            if let QueryRow::Physical(entry) = row
+                && entry.format == xdzip_codec_api::Format::Rar
+                && entry.details.comment_region.is_some()
+            {
+                rar_ids.push(entry.id.get());
+            }
+        }
+        if !rar_ids.is_empty() {
+            let mut source = self.source.fork()?;
+            let codec = xdzip_codec_native::NativeCodec {
+                format: xdzip_codec_api::Format::Rar,
+            };
+            let comments = codec.rar_comments(
+                &mut source,
+                control,
+                &rar_ids,
+                self.password
+                    .as_ref()
+                    .map(crate::extraction::Password::expose),
+            )?;
+            let mut comments = comments.into_iter();
+            for row in &mut candidates {
+                if let QueryRow::Physical(entry) = row
+                    && entry.format == xdzip_codec_api::Format::Rar
+                    && entry.details.comment_region.is_some()
+                {
+                    entry.details.comment = comments.next().ok_or(ScanError::Invalid)?;
+                    entry.details.comment_utf8 = true;
+                    entry.details.comment_region = None;
+                }
+            }
+            if comments.next().is_some() {
+                return Err(ScanError::Invalid.into());
+            }
+        }
         let mut comment_source = None;
         for mut row in candidates {
             control.check()?;

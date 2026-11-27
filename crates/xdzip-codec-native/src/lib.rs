@@ -124,6 +124,88 @@ fn source_call<T>(
     }
 }
 impl NativeCodec {
+    /// Read a bounded batch of advisory RAR comments in the isolated worker.
+    pub fn rar_comments(
+        &self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+        ids: &[u64],
+        password: Option<&str>,
+    ) -> Result<Vec<Vec<u8>>, ScanError> {
+        self.rar_comments_inner(source, control, ids, password)
+            .map_err(scan_error)
+    }
+
+    fn rar_comments_inner(
+        &self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+        ids: &[u64],
+        password: Option<&str>,
+    ) -> Result<Vec<Vec<u8>>, Fault> {
+        if self.format != Format::Rar || ids.is_empty() || ids.len() > 128 {
+            return Err(Fault::Invalid);
+        }
+        let limits = ScanLimits::default();
+        let length = source_call(control, || source.seek(SeekFrom::End(0)))?;
+        let mut request = Zeroizing::new(self.request(
+            4,
+            length,
+            password,
+            0,
+            limits,
+            (source.volume_lengths(), source.volume_names()),
+        )?);
+        request.extend_from_slice(&(ids.len() as u32).to_le_bytes());
+        for &id in ids {
+            request.extend_from_slice(&id.checked_sub(1).ok_or(Fault::Invalid)?.to_le_bytes());
+        }
+        let mut worker = Worker::start(&request)?;
+        // The index scan has its own 64-MiB admission. Selected service
+        // comments have a separate 64-MiB read budget in the worker.
+        let mut remaining = limits.read_bytes.saturating_mul(2);
+        let mut comments = Vec::with_capacity(ids.len());
+        loop {
+            let frame = worker.next(control)?;
+            let mut fields = Fields(&frame);
+            match fields.byte()? {
+                protocol::READ => {
+                    answer_read(&mut worker, source, &mut fields, &mut remaining, control)?
+                }
+                protocol::ROW => {
+                    let id = fields.u64()?.checked_add(1).ok_or(Fault::Invalid)?;
+                    if ids.get(comments.len()) != Some(&id) || fields.byte()? != 0 {
+                        return Err(Fault::Invalid);
+                    }
+                    fields.u64()?;
+                    fields.u64()?;
+                    fields.u32()?;
+                    fields.u32()?;
+                    let name = fields.bytes(limits.name_bytes)?;
+                    std::str::from_utf8(&name).map_err(|_| Fault::Invalid)?;
+                    fields.bytes(128)?;
+                    fields.bytes(32)?;
+                    fields.bytes(128)?;
+                    let comment = fields.bytes(u16::MAX as usize)?;
+                    std::str::from_utf8(&comment).map_err(|_| Fault::Invalid)?;
+                    fields.end()?;
+                    comments.push(comment);
+                    worker.send(protocol::ACK, &[])?;
+                }
+                protocol::ERROR => return Err(Fault::from_wire(fields.byte()?)),
+                protocol::DONE => {
+                    fields.end()?;
+                    worker.finish(control)?;
+                    if comments.len() != ids.len() {
+                        return Err(Fault::Invalid);
+                    }
+                    return Ok(comments);
+                }
+                _ => return Err(Fault::Invalid),
+            }
+        }
+    }
+
     fn request(
         &self,
         operation: u8,
@@ -260,7 +342,7 @@ impl NativeCodec {
                     if (cab && !raw)
                         || (raw && !matches!(self.format, Format::Cab | Format::Iso))
                         || (!cab && flags & 0x20 != 0)
-                        || flags & 0x80 != 0
+                        || (flags & 0x80 != 0 && self.format != Format::Rar)
                         || (!size_known && (self.format != Format::Rar || size != 0))
                     {
                         return Err(Fault::Invalid);
@@ -303,7 +385,7 @@ impl NativeCodec {
                             attributes: (!attributes.is_empty()).then_some(attributes),
                             comment,
                             comment_utf8: true,
-                            comment_region: None,
+                            comment_region: (flags & 0x80 != 0).then_some((0, 0)),
                             comment_truncated: false,
                         },
                         format: self.format,

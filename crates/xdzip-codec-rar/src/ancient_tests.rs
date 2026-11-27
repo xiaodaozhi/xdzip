@@ -89,6 +89,47 @@ fn independent_ancient_headers_keep_generation_flags_extra_bytes_and_checksum() 
 }
 
 #[test]
+fn ancient_file_comment_is_length_bounded_and_has_no_invented_crc() {
+    let mut bytes = main(0x80, &[]);
+    let extension = [6, 0, b'F', b'C', b'O', b'M', b'\r', b'\n'];
+    bytes.extend(file(
+        b"entry",
+        b"data",
+        4,
+        sum(b"data"),
+        8,
+        2,
+        0,
+        0x20,
+        &extension,
+    ));
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(&bytes),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert_eq!(
+        index
+            .entry_comments(&mut Cursor::new(&bytes), &[1], &control, None)
+            .unwrap()[0]
+            .1,
+        b"FCOM\r\n"
+    );
+    let mut source = Cursor::new(&bytes);
+    let mut payload = RarCodec
+        .open_payload(&mut source, index.entries(), &control)
+        .unwrap();
+    let mut sink = Sink::default();
+    payload
+        .decode(&index.entries()[0], &mut sink, &control)
+        .unwrap();
+    assert_eq!(sink.0, b"data");
+}
+
+#[test]
 fn ancient_split_ignores_nonfinal_sum_and_hashes_complete_logical_output() {
     let mut first = main(0x81, &[]);
     first.extend(file(b"part", &[1], 3, 0xffff, 2, 2, 0, 0x20, &[]));

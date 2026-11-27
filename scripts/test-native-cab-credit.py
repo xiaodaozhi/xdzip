@@ -198,11 +198,23 @@ class CreditWireTests(unittest.TestCase):
         self.assertEqual(result, b'')
 
     def test_unknown_size_bit_is_rar_only_zero_valued_and_reserved_bits_stay_invalid(self):
-        for flags, size, format_id in ((0x40, 3, 4), (0x40, 0, 7), (0x80, 0, 4)):
+        for flags, size, format_id in ((0x40, 3, 4), (0x40, 0, 7), (0x80, 0, 7)):
             scan = Process([row(size, flags=flags), frame(15)])
             with patch.object(NATIVE.subprocess, 'Popen', return_value=scan), patch.object(NATIVE.threading, 'Timer'):
                 with self.assertRaisesRegex(NATIVE.WorkerError, '^metadata_size_flags$'):
                     NATIVE.run_worker('self-owned-wire-test', [b'input'], format_id=format_id)
+
+    def test_rar_comment_hint_and_batch_request_are_scoped(self):
+        scan = Process([row(0, flags=0x80), frame(15)])
+        with patch.object(NATIVE.subprocess, 'Popen', return_value=scan), patch.object(NATIVE.threading, 'Timer'):
+            rows, _ = NATIVE.run_worker('self-owned-wire-test', [b'input'], format_id=4)
+        self.assertEqual(rows[0]['flags'], 0x80)
+        for options in ({'format_id': 7, 'comment_ids': [0]},
+                        {'format_id': 4, 'comment_ids': []},
+                        {'format_id': 4, 'comment_ids': [0, 0]},
+                        {'format_id': 4, 'comment_ids': list(range(129))}):
+            with self.subTest(options=options), self.assertRaisesRegex(NATIVE.WorkerError, '^comment_request$'):
+                NATIVE.run_worker('self-owned-wire-test', [b'input'], **options)
 
 
 if __name__ == '__main__':

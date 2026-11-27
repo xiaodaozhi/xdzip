@@ -8,6 +8,7 @@ from pathlib import Path
 import struct
 import subprocess
 import threading
+import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 CHUNK = 64 * 1024
@@ -33,8 +34,11 @@ def exact(stream, size):
 
 
 def run_worker(worker, parts, *, password=None, selected=None, format_id=7, creation=None, solid=False, encrypt_headers=False,
-               volume_names=None, digest_only=False):
-    operation = 2 if creation is not None else 0 if selected is None else 1
+               volume_names=None, digest_only=False, comment_ids=None):
+    if comment_ids is not None and (format_id != 4 or selected is not None or creation is not None
+                                    or not 1 <= len(comment_ids) <= 128 or len(set(comment_ids)) != len(comment_ids)):
+        raise WorkerError('comment_request')
+    operation = 4 if comment_ids is not None else 2 if creation is not None else 0 if selected is None else 1
     if digest_only and operation != 1:
         raise WorkerError('digest_payload_only')
     maximum_output = 8 * 1024**3 if digest_only else 32 * 1024**2
@@ -60,6 +64,8 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
     request += b''.join(struct.pack('<Q', len(part)) for part in parts)
     if creation is not None:
         request += bytes([6, solid, encrypt_headers, 0]) + struct.pack('<I', len(creation))
+    elif comment_ids is not None:
+        request += struct.pack('<I', len(comment_ids)) + b''.join(struct.pack('<Q', n) for n in comment_ids)
     elif format_id == 8:
         names = [b'volume.cab'] if volume_names is None else volume_names
         if len(names) != len(parts):
@@ -120,7 +126,7 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                 if end != len(value):
                     raise WorkerError('metadata_length')
                 size_known = not flags & 0x40
-                if flags & 0x80 or (not size_known and (format_id != 4 or unpacked != 0)):
+                if (flags & 0x80 and format_id != 4) or (not size_known and (format_id != 4 or unpacked != 0)):
                     raise WorkerError('metadata_size_flags')
                 if flags & 0x20 and format_id != 8:
                     raise WorkerError('metadata_encoding_flags')
@@ -220,6 +226,46 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
             child.stdin.close()
 
 
+def rar_comment_fixture(worker):
+    def block(kind, flags, fields, checked_length=None):
+        body = bytes([kind]) + struct.pack('<HH', flags, len(fields) + 7) + fields
+        checksum = zlib.crc32(body if checked_length is None else body[:checked_length - 2]) & 0xffff
+        return struct.pack('<H', checksum) + body
+
+    def file_header(name, data, flags=0):
+        fields = struct.pack('<IIBIIBBHI', len(data), len(data), 2, zlib.crc32(data),
+                             0x58210000, 20, 0x30, len(name), 0x20) + name
+        return block(0x74, 0x8000 | flags, fields) + data
+
+    def service(text, child):
+        entry = bytearray(file_header(b'CMT', text, 0x10 if child else 0))
+        entry[2] = 0x7a
+        size = struct.unpack_from('<H', entry, 5)[0]
+        struct.pack_into('<H', entry, 0, zlib.crc32(entry[2:size]) & 0xffff)
+        return bytes(entry)
+
+    message = b'inline comment'
+    child = block(0x75, 0, struct.pack('<HBBH', len(message), 20, 0x30,
+                  zlib.crc32(message) & 0xffff) + message, 13)
+    first = bytearray(file_header(b'first', b'alpha', 8))
+    size = struct.unpack_from('<H', first, 5)[0]
+    first[5:7] = struct.pack('<H', size + len(child))
+    first[0:2] = struct.pack('<H', zlib.crc32(first[2:size]) & 0xffff)
+    first[size:size] = child
+    archive = (b'Rar!\x1a\x07\x00' + block(0x73, 0, bytes(6)) + service(b'archive text', False)
+               + first + file_header(b'second', b'beta') + service(b'service comment', True)
+               + block(0x7b, 0, b''))
+    rows, _ = run_worker(worker, [archive], format_id=4)
+    assert len(rows) == 2 and all(row['flags'] & 0x80 for row in rows), 'rar_comment_hints'
+    comments, _ = run_worker(worker, [archive], format_id=4, comment_ids=[1, 0])
+    assert [row['index'] for row in comments] == [1, 0], 'rar_comment_order'
+    assert [row['comment'] for row in comments] == [b'service comment', message], 'rar_comment_values'
+    for row, expected in zip(rows, (b'alpha', b'beta')):
+        _, decoded = run_worker(worker, [archive], format_id=4, selected=row['index'])
+        assert decoded == expected, 'rar_comment_payload_identity'
+    return dict(case='rar_entry_comments', files=2, status='passed')
+
+
 def rar_fixtures(worker):
     base = ROOT / 'tests/fixtures/native-archives'
     manifest = json.loads((base / 'sources.json').read_text(encoding='utf-8'))
@@ -280,6 +326,7 @@ def rar_fixtures(worker):
     _, decoded = run_worker(worker, parts, selected=0, format_id=4)
     assert decoded == expected and hashlib.sha256(decoded).hexdigest() == modern['input']['sha256'], 'modern_rar_decoded_identity'
     results.append(dict(case='rar_7_23_rar5_compatible_compressed', unpack_version=50, decoded_bytes=len(decoded), status='passed'))
+    results.append(rar_comment_fixture(worker))
     return results
 
 

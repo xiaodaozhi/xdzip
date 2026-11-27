@@ -100,6 +100,7 @@ mod ffi {
             entries: u32,
             name_bytes: u32,
             volumes: &[u64],
+            comment_ids: &[u64],
             password: &str,
             has_password: bool,
         ) -> u8;
@@ -147,6 +148,7 @@ fn run_rar(
     entries: u32,
     name_bytes: u32,
     volumes: &[u64],
+    comment_ids: &[u64],
     password: &str,
     has_password: bool,
 ) -> u8 {
@@ -158,6 +160,7 @@ fn run_rar(
             entries,
             name_bytes,
             volumes,
+            comment_ids,
             password,
             has_password,
         )

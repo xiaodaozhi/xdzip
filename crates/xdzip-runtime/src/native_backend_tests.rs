@@ -13,6 +13,156 @@ use xdzip_codec_api::{
     payload::{DecodeError, DecodedSink},
 };
 static NEXT: AtomicU64 = AtomicU64::new(0);
+
+#[test]
+#[ignore = "requires built isolated worker and verified public RAR comment fixtures"]
+fn rar_comments_reach_query_pages_with_opening_password() {
+    use crate::query::{QueryRequest, QueryRow};
+    let root = PathBuf::from(std::env::var_os("XDZIP_RAR_COMMENT_FIXTURES").unwrap());
+    let control = Cancellation::default();
+    for (name, password, expected) in [
+        (
+            "rar202-comment-nopsw.rar",
+            None,
+            ["file1comment", "file2comment"],
+        ),
+        (
+            "rar3-comment-plain.rar",
+            None,
+            ["Comment1v2\n", "Comment2v2\n"],
+        ),
+        (
+            "rar3-comment-hpsw.rar",
+            Some("password"),
+            ["Comment1v2\n", "Comment2v2\n"],
+        ),
+        (
+            "rar3-comment-psw.rar",
+            Some("password"),
+            ["Comment1v2\n", "Comment2v2\n"],
+        ),
+    ] {
+        let secret = password.map(|value| extraction::Password::new(value.into()).unwrap());
+        let mut archive = Archive::open_with_password(&root.join(name), &control, secret).unwrap();
+        let page = archive
+            .query_page(
+                QueryRequest {
+                    directory: "",
+                    text: "",
+                    sort: 0,
+                    offset: 0,
+                    expected: None,
+                    generation: 1,
+                },
+                &control,
+            )
+            .unwrap();
+        assert_eq!(page.rows.len(), 2, "{name}");
+        for (row, text) in page.rows.iter().zip(expected) {
+            let QueryRow::Physical(entry) = row else {
+                panic!("expected file row");
+            };
+            assert!(entry.details.comment_utf8);
+            assert_eq!(entry.details.comment, text.as_bytes(), "{name}");
+        }
+    }
+    let mut archive = Archive::open(&root.join("FCOMM.RAR"), &control).unwrap();
+    let page = archive
+        .query_page(
+            QueryRequest {
+                directory: "",
+                text: "",
+                sort: 0,
+                offset: 0,
+                expected: None,
+                generation: 1,
+            },
+            &control,
+        )
+        .unwrap();
+    let QueryRow::Physical(entry) = &page.rows[0] else {
+        panic!("expected file row");
+    };
+    assert_eq!(entry.details.comment, b"FCOM\r\n");
+}
+
+#[test]
+#[ignore = "requires built isolated worker"]
+fn rar_comment_page_budget_preserves_every_physical_row() {
+    use crate::query::{QueryRequest, QueryRow};
+    use xdzip_compression::crc32;
+    fn block(kind: u8, flags: u16, fields: &[u8]) -> Vec<u8> {
+        let mut body = vec![kind];
+        body.extend(flags.to_le_bytes());
+        body.extend(((7 + fields.len()) as u16).to_le_bytes());
+        body.extend(fields);
+        let mut result = (crc32(&body) as u16).to_le_bytes().to_vec();
+        result.extend(body);
+        result
+    }
+    let mut bytes = b"Rar!\x1a\x07\x00".to_vec();
+    bytes.extend(block(0x73, 0, &[0; 6]));
+    for number in 0..40 {
+        let name = format!("file{number:02}.txt");
+        let text = vec![b'a' + number as u8 % 26; 32768];
+        let mut child_fields = (text.len() as u16).to_le_bytes().to_vec();
+        child_fields.extend([20, 0x30]);
+        child_fields.extend((crc32(&text) as u16).to_le_bytes());
+        child_fields.extend(&text);
+        let mut child = block(0x75, 0, &child_fields);
+        let checksum = crc32(&child[2..13]) as u16;
+        child[..2].copy_from_slice(&checksum.to_le_bytes());
+        let mut fields = vec![0; 8];
+        fields.push(2);
+        fields.extend(0u32.to_le_bytes());
+        fields.extend(0x58210000u32.to_le_bytes());
+        fields.extend([20, 0x30]);
+        fields.extend((name.len() as u16).to_le_bytes());
+        fields.extend(0x20u32.to_le_bytes());
+        fields.extend(name.as_bytes());
+        let mut parent = block(0x74, 0x8008, &fields);
+        let full = (parent.len() + child.len()) as u16;
+        parent[5..7].copy_from_slice(&full.to_le_bytes());
+        let checksum = crc32(&parent[2..]) as u16;
+        parent[..2].copy_from_slice(&checksum.to_le_bytes());
+        parent.extend(child);
+        bytes.extend(parent);
+    }
+    bytes.extend(block(0x7b, 0, &[]));
+    let fixture = Fixture::new();
+    let path = fixture.0.join("comments.rar");
+    std::fs::write(&path, bytes).unwrap();
+    let control = Cancellation::default();
+    let mut archive = Archive::open(&path, &control).unwrap();
+    let mut offset = 0u64;
+    let mut key = None;
+    while offset < 40 {
+        let page = archive
+            .query_page(
+                QueryRequest {
+                    directory: "",
+                    text: "",
+                    sort: 0,
+                    offset,
+                    expected: key,
+                    generation: 1,
+                },
+                &control,
+            )
+            .unwrap();
+        assert!(!page.rows.is_empty());
+        key = Some(page.key);
+        for row in &page.rows {
+            let QueryRow::Physical(entry) = row else {
+                panic!("expected physical file");
+            };
+            assert_eq!(entry.details.comment.len(), 32768);
+        }
+        offset += page.rows.len() as u64;
+        assert!(offset <= 40);
+    }
+    assert_eq!(offset, 40);
+}
 struct Fixture(PathBuf);
 impl Fixture {
     fn new() -> Self {

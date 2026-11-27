@@ -422,6 +422,19 @@ static void parse_request() {
             item.end();
             request.records.push_back(row);
         }
+    } else if (request.operation == 4 && request.format == 4) {
+        count = fields.u32();
+        if (count == 0 || count > 128)
+            throw Failure{4};
+        for (uint32_t i = 0; i < count; i++) {
+            auto id = fields.u64();
+            if (id >= request.entries ||
+                std::find(request.comment_ids.begin(), request.comment_ids.end(), id) !=
+                    request.comment_ids.end())
+                throw Failure{2};
+            request.comment_ids.push_back(id);
+        }
+        fields.end();
     } else if (request.format == 8) {
         count = fields.u32();
         if (count == 0 || count != request.volumes.size())

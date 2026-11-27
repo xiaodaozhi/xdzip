@@ -102,6 +102,176 @@ fn file_with_comment(bytes: &[u8]) -> Vec<u8> {
     out
 }
 
+fn service_comment(bytes: &[u8], child: bool) -> Vec<u8> {
+    let mut record = old_file(b"CMT", bytes, if child { 0x10 } else { 0 }, 29);
+    record[2] = 0x7a;
+    let size = usize::from(u16::from_le_bytes(record[5..7].try_into().unwrap()));
+    let checksum = crc32(&record[2..size]) as u16;
+    record[..2].copy_from_slice(&checksum.to_le_bytes());
+    record
+}
+
+#[test]
+fn unicode_service_comment_is_decoded_as_utf16() {
+    let raw: Vec<u8> = "中文备注"
+        .encode_utf16()
+        .flat_map(u16::to_le_bytes)
+        .collect();
+    let mut child = service_comment(&raw, true);
+    let old_size = usize::from(u16::from_le_bytes(child[5..7].try_into().unwrap()));
+    child[28..32].copy_from_slice(&1u32.to_le_bytes());
+    let checksum = crc32(&child[2..old_size]) as u16;
+    child[..2].copy_from_slice(&checksum.to_le_bytes());
+    let archive = old_archive(&[old_file(b"entry", b"abc", 0, 29), child]);
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(&archive),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert_eq!(
+        index
+            .entry_comments(&mut Cursor::new(&archive), &[1], &control, None)
+            .unwrap()[0]
+            .1,
+        "中文备注".as_bytes()
+    );
+    assert_eq!(unpack(archive), [b"abc"]);
+}
+
+#[test]
+fn service_comments_follow_physical_files_not_the_archive() {
+    let archive = old_archive(&[
+        service_comment(b"archive comment", false),
+        old_file(b"duplicate", b"one", 0, 29),
+        service_comment(b"first comment", true),
+        old_file(b"duplicate", b"two", 0, 29),
+        service_comment(b"second comment", true),
+        old_file(b"plain", b"three", 0, 29),
+        service_comment(b"another archive comment", false),
+    ]);
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(archive.clone()),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert!(index.entries()[0].details.comment_region.is_some());
+    assert!(index.entries()[1].details.comment_region.is_some());
+    assert!(index.entries()[2].details.comment_region.is_none());
+    assert_eq!(
+        index
+            .entry_comments(
+                &mut Cursor::new(archive.clone()),
+                &[1, 2, 3],
+                &control,
+                None
+            )
+            .unwrap(),
+        [
+            (1, b"first comment".to_vec()),
+            (2, b"second comment".to_vec()),
+            (3, Vec::new())
+        ]
+    );
+    assert_eq!(
+        unpack(archive),
+        [b"one".as_slice(), b"two".as_slice(), b"three".as_slice()]
+    );
+}
+
+#[test]
+fn damaged_service_comment_is_empty_without_changing_file_payload() {
+    let mut archive = old_archive(&[
+        old_file(b"entry", b"file data", 0, 29),
+        service_comment(b"visible comment", true),
+    ]);
+    let at = archive
+        .windows(15)
+        .position(|w| w == b"visible comment")
+        .unwrap();
+    archive[at] ^= 1;
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(&archive),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert_eq!(
+        index
+            .entry_comments(&mut Cursor::new(&archive), &[1], &control, None)
+            .unwrap()[0]
+            .1,
+        b""
+    );
+    assert_eq!(unpack(archive), [b"file data"]);
+}
+
+#[test]
+#[ignore = "requires separately verified public RAR comment fixtures"]
+fn independent_comment_fixtures_read_expected_entry_text() {
+    let root = std::path::PathBuf::from(std::env::var_os("XDZIP_RAR_COMMENT_FIXTURES").unwrap());
+    let control = Cancellation::default();
+    for (name, password, expected) in [
+        (
+            "rar202-comment-nopsw.rar",
+            None,
+            ["file1comment", "file2comment"],
+        ),
+        (
+            "rar3-comment-plain.rar",
+            None,
+            ["Comment1v2\n", "Comment2v2\n"],
+        ),
+        (
+            "rar3-comment-hpsw.rar",
+            Some("password"),
+            ["Comment1v2\n", "Comment2v2\n"],
+        ),
+        (
+            "rar3-comment-psw.rar",
+            Some("password"),
+            ["Comment1v2\n", "Comment2v2\n"],
+        ),
+    ] {
+        let bytes = std::fs::read(root.join(name)).unwrap();
+        let mut index = read_index(
+            &mut Cursor::new(&bytes),
+            &control,
+            ScanLimits::default(),
+            password,
+        )
+        .unwrap();
+        let comments = index
+            .entry_comments(&mut Cursor::new(&bytes), &[1, 2], &control, password)
+            .unwrap();
+        for (actual, expected) in comments.iter().zip(expected) {
+            assert_eq!(actual.1, expected.as_bytes(), "{name}");
+        }
+    }
+    let bytes = std::fs::read(root.join("FCOMM.RAR")).unwrap();
+    let mut index = read_index(
+        &mut Cursor::new(&bytes),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert_eq!(
+        index
+            .entry_comments(&mut Cursor::new(&bytes), &[1], &control, None)
+            .unwrap()[0]
+            .1,
+        b"FCOM\r\n"
+    );
+}
+
 #[test]
 fn embedded_and_standalone_comments_keep_independent_header_crc_ranges() {
     let mut archive = b"Rar!\x1a\x07\x00".to_vec();
@@ -120,6 +290,82 @@ fn embedded_and_standalone_comments_keep_independent_header_crc_ranges() {
     assert_eq!(unpack(archive.clone()), [b"abc"]);
     archive[at - 13] ^= 1;
     assert_eq!(scan(archive), Err(ScanError::Invalid));
+}
+
+#[test]
+fn embedded_file_comments_are_decoded_only_when_requested() {
+    let archive = old_archive(&[
+        file_with_comment(b"file comment"),
+        old_file(b"plain", b"xyz", 0, 20),
+    ]);
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(archive.clone()),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert!(index.entries()[0].details.comment_region.is_some());
+    assert!(index.entries()[0].details.comment.is_empty());
+    assert!(index.entries()[1].details.comment_region.is_none());
+    assert_eq!(
+        index
+            .entry_comments(&mut Cursor::new(archive.clone()), &[1, 2], &control, None)
+            .unwrap(),
+        [(1, b"file comment".to_vec()), (2, Vec::new())]
+    );
+    assert_eq!(
+        unpack(archive.clone()),
+        [b"abc".as_slice(), b"xyz".as_slice()]
+    );
+    let mut damaged = archive;
+    let at = damaged
+        .windows(12)
+        .position(|w| w == b"file comment")
+        .unwrap();
+    damaged[at] ^= 1;
+    let mut index = read_index(
+        &mut Cursor::new(damaged.clone()),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert!(
+        index
+            .entry_comments(&mut Cursor::new(damaged.clone()), &[1], &control, None)
+            .unwrap()[0]
+            .1
+            .is_empty()
+    );
+    assert_eq!(unpack(damaged), [b"abc".as_slice(), b"xyz".as_slice()]);
+}
+
+#[test]
+fn legacy_comment_encoding_can_be_detected_when_filename_is_ascii() {
+    let raw = [
+        213, 226, 202, 199, 210, 187, 184, 246, 214, 208, 206, 196, 215, 162, 202, 205, 163, 172,
+        211, 195, 211, 218, 209, 233, 214, 164, 206, 196, 188, 254, 212, 164, 192, 192, 196, 220,
+        185, 187, 213, 253, 200, 183, 207, 212, 202, 190, 209, 185, 203, 245, 176, 252, 214, 208,
+        181, 196, 214, 208, 206, 196, 196, 218, 200, 221, 161, 163,
+    ];
+    let archive = old_archive(&[file_with_comment(&raw)]);
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(&archive),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    let result = index
+        .entry_comments(&mut Cursor::new(&archive), &[1], &control, None)
+        .unwrap();
+    assert_eq!(
+        result[0].1,
+        "这是一个中文注释，用于验证文件预览能够正确显示压缩包中的中文内容。".as_bytes()
+    );
 }
 
 #[test]
