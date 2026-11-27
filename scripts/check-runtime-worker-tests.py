@@ -90,27 +90,9 @@ def prepare(selected, output, args):
     if 'rar-comments' in required:
         module = load_module('prepare-rar-rust-fixtures.py')
         destination = output/'fixtures/rar-comments'
-        items = [
-            ('FCOMM.RAR', 75, 'db470414d97b8d7a3213eaf5957b139e01621012ede09eda1565342709aa1191',
-             'bitplane/rar-research/c87266e2e47c210c60b3cc0acb81f2633ec1fcb2/fixtures/1.402/FCOMM.RAR'),
-            ('rar202-comment-nopsw.rar', 204, '16715eaf4163092733579f8a616e83a78e3feae2b8bae15b1538bc88bf0dbc86',
-             'markokr/rarfile/d2f7df6fc843dae356fd6b0a85971dc36fd6e757/test/files/rar202-comment-nopsw.rar'),
-            ('rar3-comment-plain.rar', 300, '224a3f0aacab5cbb140b72dde616280a871589f251b9147bdb55b49651661813',
-             'markokr/rarfile/d2f7df6fc843dae356fd6b0a85971dc36fd6e757/test/files/rar3-comment-plain.rar'),
-            ('rar3-comment-hpsw.rar', 484, '29c61403d1e7cec0b15eb7e33cfa217cebd56bf1a4a78a2642715eca474350b2',
-             'markokr/rarfile/d2f7df6fc843dae356fd6b0a85971dc36fd6e757/test/files/rar3-comment-hpsw.rar'),
-            ('rar3-comment-psw.rar', 332, 'ffb9b41571ac4d56ebf9a5ce5323740ea6150d66823b66abf7566f8dd2639803',
-             'markokr/rarfile/d2f7df6fc843dae356fd6b0a85971dc36fd6e757/test/files/rar3-comment-psw.rar'),
-        ]
-        records = []
-        for name, size, sha256, path in items:
-            item = dict(file=name, bytes=size, sha256=sha256,
-                        url='https://raw.githubusercontent.com/' + path, encoding='raw',
-                        cache_subdirectory='public')
-            _, downloaded = module.public_data(item, destination, args.rar_cache, args.offline)
-            records.append({**item, 'downloaded_bytes': downloaded})
-        sources['rar_comments'] = records
-        environment['XDZIP_RAR_COMMENT_FIXTURES'] = str(destination)
+        comment_env, sources['rar_comments'] = module.prepare_comments(
+            destination, args.rar_cache, args.offline)
+        environment.update(comment_env)
     if 'rar7-genuine' in required:
         module = load_module('check-rar7-genuine-fixture.py')
         path, sources['rar7'] = module.prepare(output/'fixtures/rar7', args.rar7_cache, args.offline)
