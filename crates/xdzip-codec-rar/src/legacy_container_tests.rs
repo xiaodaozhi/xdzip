@@ -1,5 +1,8 @@
 use super::*;
 
+#[path = "../../../tests/support/rar_cmt_time.rs"]
+mod rar_cmt_time;
+
 fn opaque_service(flags: u16, packed_high: u32) -> Vec<u8> {
     let mut fields = 3u32.to_le_bytes().to_vec();
     fields.extend(7u32.to_le_bytes());
@@ -109,6 +112,167 @@ fn service_comment(bytes: &[u8], child: bool) -> Vec<u8> {
     let checksum = crc32(&record[2..size]) as u16;
     record[..2].copy_from_slice(&checksum.to_le_bytes());
     record
+}
+
+fn service_comment_with_time(
+    bytes: &[u8],
+    subdata: &[u8],
+    salt: Option<[u8; 8]>,
+    time: &[u8],
+) -> Vec<u8> {
+    let mut record = service_comment(bytes, true);
+    let size = usize::from(u16::from_le_bytes(record[5..7].try_into().unwrap()));
+    let mut tail = subdata.to_vec();
+    if let Some(salt) = salt {
+        tail.extend(salt);
+    }
+    tail.extend(time);
+    record.splice(size..size, tail.iter().copied());
+    let flags = u16::from_le_bytes(record[3..5].try_into().unwrap())
+        | 0x1000
+        | if salt.is_some() { 0x400 } else { 0 };
+    record[3..5].copy_from_slice(&flags.to_le_bytes());
+    let new_size = size + tail.len();
+    record[5..7].copy_from_slice(&(new_size as u16).to_le_bytes());
+    let checksum = crc32(&record[2..new_size]) as u16;
+    record[..2].copy_from_slice(&checksum.to_le_bytes());
+    record
+}
+
+#[test]
+fn service_comments_with_extended_times_preserve_file_content_and_encoding() {
+    let raw: Vec<u8> = "中文备注"
+        .encode_utf16()
+        .flat_map(u16::to_le_bytes)
+        .collect();
+    for (salt, time) in [
+        (None, vec![0, 0]),
+        (Some([0x37; 8]), vec![0, 0xb0, 1, 2, 3]),
+        (None, vec![0x80, 0x08, 0, 0, 0x21, 0x58, 0, 0, 0x21, 0x58]),
+    ] {
+        let mut child = service_comment_with_time(&raw, b"opaque-subdata", salt, &time);
+        let header_size = usize::from(u16::from_le_bytes(child[5..7].try_into().unwrap()));
+        child[28..32].copy_from_slice(&1u32.to_le_bytes());
+        let checksum = crc32(&child[2..header_size]) as u16;
+        child[..2].copy_from_slice(&checksum.to_le_bytes());
+        let archive = old_archive(&[old_file(b"entry", b"file data", 0, 29), child]);
+        let control = Cancellation::default();
+        let mut index = read_index(
+            &mut Cursor::new(&archive),
+            &control,
+            ScanLimits::default(),
+            None,
+        )
+        .unwrap();
+        assert_eq!(
+            index
+                .entry_comments(&mut Cursor::new(&archive), &[1], &control, None)
+                .unwrap()[0]
+                .1,
+            "中文备注".as_bytes()
+        );
+        assert_eq!(index.entries()[0].modified_dos, 0x58210000);
+        assert_eq!(unpack(archive), [b"file data"]);
+    }
+}
+
+#[test]
+fn damaged_comment_with_extended_time_remains_empty() {
+    let child = service_comment_with_time(b"note", b"metadata", None, &[0, 0]);
+    let mut archive = old_archive(&[old_file(b"entry", b"payload", 0, 29), child]);
+    let at = archive
+        .windows(4)
+        .position(|bytes| bytes == b"note")
+        .unwrap();
+    archive[at] ^= 1;
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(&archive),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert!(
+        index
+            .entry_comments(&mut Cursor::new(&archive), &[1], &control, None)
+            .unwrap()[0]
+            .1
+            .is_empty()
+    );
+    assert_eq!(unpack(archive), [b"payload"]);
+}
+
+#[test]
+fn encrypted_service_comment_with_extended_time_finds_verified_salt() {
+    for subdata in [b"".as_slice(), b"opaque\x00\x00metadata".as_slice()] {
+        let archive = rar_cmt_time::encrypted_comment(subdata);
+        let control = Cancellation::default();
+        let mut index = read_index(
+            &mut Cursor::new(&archive),
+            &control,
+            ScanLimits::default(),
+            None,
+        )
+        .unwrap();
+        assert_eq!(
+            index
+                .entry_comments(&mut Cursor::new(&archive), &[1], &control, Some("password"))
+                .unwrap()[0]
+                .1,
+            b"This is from b.txt"
+        );
+        assert!(
+            index
+                .entry_comments(&mut Cursor::new(&archive), &[1], &control, Some("wrong"))
+                .unwrap()[0]
+                .1
+                .is_empty()
+        );
+        assert_eq!(unpack(archive), [b"This is from a.txt"]);
+    }
+    let mut longest_time = vec![0xbb, 0xbb];
+    longest_time.extend([0x52; 24]);
+    let archive = rar_cmt_time::encrypted_comment_with_time(b"subdata", Some(&longest_time));
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(&archive),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert_eq!(
+        index
+            .entry_comments(&mut Cursor::new(&archive), &[1], &control, Some("password"))
+            .unwrap()[0]
+            .1,
+        b"This is from b.txt"
+    );
+    let mut archive = rar_cmt_time::encrypted_comment(b"opaque\x00\x00metadata");
+    let data_at = 80 + usize::from(u16::from_le_bytes(archive[85..87].try_into().unwrap()));
+    archive[data_at] ^= 1;
+    let control = Cancellation::default();
+    let mut index = read_index(
+        &mut Cursor::new(&archive),
+        &control,
+        ScanLimits::default(),
+        None,
+    )
+    .unwrap();
+    assert!(
+        index
+            .entry_comments(&mut Cursor::new(&archive), &[1], &control, Some("password"))
+            .unwrap()[0]
+            .1
+            .is_empty()
+    );
+    assert_eq!(unpack(archive.clone()), [b"This is from a.txt"]);
+    control.cancel();
+    assert_eq!(
+        index.entry_comments(&mut Cursor::new(&archive), &[1], &control, Some("password")),
+        Err(ScanError::Cancelled)
+    );
 }
 
 #[test]

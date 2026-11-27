@@ -142,16 +142,18 @@ fn file(
         // Service content has no output authority. Preserve its complete raw
         // header and skip the bounded opaque tail, without guessing salt/time
         // partitions or letting service timestamps change ordinary files.
-        // CMT subdata precedes the optional salt. Do not guess where an
-        // extended-time tail ends; those comments remain unavailable.
-        if d.name == b"CMT" && flags & 0x1000 == 0 {
+        // CMT's opaque subdata has no length. An encrypted comment with both
+        // salt and extended time is resolved later against its content CRC.
+        if d.name == b"CMT" {
             let tail = w.rest();
             let salt_len = if flags & 0x400 != 0 { 8 } else { 0 };
-            if let Some(data_len) = tail.len().checked_sub(salt_len) {
+            let time_min = if flags & 0x1000 != 0 { 2 } else { 0 };
+            if tail.len() >= salt_len + time_min {
+                let data_len = tail.len() - salt_len;
                 // Service flags occupy the file-attribute field; SubData is
                 // separate opaque metadata and does not select text encoding.
                 d.service_comment_utf16 = Some(attributes & 1 != 0);
-                if salt_len != 0 && d.encrypted {
+                if salt_len != 0 && d.encrypted && flags & 0x1000 == 0 {
                     d.crypt = Some(Crypt {
                         version: u64::from(method),
                         flags: 0,
