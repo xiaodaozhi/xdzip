@@ -100,10 +100,25 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                     raise WorkerError('read_limit')
                 send(20, source[offset:offset + count])
             elif kind == 13:
-                index, flags, unpacked, packed, modified, method, length = struct.unpack('<QBQQIII', value[:37])
-                if len(value) != 37 + length:
+                if len(value) < 37:
                     raise WorkerError('metadata_length')
-                raw_name = value[37:]
+                index, flags, unpacked, packed, modified, method, length = struct.unpack('<QBQQIII', value[:37])
+                end = 37 + length
+                if end > len(value):
+                    raise WorkerError('metadata_length')
+                raw_name = value[37:end]
+                properties = []
+                for limit in (128, 32, 128, 65535):
+                    if end + 4 > len(value):
+                        raise WorkerError('metadata_length')
+                    count = struct.unpack_from('<I', value, end)[0]
+                    end += 4
+                    if count > limit or end + count > len(value):
+                        raise WorkerError('metadata_length')
+                    properties.append(value[end:end + count])
+                    end += count
+                if end != len(value):
+                    raise WorkerError('metadata_length')
                 size_known = not flags & 0x40
                 if flags & 0x80 or (not size_known and (format_id != 4 or unpacked != 0)):
                     raise WorkerError('metadata_size_flags')
@@ -111,7 +126,8 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                     raise WorkerError('metadata_encoding_flags')
                 rows.append(dict(index=index, flags=flags, size=unpacked, size_known=size_known, packed=packed,
                                  method=method, name=raw_name.decode('utf-8', errors='replace' if flags & 0x10 else 'strict'),
-                                 raw_name=raw_name))
+                                 raw_name=raw_name, encryption=properties[0], crc=properties[1],
+                                 attributes=properties[2], comment=properties[3]))
                 send(21)
             elif kind == 12:
                 if len(value) > CHUNK or decoded + len(value) > maximum_output:

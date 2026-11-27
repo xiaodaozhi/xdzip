@@ -19,9 +19,10 @@ def work(count):
     return frame(17, struct.pack('<Q', count))
 
 
-def row(size, index=0, flags=0):
+def row(size, index=0, flags=0, properties=(b'', b'', b'', b'')):
     name = b'known.bin'
-    return frame(13, struct.pack('<QBQQIII', index, flags, size, 0, 0, 0, len(name)) + name)
+    extras = b''.join(struct.pack('<I', len(value)) + value for value in properties)
+    return frame(13, struct.pack('<QBQQIII', index, flags, size, 0, 0, 0, len(name)) + name + extras)
 
 
 def auxiliary(count):
@@ -74,6 +75,14 @@ class CreditWireTests(unittest.TestCase):
     def rejected(self, expected, frames, **options):
         with self.assertRaisesRegex(NATIVE.WorkerError, '^' + expected + '$'):
             self.run_payload(frames, **options)
+
+    def test_metadata_properties_are_bounded_and_framed(self):
+        properties = (b'AES-256', b'32:0', b'A__R', b'comment')
+        (rows, _), _ = self.run_payload([row(3, properties=properties), frame(15)], selected=None)
+        self.assertEqual(tuple(rows[0][key] for key in ('encryption', 'crc', 'attributes', 'comment')),
+                         properties)
+        self.rejected('metadata_length', [row(3, properties=properties[:-1])], selected=None)
+        self.rejected('metadata_length', [row(3, properties=(b'x' * 129, b'', b'', b''))], selected=None)
 
     def test_paid_output_and_ordinary_output_keep_separate_admission(self):
         (rows, data), process = self.run_payload([work(2), frame(12, b'a'), frame(23, b'bc'), frame(15)])
