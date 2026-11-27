@@ -374,11 +374,12 @@
     "ui.0e801031324c": "瀏覽內容，選擇需要解壓的檔案",
     "ui.b0d96542deee": "新增檔案或資料夾，建立壓縮檔",
     "ui.4a11171118b0": "也可以將壓縮檔拖到這裡",
-    "ui.68e2f0d4ff9a": "支援開啟",
     "welcome.formatsOpenSettings": "檔案關聯",
-    "welcome.formatGroupCount": {
-      "other": "%1，%n 個副檔名"
+    "welcome.formatSummary": {
+      "other": "支援開啟 %n 種壓縮檔"
     },
+    "welcome.recentLoadMore": "載入更多",
+    "welcome.recentClear": "清空清單",
     "format.group.archives": "壓縮檔",
     "format.group.compressed-tar": "壓縮 TAR 封存檔",
     "format.group.compressed-streams": "壓縮串流",

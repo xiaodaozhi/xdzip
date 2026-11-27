@@ -383,12 +383,13 @@
     "ui.0e801031324c": "Inhalt ansehen und auszupackende Einträge wählen",
     "ui.b0d96542deee": "Dateien oder Ordner zum Erstellen eines Archivs hinzufügen",
     "ui.4a11171118b0": "Oder ein Archiv hier ablegen",
-    "ui.68e2f0d4ff9a": "Unterstützte Archive",
     "welcome.formatsOpenSettings": "Dateizuordnungen",
-    "welcome.formatGroupCount": {
-      "one": "%1, %n Dateiendung",
-      "other": "%1, %n Dateiendungen"
+    "welcome.formatSummary": {
+      "one": "Öffnet %n Archivformat",
+      "other": "Öffnet %n Archivformate"
     },
+    "welcome.recentLoadMore": "Mehr laden",
+    "welcome.recentClear": "Liste leeren",
     "format.group.archives": "Archive",
     "format.group.compressed-tar": "Komprimierte TAR-Archive",
     "format.group.compressed-streams": "Komprimierte Datenströme",

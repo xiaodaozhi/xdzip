@@ -392,13 +392,14 @@
     "ui.0e801031324c": "Explore o conteúdo e escolha o que extrair",
     "ui.b0d96542deee": "Adicione arquivos ou pastas para criar um arquivo compactado",
     "ui.4a11171118b0": "Ou solte um arquivo compactado aqui",
-    "ui.68e2f0d4ff9a": "Arquivos compactados compatíveis",
     "welcome.formatsOpenSettings": "Associações de arquivos",
-    "welcome.formatGroupCount": {
-      "one": "%1, %n extensão",
-      "many": "%1, extensões: %n",
-      "other": "%1, %n extensões"
+    "welcome.formatSummary": {
+      "one": "Abre %n formato de arquivo compactado",
+      "many": "Formatos de arquivo compactado compatíveis: %n",
+      "other": "Abre %n formatos de arquivo compactado"
     },
+    "welcome.recentLoadMore": "Carregar mais",
+    "welcome.recentClear": "Limpar lista",
     "format.group.archives": "Arquivos compactados",
     "format.group.compressed-tar": "Arquivos TAR compactados",
     "format.group.compressed-streams": "Fluxos compactados",

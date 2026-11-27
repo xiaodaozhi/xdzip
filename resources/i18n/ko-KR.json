@@ -374,11 +374,12 @@
     "ui.0e801031324c": "내용을 살펴보고 풀 항목 선택",
     "ui.b0d96542deee": "파일이나 폴더를 추가하여 압축 파일 만들기",
     "ui.4a11171118b0": "또는 압축 파일을 여기에 놓기",
-    "ui.68e2f0d4ff9a": "지원되는 압축 파일",
     "welcome.formatsOpenSettings": "파일 연결",
-    "welcome.formatGroupCount": {
-      "other": "%1, 확장자 %n개"
+    "welcome.formatSummary": {
+      "other": "압축 파일 형식 %n개 지원"
     },
+    "welcome.recentLoadMore": "더 불러오기",
+    "welcome.recentClear": "목록 지우기",
     "format.group.archives": "압축 파일",
     "format.group.compressed-tar": "압축된 TAR 아카이브",
     "format.group.compressed-streams": "압축 스트림",

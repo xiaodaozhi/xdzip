@@ -374,11 +374,12 @@
     "ui.0e801031324c": "内容を閲覧して展開する項目を選ぶ",
     "ui.b0d96542deee": "ファイルやフォルダーを追加してアーカイブを作成",
     "ui.4a11171118b0": "またはここにアーカイブをドロップ",
-    "ui.68e2f0d4ff9a": "対応アーカイブ",
     "welcome.formatsOpenSettings": "ファイルの関連付け",
-    "welcome.formatGroupCount": {
-      "other": "%1、拡張子 %n 件"
+    "welcome.formatSummary": {
+      "other": "%n 種類のアーカイブ形式に対応"
     },
+    "welcome.recentLoadMore": "さらに読み込む",
+    "welcome.recentClear": "リストを消去",
     "format.group.archives": "アーカイブ",
     "format.group.compressed-tar": "圧縮 TAR アーカイブ",
     "format.group.compressed-streams": "圧縮ストリーム",

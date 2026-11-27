@@ -392,13 +392,14 @@
     "ui.0e801031324c": "Consultez le contenu et choisissez les éléments à extraire",
     "ui.b0d96542deee": "Ajoutez des fichiers ou des dossiers pour créer une archive",
     "ui.4a11171118b0": "Ou déposez une archive ici",
-    "ui.68e2f0d4ff9a": "Archives prises en charge",
     "welcome.formatsOpenSettings": "Associations de fichiers",
-    "welcome.formatGroupCount": {
-      "one": "%1, %n extension",
-      "many": "%1, extensions : %n",
-      "other": "%1, %n extensions"
+    "welcome.formatSummary": {
+      "one": "Ouvre %n format d’archive",
+      "many": "Formats d’archive pris en charge : %n",
+      "other": "Ouvre %n formats d’archive"
     },
+    "welcome.recentLoadMore": "Charger plus",
+    "welcome.recentClear": "Effacer la liste",
     "format.group.archives": "Archives",
     "format.group.compressed-tar": "Archives TAR compressées",
     "format.group.compressed-streams": "Flux compressés",

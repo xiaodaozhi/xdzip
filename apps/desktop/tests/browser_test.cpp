@@ -53,6 +53,7 @@
 #include <QInputMethodEvent>
 #include <QItemSelectionModel>
 #include <QJSValue>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QLocalServer>
 #include <QLockFile>
@@ -9728,6 +9729,118 @@ QtObject {
         dialog->close();
         window->close();
     }
+    void welcomeRecentArchivesPageAndPromote() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              profile.filePath("settings.ini"));
+        QVERIFY2(path.valid(), qPrintable(path.error()));
+        QStringList expected;
+        for (int index = 0; index < 45; ++index)
+            expected.append(profile.filePath(QStringLiteral("archive-%1.zip").arg(index)));
+        const auto previous = expected.last();
+        const auto newest = profile.filePath("newest.zip");
+        const auto archive = QStringLiteral(XDZIP_FIXTURES "/normal.zip");
+        QVERIFY(QFile::copy(archive, previous));
+        QVERIFY(QFile::copy(archive, newest));
+        QFile json(profile.filePath("recent.json"));
+        QVERIFY(json.open(QIODevice::WriteOnly));
+        auto legacy = QJsonArray::fromStringList(expected);
+        legacy.append(profile.filePath("./archive-0.zip"));
+        const auto contents = QJsonDocument(legacy).toJson(QJsonDocument::Compact);
+        QCOMPARE(json.write(contents), contents.size());
+        json.close();
+
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        QCOMPARE(preferences->recentArchives(), expected);
+        const auto item = [window](const QString &name) {
+            return findVisual(window->contentItem(), name);
+        };
+        const auto shown = [&item](const QString &name) {
+            const auto *control = item(name);
+            return control && control->isVisible();
+        };
+        const auto invoke = [&item](const QString &name) {
+            auto *control = item(name);
+            return control && QMetaObject::invokeMethod(control, "click");
+        };
+
+        QVERIFY(invoke("welcomeRecentToggle"));
+        QTRY_VERIFY(shown("welcomeRecentEntry-19"));
+        QVERIFY(!shown("welcomeRecentEntry-20"));
+        QTRY_VERIFY(shown("welcomeLoadMore"));
+        auto *list = item("welcomeRecentList");
+        QVERIFY(list);
+        QCOMPARE(list->property("count").toInt(), 21);
+        const auto clearPosition = item("welcomeClearRecent")->mapToScene(QPointF());
+        QTest::keyClick(window, Qt::Key_End);
+        QTRY_VERIFY(list->property("atYEnd").toBool());
+        const auto audit = qEnvironmentVariable("XDZIP_WELCOME_RECENT_AUDIT");
+        if (!audit.isEmpty())
+            QVERIFY(visual_audit::save(window, audit, "welcome-recent-first-page"));
+        QVERIFY(invoke("welcomeLoadMore"));
+        QTRY_VERIFY(shown("welcomeRecentEntry-39"));
+        QVERIFY(!shown("welcomeRecentEntry-40"));
+        QCOMPARE(list->property("count").toInt(), 41);
+        QCOMPARE(item("welcomeClearRecent")->mapToScene(QPointF()), clearPosition);
+        QVERIFY(invoke("welcomeLoadMore"));
+        QTRY_VERIFY(shown("welcomeRecentEntry-44"));
+        QVERIFY(!shown("welcomeLoadMore"));
+        QCOMPARE(list->property("count").toInt(), 45);
+        QVERIFY(invoke("welcomeRecentEntry-44"));
+        expected.move(44, 0);
+        QTRY_COMPARE(preferences->recentArchives(), expected);
+
+        sessions.openPath(newest);
+        expected.prepend(newest);
+        QTRY_COMPARE(preferences->recentArchives(), expected);
+        sessions.newSession();
+        QVERIFY(invoke("welcomeRecentToggle"));
+        QTRY_VERIFY(shown("welcomeRecentEntry-1"));
+        QVERIFY(!shown("welcomeRecentEntry-20"));
+        QVERIFY(invoke("welcomeRecentEntry-1"));
+        expected.move(1, 0);
+        QCOMPARE(preferences->recentArchives(), expected);
+        QCOMPARE(window->title(), QFileInfo(previous).fileName());
+        sessions.newSession();
+        QVERIFY(invoke("welcomeRecentToggle"));
+        QTRY_VERIFY(shown("welcomeClearRecent"));
+        QVERIFY(invoke("welcomeClearRecent"));
+        QVERIFY(preferences->recentArchives().isEmpty());
+        QVERIFY(!json.exists());
+        sessions.confirmQuit(false);
+    }
+    void recentHistoryRetainsNewestRecordsWithinItsFileBudget() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH",
+                                              profile.filePath("settings.ini"));
+        QVERIFY2(path.valid(), qPrintable(path.error()));
+        UiPreferences preferences;
+        const auto base = profile.filePath(QString(1600, QLatin1Char('a')));
+        for (int index = 0; index < 45; ++index)
+            preferences.rememberArchive(base + QString::number(index));
+        const auto recent = preferences.recentArchives();
+        QVERIFY(recent.size() > 20 && recent.size() < 45);
+        for (qsizetype index = 0; index < recent.size(); ++index)
+            QCOMPARE(recent.at(index), base + QString::number(44 - index));
+        const auto json = profile.filePath("recent.json");
+        QVERIFY(QFileInfo(json).size() <= 64 * 1024);
+        QLockFile writer(json + ".lock");
+        QVERIFY(writer.tryLock(0));
+        QVERIFY(!preferences.clearRecentArchives());
+        QCOMPARE(preferences.recentArchives(), recent);
+        writer.unlock();
+        QVERIFY(preferences.clearRecentArchives());
+    }
     void welcomeOpensRealArchivesAndReturns() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -9743,7 +9856,9 @@ QtObject {
         QTRY_VERIFY(controller->runtimeAvailable() && welcome->isVisible());
         QVERIFY(!workspace->isVisible());
         window->resize(1024, 622);
-        QTRY_COMPARE(open->width(), 296.0);
+        auto *openCard = findVisual(window->contentItem(), "welcomeOpenCard");
+        QVERIFY(openCard);
+        QTRY_COMPARE(openCard->width(), 296.0);
         QTRY_COMPARE(open->height(), 124.0);
         QTRY_VERIFY(visibleImagesReady(window->contentItem()));
         auto *titlebar = findVisual(window->contentItem(), "archiveTitlebar");
@@ -10416,45 +10531,21 @@ QtObject {
         QVERIFY(viewport && viewport->property("contentY").isValid());
         QTRY_VERIFY(formats->width() > 0);
         QTRY_VERIFY(formats->width() <= 608);
-        auto *groupStrip = findVisual(window->contentItem(), "welcomeFormatGroups");
-        QVERIFY(groupStrip);
-        const auto *first = findVisual(window->contentItem(), "welcomeFormatGroup-archives");
-        QVERIFY(first);
-        auto *firstContent = first->property("contentItem").value<QQuickItem *>();
-        QVERIFY(firstContent);
-        const auto firstLabels = firstContent->childItems();
-        QCOMPARE(firstLabels.size(), 2);
-        const auto baseline = [groupStrip](QQuickItem *item) {
-            return item->mapToItem(groupStrip, QPointF(0, item->baselineOffset())).y();
-        };
-        for (const auto &group : {"archives", "compressed-tar", "compressed-streams",
-                                  "text-envelopes", "installer-metadata"}) {
-            auto *badge = findVisual(window->contentItem(),
-                                     "welcomeFormatGroup-" + QString::fromLatin1(group));
-            QVERIFY(badge && badge->isVisible());
-            QTRY_COMPARE(badge->mapToItem(groupStrip, QPointF()).y(),
-                         first->mapToItem(groupStrip, QPointF()).y());
-            auto *content = badge->property("contentItem").value<QQuickItem *>();
-            QVERIFY(content);
-            const auto labels = content->childItems();
-            QCOMPARE(labels.size(), 2);
-            QTRY_VERIFY(qAbs(baseline(labels[0]) - baseline(firstLabels[0])) <= 0.01);
-            QTRY_VERIFY(qAbs(baseline(labels[1]) - baseline(firstLabels[1])) <= 0.01);
-            const auto center = [badge](QQuickItem *item) {
-                return item
-                    ->mapToItem(badge, QPointF(0, item->property("referenceCenter").toReal()))
-                    .y();
-            };
-            QTRY_VERIFY(qAbs(center(labels[0]) - center(labels[1])) <= 0.5);
-            badge->forceActiveFocus(Qt::TabFocusReason);
-            QTRY_VERIFY(badge->mapToItem(groupStrip, QPointF()).x() >= -0.5);
-            QTRY_VERIFY(badge->mapToItem(groupStrip, QPointF(badge->width(), 0)).x() <=
-                        groupStrip->width() + 0.5);
-        }
+        auto *summary = findVisual(formats, "welcomeFormatSummary");
+        auto *association = findVisual(formats, "welcomeFormatsSettings");
+        QVERIFY(summary && association);
+        auto *welcome = findVisual(window->contentItem(), "welcomePage");
+        QVERIFY(welcome);
+        const auto count = welcome->property("readableFormatCount").toInt();
+        QVERIFY(count > 0);
+        QCOMPARE(summary->property("text").toString(), qtTrId("welcome.formatSummary", count));
+        QCOMPARE(summary->property("font").value<QFont>().pixelSize(), qRound(13 * factor));
+        QCOMPARE(summary->property("font").value<QFont>().weight(), QFont::Normal);
+        QTRY_VERIFY(summary->mapToItem(association, QPointF(summary->width(), 0)).x() <= 0);
         const auto formatAudit = qEnvironmentVariable("XDZIP_FORMAT_GROUPS_AUDIT");
         if (!formatAudit.isEmpty()) {
             QVERIFY(QDir().mkpath(formatAudit));
-            QVERIFY(visual_audit::save(window, formatAudit, "welcome-format-groups"));
+            QVERIFY(visual_audit::save(window, formatAudit, "welcome-format-summary"));
             auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
             QVERIFY(settings);
             QVERIFY(QMetaObject::invokeMethod(settings, "configure"));

@@ -146,6 +146,8 @@
         <file>ui/ArchiveEntryPointer.qml</file>
     <file>ui/SessionPage.qml</file>
     <file>ui/WelcomePage.qml</file>
+    <file>ui/WelcomeOpenSplit.qml</file>
+    <file>ui/WelcomeRecentPopup.qml</file>
     <file>ui/BrowserBusyOverlay.qml</file>
     <file alias="assets/light/archive-grey.png">../../design/assets/png/light/archive-grey@3x.png</file>
     <file alias="assets/dark/archive-grey.png">../../design/assets/png/dark/archive-grey@3x.png</file>
@@ -182,6 +184,7 @@
     <file>ui/SelectionCheck.qml</file>
     <file>ui/ArchiveToolbar.qml</file>
     <file>ui/CommandMenu.qml</file>
+    <file>ui/CommandMenuBackground.qml</file>
     <file>ui/Breadcrumb.qml</file>
     <file>ui/CommandMenuItem.qml</file>
     <file>ui/CommandMenuTag.qml</file>

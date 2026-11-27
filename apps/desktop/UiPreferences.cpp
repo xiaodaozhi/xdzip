@@ -9,6 +9,7 @@
 #include <QLockFile>
 #include <QQmlEngine>
 #include <QSaveFile>
+#include <QSet>
 #include <QStyleHints>
 #include <QTemporaryDir>
 #include <QtQml/qqml.h>
@@ -17,6 +18,20 @@
 #endif
 
 namespace {
+constexpr qsizetype RecentHistoryByteLimit = 64 * 1024;
+
+QString recentPath(const QString &path) {
+    return QDir::cleanPath(QDir::fromNativeSeparators(QFileInfo(path).absoluteFilePath()));
+}
+
+QString recentPathKey(const QString &normalizedPath) {
+#ifdef Q_OS_WIN
+    return normalizedPath.toCaseFolded();
+#else
+    return normalizedPath;
+#endif
+}
+
 bool validTheme(const QString &theme) {
     return theme == "system" || theme == "light" || theme == "dark";
 }
@@ -249,26 +264,38 @@ void UiPreferences::previewDensity(const QString &density) {
     emit appearanceChanged();
 }
 void UiPreferences::rememberArchive(const QString &path) {
-    if (!m_recentEnabled || path.isEmpty())
+    if (!m_recentEnabled || path.isEmpty() || path.contains(QChar::Null))
         return;
-    const auto filePath = QFileInfo(uiSettingsPath()).dir().filePath("recent.json");
-    QFile input(filePath);
+    const auto directory = QFileInfo(uiSettingsPath()).dir();
+    if (!QDir().mkpath(directory.absolutePath()))
+        return;
+    const auto filePath = directory.filePath("recent.json");
+    QLockFile lock(filePath + ".lock");
+    if (!lock.tryLock(0))
+        return;
+
+    const auto newest = recentPath(path);
+    const auto newestKey = recentPathKey(newest);
+    auto paths = recentArchives();
+    paths.removeIf([&](const QString &entry) { return recentPathKey(entry) == newestKey; });
+    paths.prepend(newest);
+
     QJsonArray entries;
-    if (input.open(QIODevice::ReadOnly) && input.size() <= 65536)
-        entries = QJsonDocument::fromJson(input.readAll()).array();
-    QJsonArray updated{path};
-    for (const auto &entry : entries) {
-        if (entry.isString() && entry.toString() != path && updated.size() < 20)
-            updated.append(entry);
+    qsizetype byteCount = 2; // Opening and closing JSON brackets.
+    for (const auto &entry : paths) {
+        const auto stringSize =
+            QJsonDocument(QJsonArray{entry}).toJson(QJsonDocument::Compact).size() - 2;
+        const auto commaSize = entries.isEmpty() ? 0 : 1;
+        if (byteCount + stringSize + commaSize > RecentHistoryByteLimit)
+            break;
+        entries.append(entry);
+        byteCount += stringSize + commaSize;
     }
-    QDir().mkpath(QFileInfo(filePath).absolutePath());
-    QSaveFile output(filePath);
-    if (!output.open(QIODevice::WriteOnly))
-        return;
-    output.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
-    const auto bytes = QJsonDocument(updated).toJson(QJsonDocument::Compact);
-    if (output.write(bytes) == bytes.size() && output.commit())
+    if (!entries.isEmpty() &&
+        atomicWrite(filePath, QJsonDocument(entries).toJson(QJsonDocument::Compact))) {
+        lock.unlock();
         emit recentChanged();
+    }
 }
 bool UiPreferences::saveDetails(const QString &theme, double scale, const QString &language,
                                 const QString &density, bool recentEnabled, bool clearRecent) {
@@ -305,30 +332,31 @@ bool UiPreferences::saveDetails(const QString &theme, double scale, const QStrin
         return false;
     }
     previewDensity(density);
-    if (clearRecent) {
-        const auto path = QFileInfo(uiSettingsPath()).dir().filePath("recent.json");
-        if (QFile::exists(path) && !QFile::remove(path)) {
-            m_error = qtTrId("ui.c43b29d7cbdf");
-            emit errorChanged();
-            return false;
-        }
-    }
-    return true;
+    return !clearRecent || clearRecentArchives();
 }
 
 QStringList UiPreferences::recentArchives() const {
     if (!m_recentEnabled)
         return {};
     QFile file(QFileInfo(uiSettingsPath()).dir().filePath("recent.json"));
-    if (!file.open(QIODevice::ReadOnly) || file.size() > 65536)
+    if (!file.open(QIODevice::ReadOnly) || file.size() > RecentHistoryByteLimit)
         return {};
+    const auto bytes = file.read(RecentHistoryByteLimit + 1);
+    if (bytes.size() > RecentHistoryByteLimit)
+        return {};
+
     QStringList result;
-    for (const auto &entry : QJsonDocument::fromJson(file.readAll()).array()) {
+    QSet<QString> seen;
+    for (const auto &entry : QJsonDocument::fromJson(bytes).array()) {
         const auto path = entry.toString();
-        if (!path.isEmpty() && !path.contains(QChar::Null) && !result.contains(path))
-            result.append(path);
-        if (result.size() == 20)
-            break;
+        if (path.isEmpty() || path.contains(QChar::Null))
+            continue;
+        const auto normalized = recentPath(path);
+        const auto key = recentPathKey(normalized);
+        if (!seen.contains(key)) {
+            seen.insert(key);
+            result.append(normalized);
+        }
     }
     return result;
 }
@@ -394,11 +422,15 @@ bool UiPreferences::applyNetwork(const QString &mode, const QString &proxy, cons
 }
 
 bool UiPreferences::clearRecentArchives() {
-    const auto path = QFileInfo(uiSettingsPath()).dir().filePath("recent.json");
-    if (QFile::exists(path) && !QFile::remove(path)) {
-        m_error = qtTrId("ui.c43b29d7cbdf");
-        emit errorChanged();
-        return false;
+    const auto directory = QFileInfo(uiSettingsPath()).dir();
+    if (directory.exists()) {
+        const auto path = directory.filePath("recent.json");
+        QLockFile lock(path + ".lock");
+        if (!lock.tryLock(0) || (QFile::exists(path) && !QFile::remove(path))) {
+            m_error = qtTrId("ui.c43b29d7cbdf");
+            emit errorChanged();
+            return false;
+        }
     }
     m_error.clear();
     emit errorChanged();

@@ -701,7 +701,7 @@ void DesktopIntegration::rebuildTasks(QMenu *menu) {
 }
 void DesktopIntegration::rebuildRecent() {
     m_recent->clear();
-    const auto paths = m_settings->recentArchives();
+    const auto paths = m_settings->recentArchives().mid(0, 20);
     if (paths.isEmpty()) {
         m_recent->addAction(text("emptyRecent"))->setEnabled(false);
         return;
