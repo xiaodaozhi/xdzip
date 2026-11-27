@@ -18,6 +18,8 @@ pub struct Grant {
     parent_grant: Option<Arc<Grant>>,
     #[cfg(windows)]
     selected: Option<Arc<crate::windows_extraction::Selected>>,
+    #[cfg(windows)]
+    archive_update_shared: bool,
     _temporary_lock: Option<File>,
 }
 
@@ -222,8 +224,8 @@ pub struct ArchiveUpdate {
     expected: ExistingFile,
 }
 impl ArchiveUpdate {
-    /// Bind an explicit edit intent to an owned, safe, single-link ordinary file.
-    /// Parent and leaf ACL, no-follow and version checks are the normal output checks.
+    /// Bind an explicit edit intent to a single-link ordinary file. Windows local
+    /// NTFS permits shared access while keeping staging private and checking identity.
     pub fn open(path: &Path, source: FileIdentity) -> Result<Self, OutputError> {
         let parent = path.parent().ok_or(OutputError::UnsafeTarget)?;
         let name = path
@@ -234,6 +236,9 @@ impl ArchiveUpdate {
         if relative.parts().len() != 1 {
             return Err(OutputError::UnsafeTarget);
         }
+        #[cfg(windows)]
+        let grant = Grant::for_archive_update(parent)?;
+        #[cfg(not(windows))]
         let grant = Grant::for_creation(parent)?;
         let expected = grant
             .existing(&relative)?
@@ -317,10 +322,33 @@ impl Grant {
             parent_grant: None,
             #[cfg(windows)]
             selected: None,
+            #[cfg(windows)]
+            archive_update_shared: false,
             _temporary_lock: None,
         });
         grant.validate()?;
         Ok(grant)
+    }
+    #[cfg(windows)]
+    fn for_archive_update(path: &Path) -> Result<Arc<Self>, OutputError> {
+        let selected = match crate::windows_extraction::Selected::open(path) {
+            Ok(selected) => Arc::new(selected),
+            Err(OutputError::Unsupported) => return Self::for_creation(path),
+            Err(error) => return Err(error),
+        };
+        let file = selected.file().try_clone().map_err(extraction_failure)?;
+        let identity = FileIdentity::read(&file).map_err(extraction_failure)?;
+        Ok(Arc::new(Self {
+            dir: Dir::from_std_file(file),
+            path: selected.resolved().to_path_buf(),
+            identity,
+            source: Arc::from([]),
+            created_directories: Arc::new(AtomicU64::new(0)),
+            parent_grant: None,
+            selected: Some(selected),
+            archive_update_shared: true,
+            _temporary_lock: None,
+        }))
     }
     #[cfg(windows)]
     fn from_selected(
@@ -339,6 +367,7 @@ impl Grant {
             created_directories: Arc::new(AtomicU64::new(created)),
             parent_grant: None,
             selected: Some(selected),
+            archive_update_shared: false,
             _temporary_lock: None,
         });
         grant.validate()?;
@@ -367,10 +396,18 @@ impl Grant {
         if FileIdentity::read(&file).map_err(|_| OutputError::TargetChanged)? != self.identity {
             return Err(OutputError::TargetChanged);
         }
+        #[cfg(windows)]
+        if self.archive_update_shared {
+            return Ok(());
+        }
         private::check(&file, true)
     }
     fn parent(&self, path: &PortablePath, create: bool) -> Result<Parent, OutputError> {
         self.validate()?;
+        #[cfg(windows)]
+        if self.archive_update_shared && path.parts().len() != 1 {
+            return Err(OutputError::UnsafeTarget);
+        }
         let mut dir = self.dir.try_clone().map_err(failure)?;
         let mut identities = Vec::new();
         for part in &path.parts()[..path.parts().len() - 1] {
@@ -511,6 +548,8 @@ impl Grant {
             parent_grant: Some(Arc::clone(self)),
             #[cfg(windows)]
             selected: None,
+            #[cfg(windows)]
+            archive_update_shared: false,
             _temporary_lock: None,
         });
         child.validate()?;
@@ -585,6 +624,13 @@ impl Grant {
             .open_with(leaf, &options)
             .map_err(|_| OutputError::TargetChanged)?
             .into_std();
+        #[cfg(windows)]
+        if self.archive_update_shared {
+            private::check_archive_edit_file(&file)?;
+        } else {
+            private::check(&file, false)?;
+        }
+        #[cfg(not(windows))]
         private::check(&file, false)?;
         let version = FileVersion::read(&file).map_err(failure)?;
         Ok(Some(ExistingFile {
@@ -611,10 +657,27 @@ impl Grant {
             .collect::<String>();
         let prefix = workspace_prefix(&self.path);
         let name = format!("{prefix}{nonce}");
-        self.dir
-            .create_dir_with(&name, &private_builder())
-            .map_err(extraction_failure)?;
-        let dir = self.dir.open_dir_nofollow(&name).map_err(failure)?;
+        #[cfg(windows)]
+        let dir = if self.archive_update_shared {
+            let (_, file) = self
+                .selected
+                .as_ref()
+                .ok_or(OutputError::UnsafeTarget)?
+                .create_child(&name)?;
+            Dir::from_std_file(file)
+        } else {
+            self.dir
+                .create_dir_with(&name, &private_builder())
+                .map_err(extraction_failure)?;
+            self.dir.open_dir_nofollow(&name).map_err(failure)?
+        };
+        #[cfg(not(windows))]
+        let dir = {
+            self.dir
+                .create_dir_with(&name, &private_builder())
+                .map_err(extraction_failure)?;
+            self.dir.open_dir_nofollow(&name).map_err(failure)?
+        };
         let file = directory_file(&dir)?;
         private::check(&file, true)?;
         let id = FileIdentity::read(&file).map_err(failure)?;
@@ -789,6 +852,8 @@ impl Grant {
             parent_grant: Some(root),
             #[cfg(windows)]
             selected: None,
+            #[cfg(windows)]
+            archive_update_shared: false,
             _temporary_lock: Some(lease),
         });
         let child =
@@ -1039,7 +1104,11 @@ impl Workspace {
             .open_with(leaf, &options)
             .map_err(failure)?
             .into_std();
-        private::check(&source, false)?;
+        if self.grant.archive_update_shared {
+            private::check_archive_edit_file(&source)?;
+        } else {
+            private::check(&source, false)?;
+        }
         if FileVersion::read(&source).map_err(failure)? != expected.version {
             return Err(OutputError::TargetChanged);
         }

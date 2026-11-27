@@ -37,6 +37,22 @@ pub(crate) fn check(file: &File, directory: bool) -> Result<(), OutputError> {
     Ok(())
 }
 
+#[cfg(windows)]
+pub(crate) fn check_archive_edit_file(file: &File) -> Result<(), OutputError> {
+    use std::os::windows::fs::MetadataExt;
+    let metadata = file.metadata().map_err(failure)?;
+    if !metadata.is_file()
+        || metadata.file_attributes() & 0x400 != 0
+        || winapi_util::file::information(file)
+            .map_err(failure)?
+            .number_of_links()
+            != 1
+    {
+        return Err(OutputError::UnsafeTarget);
+    }
+    windows::check_archive_edit_acl(file)
+}
+
 /// Temporary plaintext must also exclude unrelated readers, while ordinary
 /// user-selected extraction targets keep their existing read-sharing policy.
 pub(crate) fn check_confidential(file: &File, directory: bool) -> Result<(), OutputError> {
@@ -289,50 +305,40 @@ mod windows {
         }
 
         fn same_policy(&self, other: &Self) -> bool {
-            // SAFETY: both validated ACLs remain live. GetAce returns an entry inside
-            // each ACL and IsValidAcl guarantees AceSize for entries within AceCount.
-            unsafe {
-                let count = (*self.acl).AceCount;
-                self.same_owner(other)
-                    && count == (*other.acl).AceCount
-                    && (0..u32::from(count)).all(|index| {
-                        let mut left = null_mut();
-                        let mut right = null_mut();
-                        if GetAce(self.acl, index, &mut left) == 0
-                            || GetAce(other.acl, index, &mut right) == 0
-                            || left.is_null()
-                            || right.is_null()
-                        {
-                            return false;
+            fn entries(acl: *mut ACL) -> Option<Vec<Vec<u8>>> {
+                let mut entries = Vec::new();
+                // SAFETY: the validated ACL remains live; GetAce returns entries
+                // bounded by IsValidAcl and their validated header sizes.
+                unsafe {
+                    for index in 0..u32::from((*acl).AceCount) {
+                        let mut ptr = null_mut();
+                        if GetAce(acl, index, &mut ptr) == 0 || ptr.is_null() {
+                            return None;
                         }
-                        let left_header = &*left.cast::<ACE_HEADER>();
-                        let right_header = &*right.cast::<ACE_HEADER>();
-                        let len = usize::from(left_header.AceSize);
-                        let header_size = std::mem::size_of::<ACE_HEADER>();
-                        // Protecting the copied DACL can turn inherited ACEs into
-                        // explicit ACEs. Preserve their order, rights and applicability.
-                        len >= header_size
-                            && len == usize::from(right_header.AceSize)
-                            && left_header.AceType == right_header.AceType
-                            && (left_header.AceFlags ^ right_header.AceFlags)
-                                & !(INHERITED_ACE as u8)
-                                == 0
-                            && std::slice::from_raw_parts(
-                                left.cast::<u8>().add(header_size),
-                                len - header_size,
-                            ) == std::slice::from_raw_parts(
-                                right.cast::<u8>().add(header_size),
-                                len - header_size,
-                            )
-                    })
+                        let len = usize::from((*ptr.cast::<ACE_HEADER>()).AceSize);
+                        if len < std::mem::size_of::<ACE_HEADER>() {
+                            return None;
+                        }
+                        let mut entry = std::slice::from_raw_parts(ptr.cast::<u8>(), len).to_vec();
+                        // Windows can make inherited ACEs explicit and collapse
+                        // adjacent identical entries while protecting a DACL.
+                        entry[1] &= !(INHERITED_ACE as u8);
+                        if entries.last() != Some(&entry) {
+                            entries.push(entry);
+                        }
+                    }
+                }
+                Some(entries)
             }
+            self.same_owner(other)
+                && entries(self.acl).is_some_and(|a| Some(a) == entries(other.acl))
         }
     }
 
     pub(super) fn preserve_archive_access(source: &File, stage: &File) -> Result<(), OutputError> {
         let policy = FileAccess::read(source)?;
-        // Keep the staged data private even if publication fails after the DACL is set.
-        check_policy(&policy, true)?;
+        // The protected workspace prevents pathname access to the stage even
+        // when the original file grants read or modification to other accounts.
         if !policy.same_owner(&FileAccess::read(stage)?) {
             return Err(OutputError::UnsafeTarget);
         }
@@ -379,6 +385,34 @@ mod windows {
         update.commit(&mut workspace, stage).unwrap();
         workspace.cleanup().unwrap();
 
+        assert_eq!(std::fs::read(&path).unwrap(), b"replacement");
+        assert!(policy.same_policy(&FileAccess::read(&File::open(&path).unwrap()).unwrap()));
+    }
+
+    #[cfg(test)]
+    #[test]
+    fn archive_edit_preserves_shared_file_access() {
+        use std::io::Write;
+        let fixture = crate::tests::Owned::new();
+        let path = fixture.0.join("archive.zip");
+        std::fs::write(&path, b"original").unwrap();
+        let acl = std::process::Command::new("icacls")
+            .arg(&path)
+            .args(["/grant:r", "*S-1-1-0:(R)"])
+            .output()
+            .unwrap();
+        assert!(acl.status.success());
+        let original = File::open(&path).unwrap();
+        let identity = crate::FileIdentity::read(&original).unwrap();
+        let policy = FileAccess::read(&original).unwrap();
+        drop(original);
+        let update = crate::ArchiveUpdate::open(&path, identity).unwrap();
+        let mut workspace = update.workspace(2).unwrap();
+        let mut stage = workspace.stage().unwrap();
+        stage.write_all(b"replacement").unwrap();
+        check_confidential(&stage.verification_reader().unwrap(), false).unwrap();
+        update.commit(&mut workspace, stage).unwrap();
+        workspace.cleanup().unwrap();
         assert_eq!(std::fs::read(&path).unwrap(), b"replacement");
         assert!(policy.same_policy(&FileAccess::read(&File::open(&path).unwrap()).unwrap()));
     }
@@ -458,6 +492,10 @@ mod windows {
     }
     pub(super) fn check_acl(file: &File, confidential: bool) -> Result<(), OutputError> {
         check_policy(&FileAccess::read(file)?, confidential)
+    }
+
+    pub(super) fn check_archive_edit_acl(file: &File) -> Result<(), OutputError> {
+        FileAccess::read(file).map(|_| ())
     }
 
     fn check_policy(access: &FileAccess, confidential: bool) -> Result<(), OutputError> {
