@@ -262,6 +262,8 @@ void ApplicationSessions::openPath(const QString &path) {
             session->path == identity &&
             (session->controller->ready() || session->controller->busy() ||
              !session->pendingPath.isEmpty() || !session->controller->passwordPrompt().isEmpty())) {
+            if (session->controller->ready())
+                m_settings->rememberArchive(path);
             activate(session.get());
             return;
         }

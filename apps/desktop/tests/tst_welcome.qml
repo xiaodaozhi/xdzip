@@ -42,9 +42,17 @@ Item {
             const open = findChild(page, "welcomeOpen");
             const create = findChild(page, "welcomeCreate");
             mouseMove(page, 0, 0);
+            const recent = findChild(page, "welcomeRecentToggle");
+            const recentBackground = findChild(page, "welcomeRecentBackground");
             compare(open.background.color, Ui.Theme.accent);
+            verify(!recentBackground.visible);
             mouseMove(open, open.width / 2, open.height / 2);
             compare(open.background.color, Ui.Theme.accentHover);
+            compare(recentBackground.color, Ui.Theme.accent);
+            mouseMove(recent, recent.width / 2, recent.height / 2);
+            compare(open.background.color, Ui.Theme.accent);
+            compare(recentBackground.color, Ui.Theme.accentHover);
+            mouseMove(open, open.width / 2, open.height / 2);
             mousePress(open, open.width / 2, open.height / 2);
             compare(open.background.color, Ui.Theme.accentPressed);
             mouseRelease(open, open.width / 2, open.height / 2);
@@ -137,8 +145,8 @@ Item {
             compare(button.background.color, "#00000000");
             mouseMove(button, button.width / 2, button.height / 2);
             tryCompare(button, "hovered", true);
-            compare(button.leftPadding, Ui.Theme.welcomeFormatChipInset);
-            compare(button.rightPadding, Ui.Theme.welcomeFormatChipInset);
+            compare(button.leftPadding, Ui.Theme.welcomeFormatLinkInset);
+            compare(button.rightPadding, Ui.Theme.welcomeFormatLinkInset);
             verify(Math.abs(button.contentItem.x - button.leftPadding) <= 0.5);
             verify(Math.abs(button.width - button.contentItem.x - button.contentItem.width - button.rightPadding) <= 0.5);
             compare(button.background.color, Qt.rgba(Ui.Theme.controlHover.r, Ui.Theme.controlHover.g, Ui.Theme.controlHover.b, 0.5));
@@ -151,118 +159,23 @@ Item {
             tryCompare(button, "hovered", false);
             compare(button.background.color, "#00000000");
         }
-        function test_format_group_summary_data() {
+        function test_format_summary_data() {
             return [1, 1.25, 1.5].map(scale => ({tag: String(scale), scale: scale}));
         }
-        function test_format_group_summary(data) {
-            page.expandedFormatGroup = "archives";
+        function test_format_summary(data) {
             Ui.Theme.fontScale = data.scale;
             surface.width = 832;
-            const formats = findChild(page, "welcomeFormats");
-            const groups = Formats.formatGroups.map(group => findChild(page, "welcomeFormatGroup-" + group.id));
-            verify(groups.every(group => group && group.visible));
+            const summary = findChild(page, "welcomeFormatSummary");
             const button = findChild(page, "welcomeFormatsSettings");
-            verify(button && button.visible && button.enabled);
-            mouseClick(button);
-            compare(formatsSpy.count, 1);
-            formatsSpy.clear();
-            tryVerify(() => groups.every(group => group.contentItem.children[0].font.pixelSize === Math.round(13 * data.scale)));
-            // A child Text can update its font metrics before the parent layout
-            // schedules a second polish. Measure the frame with the new metrics.
-            verify(waitForRendering(page));
-            verify(waitForPolish(formats));
-            tryVerify(() => groups.every(group => group.width > 0 && group.height > 0));
-            verify(formats.width <= formats.parent.width);
-            console.log("Welcome format group geometry", JSON.stringify({scale: data.scale,
-                available: formats.parent.width, width: formats.width}));
-            const strip = findChild(page, "welcomeFormatGroups");
-            verify(strip);
-            const baseline = item => item.mapToItem(strip, 0, item.baselineOffset).y;
-            const [firstLabel, firstCount] = groups[0].contentItem.children;
-            const labelBaseline = baseline(firstLabel);
-            const countBaseline = baseline(firstCount);
-            for (const [index, group] of groups.entries()) {
-                compare(group.mapToItem(strip, 0, 0).y, groups[0].mapToItem(strip, 0, 0).y);
-                const [label, count] = group.contentItem.children;
-                const tag = findChild(count, "welcomeFormatCountTag");
-                verify(tag && tag.visible);
-                verify(tag.width > count.contentWidth && tag.height > 0);
-                compare(tag.radius, Ui.Theme.welcomeFormatChipRadius);
-                compare(tag.border.width, 0);
-                compare(tag.color, index === 0 ? Ui.Theme.selection : Ui.Theme.canvas);
-                const leftGap = tag.mapToItem(strip, 0, 0).x - label.mapToItem(strip, label.width, 0).x;
-                fuzzyCompare(leftGap, Ui.Theme.welcomeFormatCountGap, 0.5);
-                if (index + 1 < groups.length) {
-                    const nextLabel = groups[index + 1].contentItem.children[0];
-                    const rightGap = nextLabel.mapToItem(strip, 0, 0).x - tag.mapToItem(strip, tag.width, 0).x;
-                    verify(rightGap > leftGap);
-                }
-                fuzzyCompare(baseline(label), labelBaseline, 0.01);
-                fuzzyCompare(baseline(count), countBaseline, 0.01);
-                const labelCenter = label.mapToItem(group, 0, label.referenceCenter).y;
-                const countCenter = count.mapToItem(group, 0, count.referenceCenter).y;
-                verify(Math.abs(labelCenter - countCenter) <= 0.5);
-            }
-            const last = groups[groups.length - 1];
-            last.forceActiveFocus(Qt.TabFocusReason);
-            tryVerify(() => last.mapToItem(strip, last.width, 0).x <= strip.width + 0.5);
-            const preview = findChild(page, "welcomeFormatPreview");
-            verify(preview.visible);
-            if (data.scale === 1.5) verify(preview.truncated);
-            compare(preview.suffixes, Formats.formatGroups[0].suffixes);
-            for (const [index, group] of groups.entries()) {
-                compare(group.contentItem.children[1].text, String(Formats.formatGroups[index].suffixes.length));
-            }
-            const textEnvelopes = findChild(page, "welcomeFormatGroup-text-envelopes");
-            textEnvelopes.forceActiveFocus(Qt.TabFocusReason);
-            keyClick(Qt.Key_Space);
-            tryCompare(page, "expandedFormatGroup", "text-envelopes");
-            fuzzyCompare(baseline(textEnvelopes.contentItem.children[0]), labelBaseline, 0.01);
-            compare(findChild(textEnvelopes.contentItem.children[1], "welcomeFormatCountTag").color, Ui.Theme.selection);
-            compare(preview.suffixes, Formats.formatGroups.find(group => group.id === "text-envelopes").suffixes);
-            keyClick(Qt.Key_Space);
-            tryCompare(preview, "visible", false);
-        }
-        function test_format_paging_data() {
-            return [1, 1.5].map(scale => ({tag: String(scale), scale: scale}));
-        }
-        function test_format_paging(data) {
-            const strip = findChild(page, "welcomeFormatGroups");
-            const previous = findChild(page, "welcomeFormatPrevious");
-            const next = findChild(page, "welcomeFormatNext");
-            page.expandedFormatGroup = "archives";
-            tryVerify(() => !previous.visible && !next.visible);
-            surface.width = 320;
-            Ui.Theme.fontScale = data.scale;
-            tryVerify(() => previous.visible && next.visible && next.enabled);
-            verify(!previous.enabled);
-            const chip = findChild(page, "welcomeFormatSuffix-.zip");
-            verify(chip);
-            tryVerify(() => chip.height > 0 && [previous, next].every(button =>
-                button.width === chip.height && button.height === chip.height
-                && button.background.radius === chip.radius));
-            const controlRow = previous.parent;
-            tryCompare(strip, "width", strip.parent.width - strip.parent.spacing
-                       - 2 * chip.height - controlRow.spacing);
-            verify(previous.mapToItem(strip, 0, 0).x > strip.width);
-            page.revealAction(next);
-            const center = next.mapToItem(page, next.width / 2, next.height / 2);
-            verify(center.x > 0 && center.x < page.width && center.y > 0 && center.y < page.height,
-                   "Next button center must be inside the view: " + JSON.stringify(center));
-            const firstPage = Math.min(strip.width, strip.maximumContentX);
-            mouseClick(page, center.x, center.y);
-            tryCompare(strip, "contentX", firstPage);
-            verify(previous.enabled);
-            previous.forceActiveFocus(Qt.TabFocusReason);
-            keyClick(Qt.Key_Space);
-            tryCompare(strip, "contentX", 0);
-            verify(!previous.enabled);
-            strip.contentX = strip.maximumContentX;
-            tryVerify(() => previous.enabled && !next.enabled);
-            surface.width = 1024;
-            Ui.Theme.fontScale = 1;
-            tryVerify(() => !previous.visible && !next.visible);
-            tryCompare(strip, "contentX", 0);
+            const labels = Formats.formatGroups.filter(group => group.id !== "installer-metadata")
+                .reduce((all, group) => all.concat(group.labels), []);
+            compare(page.readableFormatCount, new Set(labels).size);
+            compare(summary.text, qsTrId("welcome.formatSummary", page.readableFormatCount));
+            compare(summary.color, Ui.Theme.textSecondary);
+            compare(summary.font.weight, Font.Normal);
+            tryVerify(() => summary.font.pixelSize === Math.round(13 * data.scale));
+            verify(waitForPolish(summary.parent));
+            verify(summary.mapToItem(button, summary.width, 0).x <= 0);
         }
         function test_feedback_preserves_top_anchors_data() {
             const cases=[];

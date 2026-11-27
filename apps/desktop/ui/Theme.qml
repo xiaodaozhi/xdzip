@@ -21,16 +21,14 @@ QtObject {
     readonly property real welcomeFormatGap: 10
     readonly property real welcomeFormatFontSize: 12
     readonly property real welcomeFormatTitleSize: 13
-    readonly property real welcomeFormatCountSize: 11
-    readonly property real welcomeFormatCountGap: 2
-    readonly property real welcomeFormatCountInset: 3
-    readonly property real welcomeFormatCountVerticalInset: 3
-    readonly property real welcomeFormatGroupGap: 8
-    readonly property real welcomeFormatGroupHeight: 32
-    readonly property real welcomeFormatChipGap: 8
-    readonly property real welcomeFormatChipInset: 7
-    readonly property real welcomeFormatChipVerticalInset: 3
-    readonly property real welcomeFormatChipRadius: 3
+    readonly property real welcomeFormatLinkGap: 8
+    readonly property real welcomeFormatLinkInset: 7
+    readonly property real welcomeRecentDisclosureWidth: 22
+    readonly property real welcomeRecentDisclosureIconSize: 14
+    readonly property real welcomeRecentDividerOpacity: 0.18
+    readonly property real welcomeRecentPopupMaximumHeight: 288
+    readonly property real welcomeRecentFooterGap: 5
+    readonly property real welcomeRecentPageSize: 20
     readonly property real welcomeContentTopInset: 28
     readonly property real welcomeFeedbackIconSize: 18
     readonly property real welcomeFeedbackGap: 8

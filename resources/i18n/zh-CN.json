@@ -383,12 +383,13 @@
     "ui.0e801031324c": "浏览内容，选择需要解压的文件",
     "ui.b0d96542deee": "添加文件或文件夹，创建压缩包",
     "ui.4a11171118b0": "也可以将压缩包拖到这里",
-    "ui.68e2f0d4ff9a": "支持打开",
     "welcome.formatsOpenSettings": "文件关联",
-    "welcome.formatGroupCount": {
-      "one": "%1，%n 个扩展名",
-      "other": "%1，%n 个扩展名"
+    "welcome.formatSummary": {
+      "one": "支持打开 %n 种压缩包",
+      "other": "支持打开 %n 种压缩包"
     },
+    "welcome.recentLoadMore": "加载更多",
+    "welcome.recentClear": "清空列表",
     "format.group.archives": "压缩包",
     "format.group.compressed-tar": "压缩 TAR",
     "format.group.compressed-streams": "压缩流",

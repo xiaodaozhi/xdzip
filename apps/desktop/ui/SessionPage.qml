@@ -916,6 +916,7 @@ Item {
             openingName: root.waitingArchiveUpdate ? root.waitingArchiveName : reader.title
             message: root.closedPage || reader.browsingBusy ? "" : reader.message || AppSettings.error
             onOpenRequested: root.dispatchDesktopCommand("open")
+            onRecentArchiveRequested: path => reader.requestOpen(path)
             onCreateRequested: createWindow.configure()
             onFormatsRequested: root.dispatchDesktopCommand("settingsAssociations")
             onCancelRequested: {

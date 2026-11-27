@@ -392,13 +392,14 @@
     "ui.0e801031324c": "Explora el contenido y elige qué extraer",
     "ui.b0d96542deee": "Añade archivos o carpetas para crear un archivo comprimido",
     "ui.4a11171118b0": "O suelta aquí un archivo comprimido",
-    "ui.68e2f0d4ff9a": "Archivos comprimidos compatibles",
     "welcome.formatsOpenSettings": "Asociaciones de archivos",
-    "welcome.formatGroupCount": {
-      "one": "%1, %n extensión",
-      "many": "%1, extensiones: %n",
-      "other": "%1, %n extensiones"
+    "welcome.formatSummary": {
+      "one": "Abre %n formato de archivo comprimido",
+      "many": "Formatos de archivo comprimido compatibles: %n",
+      "other": "Abre %n formatos de archivo comprimido"
     },
+    "welcome.recentLoadMore": "Cargar más",
+    "welcome.recentClear": "Borrar lista",
     "format.group.archives": "Archivos comprimidos",
     "format.group.compressed-tar": "Archivos TAR comprimidos",
     "format.group.compressed-streams": "Flujos comprimidos",

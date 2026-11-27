@@ -392,13 +392,14 @@
     "ui.0e801031324c": "Просмотрите содержимое и выберите, что распаковать",
     "ui.b0d96542deee": "Добавьте файлы или папки, чтобы создать архив",
     "ui.4a11171118b0": "Или перетащите архив сюда",
-    "ui.68e2f0d4ff9a": "Поддерживаемые архивы",
     "welcome.formatsOpenSettings": "Ассоциации файлов",
-    "welcome.formatGroupCount": {
-      "one": "%1, %n расширение",
-      "few": "%1, %n расширения",
-      "many": "%1, %n расширений"
+    "welcome.formatSummary": {
+      "one": "Поддерживает %n формат архивов",
+      "few": "Поддерживает %n формата архивов",
+      "many": "Поддерживает %n форматов архивов"
     },
+    "welcome.recentLoadMore": "Загрузить ещё",
+    "welcome.recentClear": "Очистить список",
     "format.group.archives": "Архивы",
     "format.group.compressed-tar": "Сжатые архивы TAR",
     "format.group.compressed-streams": "Сжатые потоки",
