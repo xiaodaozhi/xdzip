@@ -36,7 +36,16 @@ fn extended(w: &mut Wire<'_>, d: &mut Descriptor) -> Result<(), ScanError> {
     }
     Ok(())
 }
-fn comment(header: &[u8]) -> Result<(), ScanError> {
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct InlineComment {
+    pub size: u16,
+    pub version: u8,
+    pub method: u8,
+    pub crc: Option<u16>,
+    pub packed: Vec<u8>,
+}
+
+fn comment(header: &[u8]) -> Result<InlineComment, ScanError> {
     let fixed = header.get(..13).ok_or(ScanError::Invalid)?;
     let mut w = Wire::new(fixed);
     let expected = w.u16()?;
@@ -47,13 +56,18 @@ fn comment(header: &[u8]) -> Result<(), ScanError> {
     if usize::from(w.u16()?) != header.len() || (crc32(&fixed[2..]) & 65535) as u16 != expected {
         return Err(ScanError::Invalid);
     }
-    // Ignored comment content has no output authority. Its own header is
-    // verified independently; its content CRC is not a file-integrity promise.
-    w.u16()?;
-    w.byte()?;
-    w.byte()?;
-    w.u16()?;
-    w.end()
+    let size = w.u16()?;
+    let version = w.byte()?;
+    let method = w.byte()?;
+    let crc = w.u16()?;
+    w.end()?;
+    Ok(InlineComment {
+        size,
+        version,
+        method,
+        crc: Some(crc),
+        packed: header[13..].to_vec(),
+    })
 }
 fn file(
     header: &[u8],
@@ -104,6 +118,7 @@ fn file(
         attributes,
         directory,
         solid: !service && flags & 0x10 != 0,
+        service_child: service && flags & 0x10 != 0,
         encrypted: flags & 4 != 0,
         crc: Some(crc),
         dictionary: if directory {
@@ -127,6 +142,27 @@ fn file(
         // Service content has no output authority. Preserve its complete raw
         // header and skip the bounded opaque tail, without guessing salt/time
         // partitions or letting service timestamps change ordinary files.
+        // CMT subdata precedes the optional salt. Do not guess where an
+        // extended-time tail ends; those comments remain unavailable.
+        if d.name == b"CMT" && flags & 0x1000 == 0 {
+            let tail = w.rest();
+            let salt_len = if flags & 0x400 != 0 { 8 } else { 0 };
+            if let Some(data_len) = tail.len().checked_sub(salt_len) {
+                // Service flags occupy the file-attribute field; SubData is
+                // separate opaque metadata and does not select text encoding.
+                d.service_comment_utf16 = Some(attributes & 1 != 0);
+                if salt_len != 0 && d.encrypted {
+                    d.crypt = Some(Crypt {
+                        version: u64::from(method),
+                        flags: 0,
+                        exponent: 0,
+                        salt: tail[data_len..].to_vec(),
+                        iv: Vec::new(),
+                        check: None,
+                    });
+                }
+            }
+        }
         w.take(w.remaining())?;
         return Ok((d, packed, header.len()));
     }
@@ -146,7 +182,7 @@ fn file(
     }
     let processed = 7 + w.at;
     if flags & 8 != 0 {
-        comment(w.rest())?;
+        d.comment = Some(comment(w.rest())?);
     } else {
         w.end()?;
     }
@@ -195,7 +231,7 @@ fn parse_header(
                 return Err(ScanError::Invalid);
             }
             if flags & 2 != 0 {
-                comment(&header[13..])?;
+                let _ = comment(&header[13..])?;
             } else if n != 13 {
                 return Err(ScanError::Unsupported);
             }
@@ -244,7 +280,7 @@ fn parse_header(
             }
         }
         0x75 => {
-            comment(header)?;
+            let _ = comment(header)?;
             Block::Skip
         }
         0x76 | 0x79 => {
@@ -446,6 +482,19 @@ pub(crate) fn ancient(
     let header = reader.bytes(volume, at, n)?;
     let data_at = at.checked_add(n as u64).ok_or(ScanError::Invalid)?;
     reader.range(volume, data_at, packed)?;
+    let tail = &header[21 + name_len..];
+    let old_comment = if flags & 8 != 0 && tail.len() >= 2 {
+        let len = usize::from(u16::from_le_bytes([tail[0], tail[1]]));
+        tail.get(2..2 + len).map(|bytes| InlineComment {
+            size: len as u16,
+            version: 13,
+            method: 0x30,
+            crc: None,
+            packed: bytes.to_vec(),
+        })
+    } else {
+        None
+    };
     let d = Descriptor {
         name: header[21..21 + name_len].to_vec(),
         legacy: true,
@@ -459,6 +508,7 @@ pub(crate) fn ancient(
         old_checksum: Some(checksum),
         dictionary: 65536,
         encrypted: flags & 4 != 0,
+        comment: old_comment,
         ..Descriptor::default()
     };
     Ok(Parsed {

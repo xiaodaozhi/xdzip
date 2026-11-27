@@ -1,10 +1,24 @@
 {
   "schema_version": 1,
   "profiles": {
-    "worker": "24 real-worker checks with bounded/generated or pinned small archives.",
+    "worker": "27 real-worker checks with bounded/generated or pinned small archives.",
     "large": "4 large streaming/creation/index checks, run serially."
   },
   "cases": [
+    {
+      "name": "native_backend_tests::rar_comments_reach_query_pages_with_opening_password",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": ["rar-comments"],
+      "timeout_seconds": 180
+    },
+    {
+      "name": "native_backend_tests::rar_comment_page_budget_preserves_every_physical_row",
+      "source": "crates/xdzip-runtime/src/native_backend_tests.rs",
+      "profile": "worker",
+      "prerequisites": [],
+      "timeout_seconds": 180
+    },
     {
       "name": "cab_backend_tests::cab_service_open_check_validates_all_records_and_frame_tail_without_output",
       "source": "crates/xdzip-runtime/src/cab_backend_tests.rs",

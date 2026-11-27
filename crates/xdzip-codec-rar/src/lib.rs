@@ -8,6 +8,7 @@
 mod algorithm;
 #[cfg(test)]
 mod ancient_tests;
+mod comment;
 pub(crate) mod crypto;
 mod filter29;
 #[cfg(test)]
@@ -65,6 +66,103 @@ impl RarIndex {
     /// Public rows in first-visible physical order. Duplicate names stay distinct.
     pub fn entries(&self) -> &[Entry] {
         &self.0.rows
+    }
+
+    /// Decode only requested entry comments, without using them for file identity.
+    pub fn entry_comments(
+        &mut self,
+        source: &mut dyn ReadSource,
+        ids: &[u64],
+        control: &Cancellation,
+        password: Option<&str>,
+    ) -> Result<Vec<(u64, Vec<u8>)>, ScanError> {
+        if ids.len() > 128 {
+            return Err(ScanError::Limit);
+        }
+        let mut reader = source::Reader::new(source, control, METADATA_LIMIT)?;
+        let mut result = Vec::with_capacity(ids.len());
+        for &id in ids {
+            control.check()?;
+            let position = usize::try_from(id.checked_sub(1).ok_or(ScanError::Invalid)?)
+                .map_err(|_| ScanError::Invalid)?;
+            let row = self.0.rows.get(position).ok_or(ScanError::Invalid)?;
+            let file = self.0.files.get(position).ok_or(ScanError::Invalid)?;
+            let part = self.0.parts.get(file.parts[0]).ok_or(ScanError::Invalid)?;
+            let inline = match &part.description.comment {
+                Some(comment) => comment::inline(comment, control)?.unwrap_or_default(),
+                None => Vec::new(),
+            };
+            let using_service = inline.is_empty() && !file.comment_parts.is_empty();
+            let bytes = if using_service {
+                comment::service(
+                    &mut reader,
+                    &self.0.parts,
+                    &file.comment_parts,
+                    control,
+                    password,
+                    &mut self.0.protection,
+                )?
+                .unwrap_or_default()
+            } else {
+                inline
+            };
+            let label = match row.name_encoding {
+                xdzip_codec_api::names::NameEncoding::Legacy(label) => label,
+                _ => "CP437",
+            };
+            let utf16 = using_service
+                && self.0.parts[file.comment_parts[0]]
+                    .description
+                    .service_comment_utf16
+                    == Some(true);
+            let text = if utf16 {
+                if bytes.len() % 2 != 0 {
+                    String::new()
+                } else {
+                    let units: Vec<u16> = bytes
+                        .as_chunks::<2>()
+                        .0
+                        .iter()
+                        .map(|pair| u16::from_le_bytes(*pair))
+                        .collect();
+                    String::from_utf16(&units)
+                        .unwrap_or_default()
+                        .trim_end_matches('\0')
+                        .to_owned()
+                }
+            } else {
+                std::str::from_utf8(&bytes)
+                    .map(str::to_owned)
+                    .ok()
+                    .or_else(|| {
+                        if matches!(
+                            row.name_encoding,
+                            xdzip_codec_api::names::NameEncoding::Legacy(_)
+                        ) {
+                            xdzip_codec_api::names::decode_legacy(&bytes, label)
+                        } else {
+                            let mut sample = xdzip_codec_api::names::NameSample::default();
+                            sample.observe_bytes(&bytes);
+                            sample
+                                .finish(true)
+                                .decode_unmarked(&bytes)
+                                .map(|(text, _)| text)
+                        }
+                    })
+                    .unwrap_or_else(|| xdzip_codec_api::names::escaped_bytes(&bytes))
+            };
+            let mut bytes = text.into_bytes();
+            if bytes.len() > usize::from(u16::MAX) {
+                let mut end = usize::from(u16::MAX) - 3;
+                while !std::str::from_utf8(&bytes[..end]).is_ok() {
+                    end -= 1;
+                }
+                bytes.truncate(end);
+                bytes.extend_from_slice("…".as_bytes());
+            }
+            result.push((id, bytes));
+        }
+        Ok(result)
     }
 }
 

@@ -55,6 +55,10 @@ pub(crate) struct Descriptor {
     pub version: Option<u64>,
     pub redirection: bool,
     pub old_checksum: Option<u16>,
+    pub service_child: bool,
+    pub service_comment_utf16: Option<bool>,
+    /// Bounded inline comment data, never used to authorize file output.
+    pub comment: Option<crate::legacy::InlineComment>,
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Part {
@@ -90,6 +94,7 @@ pub(crate) struct Parsed {
 pub(crate) struct File {
     pub parts: Vec<usize>,
     pub size: Option<u64>,
+    pub comment_parts: Vec<usize>,
 }
 pub(crate) struct Index {
     pub rows: Vec<Entry>,
@@ -216,6 +221,17 @@ fn append(
         return Err(ScanError::Limit);
     }
     let at = index.parts.len();
+    let previous_part = index.parts.len().checked_sub(1);
+    if part.service
+        && part.description.legacy
+        && part.description.service_child
+        && part.description.name == b"CMT"
+        && let Some(file) = index.files.last_mut()
+        && ((!part.before && pending.is_none() && file.comment_parts.is_empty())
+            || (part.before && file.comment_parts.last().copied() == previous_part))
+    {
+        file.comment_parts.push(at);
+    }
     let chain = if part.service { services } else { pending };
     if part.before {
         let previous = chain.take().ok_or(ScanError::Invalid)?;
@@ -253,6 +269,7 @@ fn append(
             index.files.push(File {
                 parts: vec![at],
                 size: part.description.size,
+                comment_parts: Vec::new(),
             });
         }
     }
@@ -440,6 +457,9 @@ pub(crate) fn parse(
         }
         index.rows.push(Entry {
             details: xdzip_codec_api::EntryDetails {
+                // The actual comment is read only for a requested page.
+                comment_region: (d.comment.is_some() || !file.comment_parts.is_empty())
+                    .then_some((0, 0)),
                 encryption: if d.encrypted && !d.legacy && d.crypt.is_some() {
                     Some("AES-256".to_owned())
                 } else if d.encrypted && d.legacy && d.method == 29 {

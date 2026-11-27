@@ -9,6 +9,7 @@ void rar_run() {
     const auto error = codec_bridge::run_rar(
         request.operation, request.length, request.selected, request.entries, request.name_bytes,
         rust::Slice<const std::uint64_t>(request.volumes.data(), request.volumes.size()),
+        rust::Slice<const std::uint64_t>(request.comment_ids.data(), request.comment_ids.size()),
         rust::Str(request.password), request.has_password);
     if (error)
         throw Failure{error};

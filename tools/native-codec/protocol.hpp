@@ -40,6 +40,7 @@ struct Request {
     uint32_t entries = 0, name_bytes = 0;
     std::string password;
     std::vector<uint64_t> volumes;
+    std::vector<uint64_t> comment_ids;
     std::vector<std::string> volume_names;
     std::vector<Record> records;
 };
