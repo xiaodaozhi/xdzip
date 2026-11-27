@@ -890,9 +890,15 @@ Item {
             canSearch: reader.browserQueryAvailable
             canTest: reader.ready && reader.browserQueryAvailable && !reader.taskStarting
             canInspect: reader.ready && reader.browserQueryAvailable && reader.canPreflight
+            canQuickExtract: reader.ready && reader.browserQueryAvailable && !reader.busy && !extractWindow.visible
+            canReveal: reader.ready
+            archiveFolder: reader.archiveFolder
             hasSelection: reader.selectedCount > 0
             onNewRequested: root.dispatchDesktopCommand("new")
             onOpenRequested: root.dispatchDesktopCommand("open")
+            onRecentArchiveRequested: path => reader.requestOpen(path)
+            onRevealRequested: reader.revealArchiveLocation()
+            onQuickExtractRequested: destination => reader.quickExtract(destination)
             onTestRequested: root.dispatchDesktopCommand("testArchive")
             onInspectRequested: root.dispatchDesktopCommand("preflight")
             onExtractRequested: all => root.dispatchDesktopCommand(all ? "extractAll" : "extractSelected")
@@ -2190,9 +2196,9 @@ Item {
                 Text {
                     Layout.fillWidth: true
                     elide: Text.ElideRight
-                    text: root.archiveOperationVisible ? root.archiveOperationText.title : reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.entryEditError || (reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7"))
+                    text: root.archiveOperationVisible ? root.archiveOperationText.title : reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.toolbarError || reader.entryEditError || (reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7"))
                     Accessible.name: text
-                    color: reader.entryEditError ? Theme.menuDanger : Theme.textSecondary
+                    color: reader.toolbarError || reader.entryEditError ? Theme.menuDanger : Theme.textSecondary
                     font.pixelSize: Theme.mainStatusSize
                 }
             }

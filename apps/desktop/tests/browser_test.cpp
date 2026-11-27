@@ -9810,6 +9810,17 @@ QtObject {
         expected.move(1, 0);
         QCOMPARE(preferences->recentArchives(), expected);
         QCOMPARE(window->title(), QFileInfo(previous).fileName());
+        QVERIFY(invoke("toolbarRecentToggle"));
+        QTRY_VERIFY(shown("welcomeRecentEntry-19"));
+        QVERIFY(!shown("welcomeRecentEntry-20"));
+        if (!audit.isEmpty())
+            QVERIFY(visual_audit::save(window, audit, "archive-toolbar-recent"));
+        QVERIFY(invoke("welcomeLoadMore"));
+        QTRY_VERIFY(shown("welcomeRecentEntry-39"));
+        QVERIFY(invoke("welcomeRecentEntry-1"));
+        expected.move(1, 0);
+        QCOMPARE(preferences->recentArchives(), expected);
+        QCOMPARE(window->title(), QFileInfo(newest).fileName());
         sessions.newSession();
         QVERIFY(invoke("welcomeRecentToggle"));
         QTRY_VERIFY(shown("welcomeClearRecent"));
@@ -12125,7 +12136,13 @@ QtObject {
         QVERIFY(!controller.targetMatches(third.path()));
         QTRY_VERIFY(controller.requestClose());
     }
+    void staleTargetFailureCannotInvalidateCurrentArchive_data() {
+        QTest::addColumn<bool>("quick");
+        QTest::newRow("confirmation") << false;
+        QTest::newRow("quick-extract") << true;
+    }
     void staleTargetFailureCannotInvalidateCurrentArchive() {
+        QFETCH(bool, quick);
         BrowserController controller;
         controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
         QTRY_VERIFY(controller.ready() && !controller.busy());
@@ -12135,8 +12152,9 @@ QtObject {
         const auto previousMessage = controller.message();
         controller.m_targetRevision = 2;
         controller.m_targetCheck = {{"path", QStringLiteral("new")}, {"checking", true}};
-        controller.m_activeTarget =
-            BrowserController::TargetRequest{QStringLiteral("old"), session, 1, 1, false};
+        const auto folderOption = quick ? std::optional<bool>{false} : std::nullopt;
+        controller.m_activeTarget = BrowserController::TargetRequest{
+            QStringLiteral("old"), session, 1, 1, false, {}, folderOption};
         controller.m_result = {};
         controller.m_result.kind = BrowserController::RequestKind::CheckTarget;
         controller.m_pending = 10001;
@@ -12149,11 +12167,12 @@ QtObject {
         QVERIFY(controller.ready());
         QCOMPARE(controller.entries()->rowCount(), rows);
         QCOMPARE(controller.message(), previousMessage);
+        QVERIFY(controller.toolbarError().isEmpty());
         QCOMPARE(controller.targetCheck().value("path").toString(), QStringLiteral("new"));
         QVERIFY(controller.targetCheck().value("checking").toBool());
 
-        controller.m_activeTarget =
-            BrowserController::TargetRequest{QStringLiteral("new"), session, 2, 2, false};
+        controller.m_activeTarget = BrowserController::TargetRequest{
+            QStringLiteral("new"), session, 2, 2, false, {}, folderOption};
         controller.m_result.kind = BrowserController::RequestKind::CheckTarget;
         controller.m_pending = 10002;
         controller.m_busy = true;
@@ -12163,6 +12182,7 @@ QtObject {
         QCOMPARE(controller.entries()->rowCount(), 0);
         QCOMPARE(controller.targetCheck().value("errorCode").toString(),
                  QStringLiteral("source_changed"));
+        QCOMPARE(controller.toolbarError().isEmpty(), !quick);
         QTRY_VERIFY(controller.requestClose());
     }
     void creationTargetCheckKeepsInputActionsAndWelcomeStable() {
@@ -14644,6 +14664,71 @@ QtObject {
         QCOMPARE(opens, 1);
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
+    }
+    void archiveToolbarQuickExtractStartsRealTask_data() {
+        QTest::addColumn<bool>("selected");
+        QTest::newRow("all-into-named-folder") << false;
+        QTest::newRow("selected-into-parent") << true;
+    }
+    void archiveToolbarQuickExtractStartsRealTask() {
+        QFETCH(bool, selected);
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        const auto source = target.filePath("sample.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"), source));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+        auto *task = window->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(controller && extract && task);
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        if (selected) {
+            const auto *entries = controller->entries();
+            for (int row = 0; row < entries->rowCount(); ++row) {
+                if (entries->index(row, 0).data().toString() == "data.bin")
+                    controller->selectOnlyRow(row);
+            }
+            QCOMPARE(controller->selectedCount(), 1);
+        }
+
+        QSignalSpy configure(controller, &BrowserController::extractionReady);
+        QSignalSpy started(controller, &BrowserController::extractionStarted);
+        auto *menuButton = findVisual(window->contentItem(), "archiveExtractMenuButton");
+        auto *submenu = window->findChild<QObject *>("toolbarQuickMenu");
+        QVERIFY(menuButton && submenu);
+        QVERIFY(QMetaObject::invokeMethod(menuButton, "click"));
+        QVERIFY(QMetaObject::invokeMethod(submenu, "open"));
+        QTRY_VERIFY(submenu->property("visible").toBool());
+        QCOMPARE(submenu->property("count").toInt(), 5);
+        auto *option = submenu->findChild<QObject *>(selected ? "toolbarQuickCurrent"
+                                                              : "toolbarQuickSameName");
+        QVERIFY(option);
+        if (!selected)
+            QVERIFY(option->property("text").toString().contains("sample"));
+        const auto audit = qEnvironmentVariable("XDZIP_WELCOME_RECENT_AUDIT");
+        if (!audit.isEmpty() && !selected)
+            QVERIFY(visual_audit::save(window, audit, "archive-toolbar-quick-extract"));
+        QVERIFY(QMetaObject::invokeMethod(option, "click"));
+        QTRY_VERIFY_WITH_TIMEOUT(started.size() == 1 || !controller->toolbarError().isEmpty(),
+                                 10000);
+        QVERIFY2(started.size() == 1, qPrintable(controller->toolbarError()));
+        QTRY_VERIFY(task->isVisible());
+        QCOMPARE(configure.size(), 0);
+        QVERIFY(!extract->isVisible());
+        QTRY_VERIFY(!controller->tasks().isEmpty() &&
+                    controller->tasks().first().toMap().value("terminal").toBool());
+        const auto result = controller->tasks().first().toMap();
+        QCOMPARE(result.value("status").toString(), "succeeded");
+        QCOMPARE(result.value("committedFiles").toInt(), selected ? 1 : 3);
+        const QDir destination(selected ? target.path() : target.filePath("sample"));
+        QCOMPARE(QFileInfo(destination.filePath("data.bin")).size(), 262144);
+        QCOMPARE(QFile::exists(destination.filePath(QStringLiteral("照片/说明.txt"))), !selected);
+        task->close();
+        window->close();
     }
     void m3ExtractionWindowsAndRealOutput() {
         QTemporaryDir target;

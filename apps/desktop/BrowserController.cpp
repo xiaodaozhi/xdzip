@@ -27,6 +27,17 @@
 #include <utility>
 #include <vector>
 
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#include <shlobj.h>
+#elif defined(Q_OS_MACOS)
+#include "MacArchiveLocation.h"
+#elif defined(Q_OS_LINUX)
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QDBusPendingCallWatcher>
+#endif
+
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : paged() ? m_pagedCount : static_cast<int>(m_rows.size());
 }
@@ -555,6 +566,7 @@ void BrowserController::openPath(const QString &path) {
     // This comparison only deduplicates UI intents; it grants no output authority.
     const auto key = openKey(path);
     m_createdArchivesToOpen.removeIf([&](const QString &queued) { return openKey(queued) == key; });
+    m_toolbarError.clear();
     invalidateTarget();
     m_restoreAfterUpdate = false;
     m_committedQuery = {};
@@ -1015,8 +1027,87 @@ QVariantMap BrowserController::passwordPrompt() const {
     return {};
 }
 void BrowserController::prepareExtraction(bool all, const QStringList &selectors) {
+    prepareExtractionIntent(all, selectors, std::nullopt);
+}
+void BrowserController::quickExtract(const QString &destination) {
+    if (!m_ready || m_busy || m_browsingDetached || !runtimeAvailable())
+        return;
+
+    const bool createFolder = destination == "sameName";
+    auto target = QFileInfo(m_sourcePath).absolutePath();
+    if (!createFolder && destination != "here") {
+        static const QHash<QString, QStandardPaths::StandardLocation> locations{
+            {"desktop", QStandardPaths::DesktopLocation},
+            {"documents", QStandardPaths::DocumentsLocation},
+            {"downloads", QStandardPaths::DownloadLocation}};
+        const auto location = locations.constFind(destination);
+        if (location == locations.cend())
+            return;
+        target = QStandardPaths::writableLocation(*location);
+    }
+    prepareExtractionIntent(selectedCount() == 0, {}, QuickExtraction{target, createFolder});
+}
+void BrowserController::revealArchiveLocation() {
+    if (!m_ready || m_sourcePath.isEmpty())
+        return;
+
+    if (!m_toolbarError.isEmpty()) {
+        m_toolbarError.clear();
+        emit changed();
+    }
+    const QFileInfo source(m_sourcePath);
+    const auto folder = QUrl::fromLocalFile(source.absolutePath());
+    const auto openFolder = [this, folder, session = m_session] {
+        if (m_session == session && !QDesktopServices::openUrl(folder)) {
+            m_toolbarError = qtTrId("desktop.cannotRevealArchive");
+            emit changed();
+        }
+    };
+    if (source.isFile()) {
+#ifdef Q_OS_WIN
+        if (SUCCEEDED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED))) {
+            const auto uninitialize = qScopeGuard([] { CoUninitialize(); });
+            PIDLIST_ABSOLUTE item = nullptr;
+            const auto path = QDir::toNativeSeparators(source.absoluteFilePath()).toStdWString();
+            // With zero child items, the absolute PIDL names the file to select.
+            const bool selected =
+                SUCCEEDED(SHParseDisplayName(path.c_str(), nullptr, &item, 0, nullptr)) &&
+                SUCCEEDED(SHOpenFolderAndSelectItems(item, 0, nullptr, 0));
+            CoTaskMemFree(item);
+            if (selected)
+                return;
+        }
+#elif defined(Q_OS_MACOS)
+        if (revealArchiveInFinder(source.absoluteFilePath(), source.absolutePath()))
+            return;
+#elif defined(Q_OS_LINUX)
+        const auto bus = QDBusConnection::sessionBus();
+        if (bus.isConnected()) {
+            auto message = QDBusMessage::createMethodCall(
+                QStringLiteral("org.freedesktop.FileManager1"),
+                QStringLiteral("/org/freedesktop/FileManager1"),
+                QStringLiteral("org.freedesktop.FileManager1"), QStringLiteral("ShowItems"));
+            const auto uri =
+                QUrl::fromLocalFile(source.absoluteFilePath()).toString(QUrl::FullyEncoded);
+            message << QStringList{uri} << QString{};
+            auto *watcher = new QDBusPendingCallWatcher(bus.asyncCall(message, 5000), this);
+            connect(watcher, &QDBusPendingCallWatcher::finished, this,
+                    [openFolder](QDBusPendingCallWatcher *reply) {
+                        if (reply->isError())
+                            openFolder();
+                        reply->deleteLater();
+                    });
+            return;
+        }
+#endif
+    }
+    openFolder();
+}
+void BrowserController::prepareExtractionIntent(bool all, const QStringList &selectors,
+                                                std::optional<QuickExtraction> quick) {
     if (!m_ready || m_busy || !runtimeAvailable())
         return;
+    m_toolbarError.clear();
     m_extractionSelectors = selectors.isEmpty() ? m_model.selectedIds() : selectors;
     if (!all && m_extractionSelectors.isEmpty())
         return;
@@ -1028,12 +1119,16 @@ void BrowserController::prepareExtraction(bool all, const QStringList &selectors
         command.session = m_session.toULongLong();
         for (const auto &id : m_extractionSelectors)
             command.selectors.push_back(rust::String(id.toStdString()));
-        submit(std::move(command));
+        Result result;
+        result.kind = RequestKind::FreezeSelection;
+        result.quickExtraction = std::move(quick);
+        submitPrepared(std::move(command), std::move(result));
         return;
     }
-    presentExtractionIntent(all);
+    presentExtractionIntent(all, quick);
 }
-void BrowserController::presentExtractionIntent(bool all) {
+void BrowserController::presentExtractionIntent(bool all,
+                                                const std::optional<QuickExtraction> &quick) {
     QVariantList samples;
     for (int i : m_model.cachedRows()) {
         if (samples.size() >= 3)
@@ -1055,7 +1150,11 @@ void BrowserController::presentExtractionIntent(bool all) {
                           {"error", QString{}}};
     invalidateTarget();
     emit extractionChanged();
-    emit extractionReady();
+    if (!quick) {
+        emit extractionReady();
+    } else if (!m_browsingDetached) {
+        queueTargetCheck(quick->target, false, {}, quick->createFolder);
+    }
 }
 QString BrowserController::chooseTarget(const QString &initial, QWindow *owner) {
     QFileDialog dialog(nullptr, systemDialogText("ui.3fb3d26f0ffd"), initial);
@@ -1199,7 +1298,8 @@ void BrowserController::checkTarget(const QString &path, const QString &identity
     queueTargetCheck(path, false, identity);
 }
 void BrowserController::queueTargetCheck(const QString &path, bool creation,
-                                         const QString &identity) {
+                                         const QString &identity,
+                                         std::optional<bool> quickCreateFolder) {
     if (!runtimeAvailable() ||
         (!creation && (!m_ready || m_extractionIntent.value("session").toString() != m_session)))
         return;
@@ -1211,33 +1311,38 @@ void BrowserController::queueTargetCheck(const QString &path, bool creation,
     if (path.isEmpty() || QString::fromUtf8(path.toUtf8()) != path || path.contains(QChar::Null)) {
         state = {
             {"valid", false}, {"errorCode", "invalid_path"}, {"error", explain("invalid_path")}};
+        if (quickCreateFolder.has_value()) {
+            m_toolbarError = state.value("error").toString();
+            emit changed();
+        }
     } else {
         TargetRequest request{QDir::cleanPath(path),
                               creation ? QString{} : m_session,
                               revision,
                               ++m_targetSequence,
                               creation,
-                              identity};
+                              identity,
+                              quickCreateFolder};
         pending = request;
         state = {{"path", request.path}, {"valid", false}, {"checking", true}};
     }
     emit extractionChanged();
     drainCreationUiWhenIdle();
 }
-void BrowserController::finishTargetCheck(const QString &error, quint64 leftovers,
-                                          const QString &identity) {
+std::optional<bool> BrowserController::finishTargetCheck(const QString &error, quint64 leftovers,
+                                                         const QString &identity) {
     const auto request = std::exchange(m_activeTarget, std::nullopt);
     if (!request)
-        return;
+        return std::nullopt;
     const auto currentRevision = request->creation ? m_creationTargetRevision : m_targetRevision;
     if (request->revision != currentRevision)
-        return;
+        return std::nullopt;
     auto &state = request->creation ? m_creationTargetCheck : m_targetCheck;
     if (!request->creation && (request->session != m_session ||
                                m_extractionIntent.value("session").toString() != m_session)) {
         state = {
             {"valid", false}, {"errorCode", "stale_session"}, {"error", explain("stale_session")}};
-        return;
+        return std::nullopt;
     }
     const auto checkedError =
         error.isEmpty() && identity.isEmpty() ? QStringLiteral("target_changed") : error;
@@ -1248,6 +1353,9 @@ void BrowserController::finishTargetCheck(const QString &error, quint64 leftover
              {"errorCode", checkedError},
              {"error", checkedError.isEmpty() ? QString{} : explain(checkedError)},
              {"leftovers", QString::number(leftovers)}};
+    if (!checkedError.isEmpty() && request->quickCreateFolder.has_value())
+        m_toolbarError = state.value("error").toString();
+    return checkedError.isEmpty() ? request->quickCreateFolder : std::nullopt;
 }
 void BrowserController::deferActiveTarget() {
     const auto request = std::exchange(m_activeTarget, std::nullopt);
@@ -1869,6 +1977,8 @@ void BrowserController::attemptSubmission() {
         }
         restoreQuery();
         m_message = explain(code);
+        if (m_result.quickExtraction)
+            m_toolbarError = m_message;
         if (m_result.isCreationTask())
             m_creationError = m_message;
         if (m_result.kind == RequestKind::ArchiveEdit) {
@@ -2246,10 +2356,13 @@ void BrowserController::finishRequest(const xdzip::reader::Event &event) {
     if (m_result.kind == RequestKind::FreezeSelection) {
         if (m_result.error.isEmpty()) {
             m_extractionSelectors = std::move(m_result.frozenSelectors);
+            auto quick = std::move(m_result.quickExtraction);
             m_result = {};
-            presentExtractionIntent(false);
+            presentExtractionIntent(false, quick);
         } else {
             m_message = explain(m_result.error);
+            if (m_result.quickExtraction)
+                m_toolbarError = m_message;
             m_result = {};
             emit changed();
         }
@@ -2301,12 +2414,21 @@ void BrowserController::finishRequest(const xdzip::reader::Event &event) {
                                    m_activeTarget->revision == m_targetRevision &&
                                    m_activeTarget->session == m_session &&
                                    m_extractionIntent.value("session").toString() == m_session;
-        finishTargetCheck(error, m_result.leftovers, m_result.targetIdentity);
+        const auto quickCreateFolder =
+            finishTargetCheck(error, m_result.leftovers, m_result.targetIdentity);
         if (currentSource && (error == "source_changed" || error == "stale_session")) {
             invalidateSnapshot();
             m_message = explain(error);
         }
         m_result = {};
+        if (quickCreateFolder.has_value() && !m_browsingDetached && !m_closing) {
+            // Match the extraction form defaults: keep both files and retain safety limits.
+            startExtraction(m_targetCheck.value("path").toString(),
+                            m_extractionIntent.value("all").toBool(), *quickCreateFolder, 2, false,
+                            false);
+            emit extractionChanged();
+            return;
+        }
         emit changed();
         emit extractionChanged();
         QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
