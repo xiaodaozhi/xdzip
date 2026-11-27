@@ -174,6 +174,16 @@ pub(crate) fn parse<'a>(
             || special
             || xdzip_domain::path::extraction_components(name.as_bytes(), directory).is_none();
         index.rows.push(Entry {
+            details: xdzip_codec_api::EntryDetails {
+                encryption: encrypted.then(|| "AES-256".to_owned()),
+                crc: data
+                    .as_ref()
+                    .and_then(|r| index.streams.folders[r.folder].substreams[r.stream].crc)
+                    .map(|crc| (crc, 32)),
+                attributes: attrs
+                    .map(|value| xdzip_codec_api::display_dos_attributes(directory, value)),
+                ..Default::default()
+            },
             format: Format::SevenZip,
             id: EntryId::try_from(record as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: name.into_bytes(),

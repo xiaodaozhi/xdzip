@@ -439,6 +439,31 @@ pub(crate) fn parse(
             }
         }
         index.rows.push(Entry {
+            details: xdzip_codec_api::EntryDetails {
+                encryption: if d.encrypted && !d.legacy && d.crypt.is_some() {
+                    Some("AES-256".to_owned())
+                } else if d.encrypted && d.legacy && d.method == 29 {
+                    Some("AES-128".to_owned())
+                } else {
+                    None
+                },
+                crc: (file.parts.len() == 1
+                    && d.method >= 20
+                    && !d.crypt.as_ref().is_some_and(|c| c.flags & 2 != 0))
+                .then_some(d.crc)
+                .flatten()
+                .map(|crc| (crc, 32)),
+                attributes: match (d.legacy, d.host) {
+                    (true, 3) | (false, 1) => u32::try_from(d.attributes)
+                        .ok()
+                        .map(|mode| xdzip_codec_api::display_posix_attributes(d.directory, mode)),
+                    (true, 0..=2) | (false, 0) => u32::try_from(d.attributes)
+                        .ok()
+                        .map(|flags| xdzip_codec_api::display_dos_attributes(d.directory, flags)),
+                    _ => None,
+                },
+                ..Default::default()
+            },
             format: Format::Rar,
             id: EntryId::try_from(n as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: d.name.clone(),

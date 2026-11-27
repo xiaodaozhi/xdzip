@@ -6,6 +6,8 @@ use xdzip_domain::query::{PageRequest, QueryKey};
 
 /// Name bytes per transport batch, in addition to the 128-row bound.
 pub const MAX_BATCH_NAME_BYTES: usize = 64 * 1024;
+/// Bound raw optional comments before display decoding and cross-thread conversion.
+pub const MAX_BATCH_COMMENT_BYTES: usize = 1024 * 1024;
 
 /// Query failure distinct from a codec failure.
 #[derive(Debug, Eq, PartialEq)]
@@ -264,6 +266,7 @@ impl Archive {
         }
         let mut rows = Vec::new();
         let mut bytes = 0;
+        let mut comment_bytes = 0;
         let tokens = cache
             .disk
             .as_ref()
@@ -300,16 +303,40 @@ impl Archive {
                 })
                 .collect()
         };
-        for row in candidates {
+        let mut comment_source = None;
+        for mut row in candidates {
             control.check()?;
+            if let QueryRow::Physical(entry) = &mut row
+                && let Some(region) = entry.details.comment_region
+            {
+                if entry.format != xdzip_codec_api::Format::Egg {
+                    return Err(ScanError::Invalid.into());
+                }
+                if comment_source.is_none() {
+                    comment_source = Some(self.source.fork()?);
+                }
+                let source = comment_source.as_mut().expect("initialized comment source");
+                let (comment, truncated) = xdzip_codec_egg::read_comment(source, control, region)?;
+                entry.details.comment = comment;
+                entry.details.comment_utf8 = true;
+                entry.details.comment_truncated = truncated;
+            }
             let next = bytes + row.path().len();
-            if !rows.is_empty() && next > MAX_BATCH_NAME_BYTES {
+            let next_comments = comment_bytes
+                + match &row {
+                    QueryRow::Physical(entry) => entry.details.comment.len(),
+                    QueryRow::Directory(_) => 0,
+                };
+            if !rows.is_empty()
+                && (next > MAX_BATCH_NAME_BYTES || next_comments > MAX_BATCH_COMMENT_BYTES)
+            {
                 break;
             }
-            if next > MAX_BATCH_NAME_BYTES {
+            if next > MAX_BATCH_NAME_BYTES || next_comments > MAX_BATCH_COMMENT_BYTES {
                 return Err(ScanError::Limit.into());
             }
             bytes = next;
+            comment_bytes = next_comments;
             rows.push(row);
         }
         self.source.validate()?;
@@ -424,6 +451,31 @@ mod tests {
         let last = archive.query_page(request(3, Some(key)), &control).unwrap();
         assert_eq!(last.rows.len(), 1);
         assert_eq!(last.total, 4);
+    }
+    #[test]
+    fn comments_split_batches_without_losing_physical_rows() {
+        let (_owned, path) = owned(&zip64_fixture::archive(20));
+        let control = Cancellation::default();
+        let mut archive = Archive::open(&path, &control).unwrap();
+        for entry in std::sync::Arc::make_mut(&mut archive.rows) {
+            entry.details.comment = vec![b'x'; u16::MAX as usize];
+        }
+        let request = |offset, expected| QueryRequest {
+            directory: "",
+            text: "",
+            sort: 0,
+            offset,
+            expected,
+            generation: 1,
+        };
+        let first = archive.query_page(request(0, None), &control).unwrap();
+        assert_eq!(first.rows.len(), 16);
+        assert_eq!(first.total, 20);
+        let last = archive
+            .query_page(request(16, Some(first.key)), &control)
+            .unwrap();
+        assert_eq!(last.rows.len(), 4);
+        assert_eq!(last.total, 20);
     }
     #[test]
     fn hundred_thousand_rows_share_one_order_and_reject_each_stale_key() {

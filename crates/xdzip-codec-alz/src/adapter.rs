@@ -86,6 +86,14 @@ fn project(
             return Err(ScanError::Limit);
         }
         rows.push(Entry {
+            details: xdzip_codec_api::EntryDetails {
+                crc: record.has_crc.then_some((record.crc32, 32)),
+                attributes: Some(xdzip_codec_api::display_dos_attributes(
+                    record.directory,
+                    u32::from(record.attributes),
+                )),
+                ..Default::default()
+            },
             format: Format::Alz,
             id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: record.raw_name.clone(),

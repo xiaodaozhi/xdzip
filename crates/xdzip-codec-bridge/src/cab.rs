@@ -1,5 +1,5 @@
 //! CAB-specific admission on the same borrowed stream and worker callbacks.
-use super::{Source, decode_rows, ffi, scan_wire};
+use super::{Source, decode_rows, scan_wire};
 use xdzip_codec_api::{Cancellation, ScanLimits};
 use xdzip_codec_cab::CabCodec;
 
@@ -73,15 +73,7 @@ pub(super) fn run(
                 | u8::from(row.directory)
                 | (u8::from(row.link) << 2)
                 | (u8::from(row.warning) << 3);
-            let error = ffi::emit_row(
-                index as u64,
-                flags,
-                row.size,
-                row.packed_size,
-                row.modified_dos,
-                row.method,
-                &row.raw_name,
-            );
+            let error = crate::emit_metadata(index as u64, flags, row, &row.raw_name);
             if error != 0 {
                 return Err(error);
             }

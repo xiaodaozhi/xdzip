@@ -177,6 +177,7 @@ mod tests {
     use super::*;
     fn entry(id: u64, name: &str) -> Entry {
         Entry {
+            details: Default::default(),
             format: xdzip_codec_api::Format::Zip,
             id: EntryId::try_from(id).unwrap(),
             raw_name: name.as_bytes().to_vec(),

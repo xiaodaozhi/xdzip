@@ -85,6 +85,10 @@ fn project(
             return Err(ScanError::Limit);
         }
         rows.push(Entry {
+            details: xdzip_codec_api::EntryDetails {
+                crc: Some((record.crc32, 32)),
+                ..Default::default()
+            },
             format: Format::Bh,
             id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: record.raw_name.clone(),

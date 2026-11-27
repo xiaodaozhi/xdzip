@@ -246,6 +246,7 @@ impl IndexBuilder {
             || (!unlabelled_name
                 && xdzip_domain::path::extraction_components(&node.name, node.directory).is_none());
         let entry = Entry {
+            details: Default::default(),
             format: self.format,
             id: EntryId::try_from(self.records.len() as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: node.name,

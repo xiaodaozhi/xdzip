@@ -18,6 +18,7 @@ fn project(index: &index::Index) -> Result<Vec<Entry>, ScanError> {
         .enumerate()
         .map(|(at, record)| {
             Ok(Entry {
+                details: Default::default(),
                 format: Format::Asar,
                 id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,
                 raw_name: record.path.as_bytes().to_vec(),

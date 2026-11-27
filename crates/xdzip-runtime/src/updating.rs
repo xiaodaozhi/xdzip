@@ -69,7 +69,7 @@ impl Job {
             + self
                 .rows
                 .iter()
-                .map(|row| std::mem::size_of::<Entry>() + row.name_capacity())
+                .map(|row| std::mem::size_of::<Entry>() + row.metadata_capacity())
                 .sum::<usize>()
             + match &self.operation {
                 Operation::Add => 0,

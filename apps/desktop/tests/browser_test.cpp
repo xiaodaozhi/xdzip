@@ -15467,6 +15467,80 @@ QtObject {
         QVERIFY(!controller.navigationLimited());
         QCOMPARE(tree->rowCount(), 0);
     }
+    void inspectorPropertiesNativeVisual() {
+        const auto directory = qEnvironmentVariable("XDZIP_INSPECTOR_VISUAL_AUDIT");
+        if (!nativeSystemPointer() || directory.isEmpty())
+            QSKIP("Opt-in native inspector visual evidence");
+        QVERIFY(QDir().mkpath(directory));
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QVERIFY(initializeUiText(language));
+            QQmlApplicationEngine engine;
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            auto *preferences =
+                engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+            QVERIFY(window && preferences);
+            QVERIFY(preferences->saveDetails("light", 1, language, "standard", false, false, false,
+                                             "tabs"));
+            auto *controller = window->findChild<BrowserController *>();
+            QVERIFY(controller);
+            controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+            QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+            window->resize(1024, 700);
+            QVERIFY(QTest::qWaitForWindowExposed(window));
+            controller->selectOnlyRow(3);
+            auto *scroll = findVisual(window->contentItem(), "inspectorScroll");
+            QVERIFY(scroll);
+            auto *flick = qvariant_cast<QObject *>(scroll->property("contentItem"));
+            QVERIFY(flick);
+            QTRY_VERIFY(flick->property("contentHeight").toDouble() >
+                        flick->property("height").toDouble());
+            QVERIFY(flick->setProperty("contentY", flick->property("contentHeight").toDouble() -
+                                                       flick->property("height").toDouble()));
+            QTest::qWait(100);
+            const auto *crc = findVisual(window->contentItem(), "inspectorPropertyValue5");
+            QVERIFY(crc && crc->isVisible());
+            QCOMPARE(crc->property("text").toString(), QStringLiteral("00000000"));
+            QVERIFY(visual_audit::save(window, directory, "inspector-" + language));
+        }
+    }
+    void entryCommentReachesInspectorAndClearsOnSelection() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        QFile original(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"));
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        auto bytes = original.readAll();
+        const auto central = bytes.indexOf(QByteArray("PK\x01\x02", 4));
+        const auto end = bytes.lastIndexOf(QByteArray("PK\x05\x06", 4));
+        QVERIFY(central > 0 && end > central);
+        const auto set16 = [](QByteArray &data, qsizetype at, quint16 value) {
+            for (int i = 0; i < 2; ++i)
+                data[at + i] = char((value >> (8 * i)) & 255);
+        };
+        const auto set32 = [](QByteArray &data, qsizetype at, quint32 value) {
+            for (int i = 0; i < 4; ++i)
+                data[at + i] = char((value >> (8 * i)) & 255);
+        };
+        const QByteArray comment("Owned comment <plain>");
+        set16(bytes, central + 32, quint16(comment.size()));
+        bytes.insert(end, comment);
+        set32(bytes, end + comment.size() + 12, quint32(end - central + comment.size()));
+        QFile input(fixture.filePath("comment.zip"));
+        QVERIFY(input.open(QIODevice::WriteOnly));
+        QCOMPARE(input.write(bytes), bytes.size());
+        input.close();
+        BrowserController controller;
+        controller.openPath(input.fileName());
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
+        QVERIFY(controller.ready());
+        controller.selectOnlyRow(0);
+        QCOMPARE(controller.detail().value("comment").toString(),
+                 QStringLiteral("Owned comment <plain>"));
+        controller.selectAll(false);
+        QVERIFY(controller.detail().isEmpty());
+    }
     void contextualSelectionRangeAndClipboard() {
         BrowserController controller;
         controller.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
@@ -15479,10 +15553,18 @@ QtObject {
         QCOMPARE(controller.detail().value("id").toString(), "4");
         controller.selectForContext(0);
         QCOMPARE(controller.selectedCount(), 1);
+        QCOMPARE(controller.detail().value("attributes").toString(), QStringLiteral("D___"));
         controller.copySelection(false);
         QCOMPARE(QGuiApplication::clipboard()->text(), QString::fromUtf8("旅行"));
         controller.copySelection(true);
         QCOMPARE(QGuiApplication::clipboard()->text(), QString::fromUtf8("旅行/"));
+        controller.selectOnlyRow(1);
+        QCOMPARE(controller.detail().value("crc").toString(), QStringLiteral("9271EE57"));
+        QCOMPARE(controller.detail().value("attributes").toString(), QStringLiteral("____"));
+        QVERIFY(controller.detail().value("encryptionMethod").toString().isEmpty());
+        QVERIFY(controller.detail().value("comment").toString().isEmpty());
+        controller.selectOnlyRow(3);
+        QCOMPARE(controller.detail().value("crc").toString(), QStringLiteral("00000000"));
         controller.selectOnlyRow(1);
         controller.selectRangeTo(3);
         QCOMPARE(controller.selectedCount(), 3);

@@ -18,6 +18,10 @@ fn project(
     limits: ScanLimits,
 ) -> Result<Vec<Entry>, ScanError> {
     let mut rows = vec![Entry {
+        details: xdzip_codec_api::EntryDetails {
+            encryption: Some("AES-256".to_owned()),
+            ..Default::default()
+        },
         format: Format::AesCrypt,
         id: EntryId::try_from(1).expect("nonzero identity"),
         raw_name: metadata.name.as_bytes().to_vec(),

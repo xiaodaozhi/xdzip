@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "purpose": "Display per-entry archive metadata without granting extraction or verification authority.",
+  "fields": ["encryption method", "CRC", "attributes", "comment"],
+  "presence": "An unavailable or unidentified value is empty. A declared zero CRC is displayed as zero. ZIP AE-2 and keyed RAR checks do not expose their stored value as a plaintext CRC.",
+  "crc": "CRC-16 and CRC-32 are displayed as four or eight uppercase hexadecimal digits. These are declared values, not evidence that content was read or verified.",
+  "attributes": "Known attributes use directory/archive, system, hidden and read-only positions, with underscores for absent positions: ____, D___, A__R. When directory and archive flags are both present, D precedes A so both remain visible. POSIX modes contribute directory and read-only status only. These display values never authorize filesystem permissions or object creation.",
+  "comments": "ZIP entry comments use declared UTF-8, a CRC-bound Unicode Comment extra, or the resolved legacy name encoding with CP437 fallback. ARJ entry comments use the resolved name encoding. EGG comments are read lazily from a validated entry subheader range; encrypted comments are unavailable, and legacy bytes are escaped rather than guessed. Controls and bidirectional formatting controls are replaced in the plain-text view.",
+  "bounds": "ZIP entry comments are limited by the format's 16-bit field and existing directory-read budget. EGG comment display captures at most 65,535 bytes and 1 MiB of subheader work per entry, marking truncation with an ellipsis. Query pages carry at most 1 MiB of raw comments; disk index records, native worker frames and both mailboxes remain bounded and account for added metadata.",
+  "unavailable": "Formats and record profiles whose parser does not supply a particular property leave that value empty. Implicit directories never inherit a physical record's metadata."
+}

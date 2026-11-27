@@ -402,6 +402,13 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
                 };
                 let record = index.rows.len();
                 index.rows.push(Entry {
+                    details: xdzip_codec_api::EntryDetails {
+                        attributes: Some(xdzip_codec_api::display_dos_attributes(
+                            false,
+                            u32::from(raw.attributes),
+                        )),
+                        ..Default::default()
+                    },
                     format: Format::Cab,
                     id: EntryId::try_from(record as u64 + 1).map_err(|_| ScanError::Limit)?,
                     raw_name: raw.name,

@@ -27,6 +27,9 @@ pub struct Record {
     pub method: u8,
     pub raw_name: Vec<u8>,
     pub crc32: u32,
+    pub attributes: Option<u8>,
+    /// Validated file-subheader range containing at least one comment.
+    pub comment_region: Option<(u64, u64)>,
     pub directory: bool,
     pub encrypted: bool,
     pub solid: bool,
@@ -128,6 +131,110 @@ fn extra(input: &mut Input<'_>, at: u64) -> Result<(u8, u32, u64), ScanError> {
     ))
 }
 
+/// Read display comments from an already validated subheader range. The range
+/// grants no payload or output authority. Source changes and I/O failures remain
+/// errors; very large comments or pathological header counts are shortened.
+pub fn read_comment(
+    source: &mut dyn ReadSource,
+    cancel: &Cancellation,
+    region: (u64, u64),
+) -> Result<(Vec<u8>, bool), ScanError> {
+    const CAPTURE: usize = 65_535;
+    const HEADER_WORK: usize = 1024 * 1024;
+    let (mut at, end) = region;
+    let mut text = String::new();
+    let mut work = 0usize;
+    let mut truncated = false;
+    let mut ended = false;
+    while at < end {
+        cancel.check()?;
+        if work >= HEADER_WORK {
+            truncated = true;
+            break;
+        }
+        if at.checked_add(4).is_none_or(|next| next > end) {
+            return Err(ScanError::Invalid);
+        }
+        source
+            .seek(SeekFrom::Start(at))
+            .map_err(|e| source_error(&e))?;
+        let mut marker = [0; 4];
+        source
+            .read_exact(&mut marker)
+            .map_err(|e| source_error(&e))?;
+        at = at.checked_add(4).ok_or(ScanError::Invalid)?;
+        work += 4;
+        if marker == END {
+            if at != end {
+                return Err(ScanError::Invalid);
+            }
+            ended = true;
+            break;
+        }
+        if at.checked_add(3).is_none_or(|next| next > end) {
+            return Err(ScanError::Invalid);
+        }
+        let mut prefix = [0; 5];
+        source
+            .read_exact(&mut prefix[..3])
+            .map_err(|e| source_error(&e))?;
+        let width = if prefix[0] & 1 != 0 {
+            if at.checked_add(5).is_none_or(|next| next > end) {
+                return Err(ScanError::Invalid);
+            }
+            source
+                .read_exact(&mut prefix[3..5])
+                .map_err(|e| source_error(&e))?;
+            5
+        } else {
+            3
+        };
+        work += width;
+        let length = if width == 3 {
+            u64::from(word(&prefix[1..3]))
+        } else {
+            u64::from(dword(&prefix[1..5]))
+        };
+        let payload = at.checked_add(width as u64).ok_or(ScanError::Invalid)?;
+        at = payload
+            .checked_add(length)
+            .filter(|n| *n <= end)
+            .ok_or(ScanError::Invalid)?;
+        if marker != COMMENT || prefix[0] & 4 != 0 || length == 0 {
+            continue;
+        }
+        if !text.is_empty() {
+            if text.len() == CAPTURE {
+                truncated = true;
+                break;
+            }
+            text.push('\n');
+        }
+        let remaining = CAPTURE.saturating_sub(text.len());
+        let count = usize::try_from(length.min(remaining as u64)).map_err(|_| ScanError::Limit)?;
+        let mut raw = vec![0; count];
+        source.read_exact(&mut raw).map_err(|e| source_error(&e))?;
+        let decoded = if prefix[0] & 8 == 0 {
+            String::from_utf8_lossy(&raw).into_owned()
+        } else {
+            xdzip_codec_api::names::escaped_bytes(&raw)
+        };
+        let mut keep = decoded.len().min(remaining);
+        while !decoded.is_char_boundary(keep) {
+            keep -= 1;
+        }
+        text.push_str(&decoded[..keep]);
+        if count as u64 != length || keep != decoded.len() {
+            truncated = true;
+            break;
+        }
+    }
+    if !ended && !truncated {
+        return Err(ScanError::Invalid);
+    }
+    Ok((text.into_bytes(), truncated))
+}
+
 pub fn inspect(
     source: &mut dyn ReadSource,
     cancel: &Cancellation,
@@ -212,6 +319,8 @@ pub fn inspect(
         let mut raw_name = None;
         let mut entry_encrypted = encrypted;
         let mut directory = false;
+        let mut attributes = None;
+        let mut has_comment = false;
         loop {
             input.read(at, &mut marker)?;
             if marker == END {
@@ -265,12 +374,20 @@ pub fn inspect(
                 let mut attrs = [0u8; 4];
                 input.read(payload, &mut attrs)?;
                 directory = dword(&attrs) & 0x10 != 0;
+                if length >= 9 {
+                    let mut value = [0];
+                    input.read(payload + 8, &mut value)?;
+                    attributes = Some(value[0]);
+                }
             } else if marker == ENCRYPT_INFO {
                 entry_encrypted = true;
+            } else if marker == COMMENT {
+                has_comment = true;
             }
             at = payload + u64::from(length);
         }
         let raw_name = raw_name.ok_or(ScanError::Invalid)?;
+        let comment_region = has_comment.then_some((header_at + 16, at));
         if raw_name.len() > limits.name_bytes.min(4096) {
             return Err(ScanError::Limit);
         }
@@ -336,6 +453,8 @@ pub fn inspect(
             method,
             raw_name,
             crc32,
+            attributes,
+            comment_region,
             directory,
             encrypted: entry_encrypted,
             solid,

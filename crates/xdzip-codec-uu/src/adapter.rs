@@ -36,6 +36,7 @@ fn project(
         .enumerate()
         .map(|(at, record)| {
             Ok(Entry {
+                details: Default::default(),
                 format,
                 id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,
                 raw_name: record.name.clone(),

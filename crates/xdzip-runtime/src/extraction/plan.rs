@@ -247,7 +247,7 @@ impl Job {
         // Charge the full immutable snapshot conservatively even when Arc shares it.
         self.rows
             .iter()
-            .map(|e| std::mem::size_of::<Entry>() + e.name_capacity())
+            .map(|e| std::mem::size_of::<Entry>() + e.metadata_capacity())
             .sum::<usize>()
             + self
                 .planned

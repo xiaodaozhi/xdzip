@@ -66,6 +66,7 @@ pub(crate) fn assemble(
         let warning = components(member.name.as_bytes(), false).is_none()
             || components(name.as_bytes(), false).is_none();
         rows.push(Entry {
+            details: Default::default(),
             format: Format::Deb,
             id: EntryId::try_from(rows.len() as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: name.as_bytes().to_vec(),

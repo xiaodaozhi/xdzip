@@ -19,7 +19,8 @@ std::uint8_t emit_creation_progress(std::uint64_t bytes,
                                     rust::Slice<const std::uint8_t> name) noexcept;
 std::uint8_t emit_row(std::uint64_t index, std::uint8_t flags, std::uint64_t size,
                       std::uint64_t packed, std::uint32_t dos, std::uint16_t method,
-                      rust::Slice<const std::uint8_t> name) noexcept;
+                      rust::Slice<const std::uint8_t> name, rust::Str encryption, rust::Str crc,
+                      rust::Str attributes, rust::Slice<const std::uint8_t> comment) noexcept;
 std::uint8_t emit_data(rust::Slice<const std::uint8_t> bytes) noexcept;
 std::uint8_t emit_precharged_data(rust::Slice<const std::uint8_t> bytes) noexcept;
 std::uint8_t emit_work(std::uint64_t bytes) noexcept;

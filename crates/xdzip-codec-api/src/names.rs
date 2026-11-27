@@ -339,6 +339,7 @@ mod tests {
     use super::*;
     fn row(raw_name: Vec<u8>) -> Entry {
         Entry {
+            details: Default::default(),
             format: crate::Format::Cab,
             id: xdzip_domain::identity::EntryId::try_from(1).unwrap(),
             raw_name,

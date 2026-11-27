@@ -301,6 +301,7 @@ fn external_fields_restart_at_blob_zero_and_retain_defined_properties() {
     assert!(index.rows[0].link && !index.rows[0].payload_supported());
     assert!(index.rows[1].warning && !index.rows[1].payload_supported());
     assert_eq!(index.files[0].attributes, Some(0o120777u32 << 16 | 0x8000));
+    assert_eq!(index.rows[0].details.attributes.as_deref(), Some("____"));
 }
 #[test]
 fn all_structural_truncations_and_both_header_crcs_fail_closed() {

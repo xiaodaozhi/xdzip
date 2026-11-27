@@ -27,7 +27,7 @@ impl Job {
             + self
                 .rows
                 .iter()
-                .map(|entry| std::mem::size_of::<Entry>() + entry.name_capacity())
+                .map(|entry| std::mem::size_of::<Entry>() + entry.metadata_capacity())
                 .sum::<usize>()
     }
 }

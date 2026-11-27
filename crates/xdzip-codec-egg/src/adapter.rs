@@ -86,6 +86,17 @@ fn project(
             return Err(ScanError::Limit);
         }
         rows.push(Entry {
+            details: xdzip_codec_api::EntryDetails {
+                crc: (!record.directory).then_some((record.crc32, 32)),
+                attributes: record.attributes.map(|value| {
+                    xdzip_codec_api::display_dos_attributes(
+                        record.directory || value & 0x80 != 0,
+                        u32::from(value & 7),
+                    )
+                }),
+                comment_region: record.comment_region,
+                ..Default::default()
+            },
             format: Format::Egg,
             id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: record.raw_name.clone(),

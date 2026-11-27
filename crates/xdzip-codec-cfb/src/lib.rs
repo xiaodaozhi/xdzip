@@ -545,6 +545,7 @@ fn walk_tree(
     let warning = entry.name_warning || names::suspicious(&path, entry.kind == 1);
     let id = EntryId::try_from(records.len() as u64 + 1).map_err(|_| ScanError::Limit)?;
     let row = Entry {
+        details: Default::default(),
         format: Format::Compound,
         id,
         raw_name: path.as_bytes().to_vec(),

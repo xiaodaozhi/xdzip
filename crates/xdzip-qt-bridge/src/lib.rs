@@ -91,6 +91,10 @@ mod ffi {
         directory: bool,
         encrypted: bool,
         warning: bool,
+        encryption_method: String,
+        crc: String,
+        attributes: String,
+        comment: String,
     }
     struct Directory {
         id: String,
@@ -274,7 +278,13 @@ fn event_mailbox_bytes(event: &ffi::Event) -> usize {
         bytes += strings.iter().map(String::capacity).sum::<usize>();
     }
     for row in &event.rows {
-        bytes += row.name.capacity() + row.id.capacity() + row.navigation_id.capacity();
+        bytes += row.name.capacity()
+            + row.id.capacity()
+            + row.navigation_id.capacity()
+            + row.encryption_method.capacity()
+            + row.crc.capacity()
+            + row.attributes.capacity()
+            + row.comment.capacity();
     }
     for node in &event.directories {
         bytes += node.id.capacity()
@@ -679,6 +689,10 @@ impl EventReceiver {
                 directory: r.directory,
                 encrypted: false,
                 warning: false,
+                encryption_method: String::new(),
+                crc: String::new(),
+                attributes: String::new(),
+                comment: String::new(),
             })
             .collect()
     }
@@ -789,6 +803,10 @@ impl EventReceiver {
                         directory: row.directory,
                         encrypted: row.encrypted,
                         warning: row.warning,
+                        encryption_method: row.encryption_method,
+                        crc: row.crc,
+                        attributes: row.attributes,
+                        comment: row.comment,
                     })
                     .collect();
             }
@@ -1021,6 +1039,39 @@ mod tests {
                 + event.task.details.capacity() * std::mem::size_of::<ffi::TaskOutcome>()
                 + detail.name.capacity()
                 + detail.status.capacity()
+        );
+    }
+
+    #[test]
+    fn mailbox_accounts_for_entry_property_strings() {
+        let mut event = empty_event();
+        let baseline = event_mailbox_bytes(&event);
+        event.rows.push(ffi::Row {
+            id: String::new(),
+            navigation_id: String::new(),
+            physical: true,
+            name: String::new(),
+            size: 0,
+            size_known: true,
+            packed_size: 0,
+            method: 0,
+            modified_dos: 0,
+            directory: false,
+            encrypted: false,
+            warning: false,
+            encryption_method: String::with_capacity(17),
+            crc: String::with_capacity(19),
+            attributes: String::with_capacity(23),
+            comment: String::with_capacity(65_535),
+        });
+        let row = &event.rows[0];
+        assert_eq!(
+            event_mailbox_bytes(&event) - baseline,
+            event.rows.capacity() * std::mem::size_of::<ffi::Row>()
+                + row.encryption_method.capacity()
+                + row.crc.capacity()
+                + row.attributes.capacity()
+                + row.comment.capacity()
         );
     }
 

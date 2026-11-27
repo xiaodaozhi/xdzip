@@ -77,7 +77,36 @@ pub(crate) fn metadata(
         .and_then(|n| n.checked_add(1))
         .and_then(|n| EntryId::try_from(n).ok())
         .ok_or(ScanError::Limit)?;
+    let aes = aes::display_profile(record::ExtraFields::new(&record.extra));
+    let encryption = if encrypted && record.method == 99 {
+        aes.map(|(_, strength)| format!("AES-{}", [128, 192, 256][usize::from(strength - 1)]))
+    } else if encrypted && record.method != 99 && record.flags & 0x40 == 0 {
+        Some("ZipCrypto".to_owned())
+    } else {
+        None
+    };
+    let crc = if record.method == 99 && aes.is_none_or(|profile| profile.0 == 2) {
+        None
+    } else {
+        Some((record.crc, 32))
+    };
+    let unicode_comment = (!utf8)
+        .then(|| names::unicode_comment(&record.comment, &record.extra))
+        .flatten();
+    let comment_utf8 = utf8 || unicode_comment.is_some();
     let entry = Entry {
+        details: xdzip_codec_api::EntryDetails {
+            encryption,
+            crc,
+            attributes: Some(xdzip_codec_api::display_dos_attributes(
+                directory,
+                record.external_attributes & 0xff,
+            )),
+            comment: unicode_comment.unwrap_or(record.comment),
+            comment_utf8,
+            comment_region: None,
+            comment_truncated: false,
+        },
         format: xdzip_codec_api::Format::Zip,
         id,
         raw_name: record.name,
@@ -197,6 +226,53 @@ mod tests {
         assert_eq!(rows[4].size, 0);
         assert!(rows[0].directory);
         assert!(!rows[0].warning);
+    }
+    #[test]
+    fn display_properties_preserve_zero_crc_comment_and_aes2_absence() {
+        let mut bytes = zip64_fixture::classic(1);
+        let central = bytes.windows(4).position(|b| b == b"PK\x01\x02").unwrap();
+        let end = bytes.windows(4).rposition(|b| b == b"PK\x05\x06").unwrap();
+        let comment = b"owned entry comment";
+        bytes[central + 16..central + 20].copy_from_slice(&0u32.to_le_bytes());
+        bytes[central + 32..central + 34].copy_from_slice(&(comment.len() as u16).to_le_bytes());
+        bytes[central + 38..central + 42].copy_from_slice(&0x81a40020u32.to_le_bytes());
+        let directory_size = u32::from_le_bytes(bytes[end + 12..end + 16].try_into().unwrap());
+        bytes[end + 12..end + 16]
+            .copy_from_slice(&(directory_size + comment.len() as u32).to_le_bytes());
+        bytes.splice(end..end, comment.iter().copied());
+        let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
+        assert_eq!(rows[0].details.crc, Some((0, 32)));
+        assert_eq!(rows[0].details.attributes.as_deref(), Some("A___"));
+        assert_eq!(rows[0].details.comment, comment);
+        assert_eq!(rows[0].details.encryption, None);
+
+        let mut directory = record::read_directory(
+            &mut Cursor::new(bytes),
+            &Cancellation::default(),
+            ScanLimits::default(),
+        )
+        .unwrap();
+        let mut record = directory.records.remove(0);
+        record.flags |= 1;
+        record.method = 99;
+        record.extra = vec![0x01, 0x99, 7, 0, 2, 0, b'A', b'E', 3, 8, 0];
+        let (entry, _) = metadata(record, 0, ScanLimits::default(), &mut 0).unwrap();
+        assert_eq!(entry.details.encryption.as_deref(), Some("AES-256"));
+        assert_eq!(entry.details.crc, None);
+    }
+    #[test]
+    fn unicode_comment_extra_requires_matching_raw_crc() {
+        let mut body = vec![1];
+        body.extend_from_slice(&xdzip_compression::crc32(b"raw").to_le_bytes());
+        body.extend_from_slice("注释".as_bytes());
+        let mut extra = vec![0x75, 0x63];
+        extra.extend_from_slice(&(body.len() as u16).to_le_bytes());
+        extra.extend_from_slice(&body);
+        assert_eq!(
+            names::unicode_comment(b"raw", &extra).as_deref(),
+            Some("注释".as_bytes())
+        );
+        assert_eq!(names::unicode_comment(b"other", &extra), None);
     }
     #[test]
     fn filename_encoding_preserves_raw_identity_and_resolves_unlabelled_names() {

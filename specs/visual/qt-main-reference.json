@@ -12,6 +12,7 @@
   "logical_width": 1024,
   "method": "Authored geometry and typography contracts anchored to the immutable hifi source, independent of Qt. Actual HTML and Qt captures are generated locally or in CI, not stored as source. Density is 1024/1548; round Qt fonts after conversion.",
   "geometry_tolerance": 1.0,
+  "inspector_properties_policy": "After compression method, show encryption method, declared CRC, attributes and comment in that order, with an empty value when unavailable. Known attributes use compact letters and underscores, such as ____ for no flags and D___ for a directory. Use plain text, wrap long values, keep the panel scrollable and use the system font for comment text. Declared CRC is not a verification result. Preserve main-window and menu proportions.",
   "source_geometry": {
     "titleHeight": 58,
     "toolbarHeight": 79,

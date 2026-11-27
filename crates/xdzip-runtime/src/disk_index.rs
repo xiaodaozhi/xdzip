@@ -422,7 +422,8 @@ fn encode(e: &Entry) -> Vec<u8> {
             | u8::from(e.encrypted) << 3
             | u8::from(e.password_supported) << 4
             | u8::from(e.warning) << 5
-            | u8::from(e.decoded_name.is_some()) << 6,
+            | u8::from(e.decoded_name.is_some()) << 6
+            | u8::from(e.details.comment_utf8) << 7,
     );
     out.push(match e.name_encoding {
         NameEncoding::Utf8 => 0,
@@ -431,6 +432,7 @@ fn encode(e: &Entry) -> Vec<u8> {
         NameEncoding::Legacy(_) => 3,
         NameEncoding::Unresolved => 4,
     });
+    let crc = e.details.crc.map(|(value, bits)| format!("{bits}:{value}"));
     for bytes in [
         e.raw_name.as_slice(),
         e.decoded_name.as_deref().unwrap_or_default().as_bytes(),
@@ -439,6 +441,18 @@ fn encode(e: &Entry) -> Vec<u8> {
             NameEncoding::Legacy(label) => label.as_bytes(),
             _ => b"",
         },
+        e.details
+            .encryption
+            .as_deref()
+            .unwrap_or_default()
+            .as_bytes(),
+        crc.as_deref().unwrap_or_default().as_bytes(),
+        e.details
+            .attributes
+            .as_deref()
+            .unwrap_or_default()
+            .as_bytes(),
+        e.details.comment.as_slice(),
     ] {
         out.extend_from_slice(&(bytes.len() as u32).to_le_bytes());
         out.extend_from_slice(bytes);
@@ -457,6 +471,10 @@ struct DiskRecord<'a> {
     decoded_name: Option<&'a str>,
     display_name: &'a str,
     name_encoding: NameEncoding,
+    encryption: &'a str,
+    crc: Option<(u32, u8)>,
+    attributes: &'a str,
+    comment: &'a [u8],
 }
 
 impl DiskRecord<'_> {
@@ -470,6 +488,15 @@ impl DiskRecord<'_> {
 
     fn into_entry(self) -> Entry {
         Entry {
+            details: xdzip_codec_api::EntryDetails {
+                encryption: (!self.encryption.is_empty()).then(|| self.encryption.to_owned()),
+                crc: self.crc,
+                attributes: (!self.attributes.is_empty()).then(|| self.attributes.to_owned()),
+                comment: self.comment.to_vec(),
+                comment_utf8: self.flags & 128 != 0,
+                comment_region: None,
+                comment_truncated: false,
+            },
             format: Format::Zip,
             id: self.id,
             size: self.size,
@@ -520,7 +547,7 @@ fn read_record<'a>(
     let mut len = [0; 4];
     io(reader.read_exact(&mut len))?;
     let len = u32::from_le_bytes(len) as usize;
-    if !(52..=64 * 1024).contains(&len) {
+    if !(68..=160 * 1024).contains(&len) {
         return Err(ScanError::Invalid);
     }
     buffer.resize(len, 0);
@@ -530,13 +557,27 @@ fn read_record<'a>(
         .try_into()
         .map_err(|_| ScanError::Invalid)?;
     let flags = fixed[34];
-    if flags & !127 != 0 {
-        return Err(ScanError::Invalid);
-    }
     let raw_name = read_field(&mut fields, 4096)?;
     let decoded = read_field(&mut fields, 4096)?;
     let display = read_field(&mut fields, 32 * 1024)?;
     let label = read_field(&mut fields, 64)?;
+    let encryption =
+        std::str::from_utf8(read_field(&mut fields, 128)?).map_err(|_| ScanError::Invalid)?;
+    let crc = std::str::from_utf8(read_field(&mut fields, 32)?).map_err(|_| ScanError::Invalid)?;
+    let crc = if crc.is_empty() {
+        None
+    } else {
+        let (bits, value) = crc.split_once(':').ok_or(ScanError::Invalid)?;
+        let bits: u8 = bits.parse().map_err(|_| ScanError::Invalid)?;
+        let value: u32 = value.parse().map_err(|_| ScanError::Invalid)?;
+        if !matches!(bits, 16 | 32) || (bits == 16 && value > u16::MAX.into()) {
+            return Err(ScanError::Invalid);
+        }
+        Some((value, bits))
+    };
+    let attributes =
+        std::str::from_utf8(read_field(&mut fields, 128)?).map_err(|_| ScanError::Invalid)?;
+    let comment = read_field(&mut fields, u16::MAX as usize)?;
     if !fields.is_empty() {
         return Err(ScanError::Invalid);
     }
@@ -565,6 +606,10 @@ fn read_record<'a>(
             .transpose()?,
         display_name: std::str::from_utf8(display).map_err(|_| ScanError::Invalid)?,
         name_encoding,
+        encryption,
+        crc,
+        attributes,
+        comment,
     })
 }
 
@@ -579,6 +624,54 @@ mod tests {
         Archive,
         query::{QueryRequest, QueryRow},
     };
+    #[test]
+    fn disk_record_preserves_optional_properties_and_zero_crc() {
+        let control = Cancellation::default();
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/zip/normal.zip");
+        let archive = Archive::open(&path, &control).unwrap();
+        let mut entry = archive.rows[0].clone();
+        entry.details = Default::default();
+        let previous_capacity = entry.metadata_capacity();
+        entry.details.encryption = Some("AES-256".into());
+        entry.details.crc = Some((0, 32));
+        entry.details.attributes = Some("0x00000020".into());
+        entry.details.comment = vec![b'x'; u16::MAX as usize];
+        assert_eq!(
+            entry.metadata_capacity() - previous_capacity,
+            entry.details.encryption.as_ref().unwrap().capacity()
+                + entry.details.attributes.as_ref().unwrap().capacity()
+                + entry.details.comment.capacity()
+        );
+        let encoded = encode(&entry);
+        let mut framed = (encoded.len() as u32).to_le_bytes().to_vec();
+        framed.extend_from_slice(&encoded);
+        let restored = decode(&mut framed.as_slice()).unwrap();
+        assert_eq!(restored.details, entry.details);
+    }
+    #[test]
+    fn task_view_discards_display_properties_without_losing_selection() {
+        let control = Cancellation::default();
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/zip/normal.zip");
+        let mut archive = Archive::open(&path, &control).unwrap();
+        std::sync::Arc::make_mut(&mut archive.rows)[1]
+            .details
+            .comment = vec![b'x'; 65_535];
+        let mut builder = Builder::new().unwrap();
+        for entry in archive.rows.iter() {
+            builder.push(entry).unwrap();
+        }
+        archive.disk = Some(builder.finish().unwrap());
+        archive.rows = Vec::new().into();
+        let view = archive
+            .task_view(&["2".into()], false, "", &control)
+            .unwrap();
+        assert_eq!(view.rows.len(), 1);
+        assert_eq!(view.rows[0].id.get(), 2);
+        assert_eq!(view.rows[0].details, Default::default());
+        assert!(!archive.preview(2, None, &control).unwrap().bytes.is_empty());
+    }
     #[test]
     fn external_runs_keep_directories_first_for_every_order() {
         let control = Cancellation::default();

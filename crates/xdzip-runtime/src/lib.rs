@@ -232,7 +232,7 @@ impl Archive {
             ..Default::default()
         };
         xdzip_codec_zip::ZipCodec.scan_index(source, control, limits, &mut |entry| {
-            retained += std::mem::size_of::<Entry>() + entry.name_capacity();
+            retained += std::mem::size_of::<Entry>() + entry.metadata_capacity();
             if disk.is_none()
                 && (retained > disk_index::HOT_BYTES || rows.len() >= xdzip_codec_api::MAX_ENTRIES)
             {
@@ -316,11 +316,14 @@ impl Archive {
                 .filter(|(_, b)| **b == b'/')
                 .any(|(at, _)| prefixes.contains(&entry.name_bytes()[..=at]));
             if all || ids.contains(&entry.id.get()) || entry.id.get() == context || descendant {
-                bytes += std::mem::size_of::<Entry>() + entry.name_capacity();
+                // Display-only properties do not participate in payload identity or task planning.
+                let mut task_entry = entry.clone();
+                task_entry.details = Default::default();
+                bytes += std::mem::size_of::<Entry>() + task_entry.metadata_capacity();
                 if rows.len() >= xdzip_codec_api::MAX_ENTRIES || bytes > disk_index::HOT_BYTES {
                     return Err(ScanError::Limit);
                 }
-                rows.push(entry.clone());
+                rows.push(task_entry);
             }
             Ok(())
         })
