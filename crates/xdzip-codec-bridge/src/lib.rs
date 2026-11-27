@@ -9,6 +9,26 @@ use xdzip_codec_api::{
 };
 use xdzip_codec_optical::OpticalCodec;
 
+fn emit_metadata(index: u64, flags: u8, row: &Entry, name: &[u8]) -> u8 {
+    let crc = row
+        .details
+        .crc
+        .map(|(value, bits)| format!("{bits}:{value}"));
+    ffi::emit_row(
+        index,
+        flags,
+        row.size,
+        row.packed_size,
+        row.modified_dos,
+        row.method,
+        name,
+        row.details.encryption.as_deref().unwrap_or_default(),
+        crc.as_deref().unwrap_or_default(),
+        row.details.attributes.as_deref().unwrap_or_default(),
+        &row.details.comment,
+    )
+}
+
 // CXX validates layouts and borrows all slices synchronously. The C++ callbacks
 // catch every exception and return stable errors. They retain no Rust pointers,
 // and only use the worker's already authorized pipe protocol, never pathnames.
@@ -51,6 +71,7 @@ mod ffi {
         fn read_input_bytes(index: u32, buffer: &mut [u8]) -> Transfer;
         fn write_archive_at(offset: u64, bytes: &[u8]) -> u8;
         fn emit_creation_progress(bytes: u64, name: &[u8]) -> u8;
+        #[allow(clippy::too_many_arguments)]
         fn emit_row(
             index: u64,
             flags: u8,
@@ -59,6 +80,10 @@ mod ffi {
             dos: u32,
             method: u16,
             name: &[u8],
+            encryption: &str,
+            crc: &str,
+            attributes: &str,
+            comment: &[u8],
         ) -> u8;
         fn emit_data(bytes: &[u8]) -> u8;
         fn emit_precharged_data(bytes: &[u8]) -> u8;
@@ -382,15 +407,7 @@ fn run(
                 | (u8::from(row.link) << 2)
                 | (u8::from(row.warning) << 3)
                 | if raw { 0x10 } else { 0 };
-            let error = ffi::emit_row(
-                index as u64,
-                flags,
-                row.size,
-                row.packed_size,
-                row.modified_dos,
-                row.method,
-                &row.raw_name,
-            );
+            let error = emit_metadata(index as u64, flags, row, &row.raw_name);
             if error != 0 {
                 return Err(error);
             }

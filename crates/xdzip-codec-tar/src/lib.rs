@@ -412,6 +412,13 @@ fn scan(
         legacy.push(unlabelled);
         offsets.push(stream.position());
         rows.push(Entry {
+            details: xdzip_codec_api::EntryDetails {
+                attributes: record::number(&header.0[100..108])
+                    .ok()
+                    .and_then(|mode| u32::try_from(mode).ok())
+                    .map(|mode| xdzip_codec_api::display_posix_attributes(directory, mode)),
+                ..Default::default()
+            },
             id: EntryId::try_from(rows.len() as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: name,
             decoded_name: None,

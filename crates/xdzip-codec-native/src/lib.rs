@@ -236,6 +236,23 @@ impl NativeCodec {
                     let modified_dos = fields.u32()?;
                     let method = u16::try_from(fields.u32()?).map_err(|_| Fault::Invalid)?;
                     let raw_name = fields.bytes(limits.name_bytes)?;
+                    let encryption =
+                        String::from_utf8(fields.bytes(128)?).map_err(|_| Fault::Invalid)?;
+                    let crc = String::from_utf8(fields.bytes(32)?).map_err(|_| Fault::Invalid)?;
+                    let crc = if crc.is_empty() {
+                        None
+                    } else {
+                        let (bits, value) = crc.split_once(':').ok_or(Fault::Invalid)?;
+                        let bits: u8 = bits.parse().map_err(|_| Fault::Invalid)?;
+                        let value: u32 = value.parse().map_err(|_| Fault::Invalid)?;
+                        if !matches!(bits, 16 | 32) || (bits == 16 && value > u16::MAX.into()) {
+                            return Err(Fault::Invalid);
+                        }
+                        Some((value, bits))
+                    };
+                    let attributes =
+                        String::from_utf8(fields.bytes(128)?).map_err(|_| Fault::Invalid)?;
+                    let comment = fields.bytes(u16::MAX as usize)?;
                     fields.end()?;
                     let cab = self.format == Format::Cab;
                     let raw = flags & 0x10 != 0;
@@ -270,6 +287,9 @@ impl NativeCodec {
                     legacy.push(raw && !declared_utf8);
                     total_display = total_display
                         .checked_add(display_name.len())
+                        .and_then(|n| n.checked_add(encryption.len()))
+                        .and_then(|n| n.checked_add(attributes.len()))
+                        .and_then(|n| n.checked_add(comment.len()))
                         .ok_or(Fault::Limit)?;
                     if total_names > limits.total_name_bytes
                         || total_display > limits.display_name_bytes
@@ -277,6 +297,15 @@ impl NativeCodec {
                         return Err(Fault::Limit);
                     }
                     rows.push(Entry {
+                        details: xdzip_codec_api::EntryDetails {
+                            encryption: (!encryption.is_empty()).then_some(encryption),
+                            crc,
+                            attributes: (!attributes.is_empty()).then_some(attributes),
+                            comment,
+                            comment_utf8: true,
+                            comment_region: None,
+                            comment_truncated: false,
+                        },
                         format: self.format,
                         id: EntryId::try_from(index + 1).map_err(|_| Fault::Limit)?,
                         raw_name,

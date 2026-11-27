@@ -334,6 +334,7 @@ fn parse(bytes: &[u8], control: &Cancellation, limits: ScanLimits) -> Result<Par
         let (size, offset) = offset.map_or((0, None), |(offset, size)| (size, Some(offset)));
         records.push(Record {
             entry: Entry {
+                details: Default::default(),
                 format: Format::Pea,
                 id,
                 raw_name,

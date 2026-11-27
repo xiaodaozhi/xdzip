@@ -131,6 +131,22 @@ fn project(
             return Err(ScanError::Limit);
         }
         rows.push(Entry {
+            details: xdzip_codec_api::EntryDetails {
+                crc: Some((record.crc32, 32)),
+                attributes: match record.host {
+                    2 => Some(xdzip_codec_api::display_posix_attributes(
+                        record.kind == 3,
+                        u32::from(record.attributes),
+                    )),
+                    0 | 5 | 10 | 11 => Some(xdzip_codec_api::display_dos_attributes(
+                        record.kind == 3,
+                        u32::from(record.attributes),
+                    )),
+                    _ => None,
+                },
+                comment: record.comment.clone(),
+                ..Default::default()
+            },
             format: Format::Arj,
             id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: record.raw_name.clone(),

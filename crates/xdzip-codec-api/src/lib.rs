@@ -204,6 +204,67 @@ impl Format {
     }
 }
 
+/// Optional display-only metadata declared by a container, not a content verification.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct EntryDetails {
+    /// Identified encryption algorithm, if the container exposes it.
+    pub encryption: Option<String>,
+    /// Declared CRC and its bit width; zero is a valid checksum.
+    pub crc: Option<(u32, u8)>,
+    /// Container-specific declared attributes, with no output authority.
+    pub attributes: Option<String>,
+    /// Raw per-entry comment bytes, decoded only for display.
+    pub comment: Vec<u8>,
+    /// Whether the comment is explicitly declared UTF-8.
+    pub comment_utf8: bool,
+    /// Optional source range for bounded, lazy comment lookup; display only.
+    pub comment_region: Option<(u64, u64)>,
+    /// The displayed comment is intentionally shortened.
+    pub comment_truncated: bool,
+}
+
+/// Render known DOS-shaped flags as compact letters, padded to four positions.
+/// The value is advisory and never applied to extracted objects.
+pub fn display_dos_attributes(directory: bool, flags: u32) -> String {
+    let mut out = String::new();
+    for (present, letter) in [
+        (directory || flags & 0x10 != 0, 'D'),
+        (flags & 0x20 != 0, 'A'),
+        (flags & 0x01 != 0, 'R'),
+        (flags & 0x02 != 0, 'H'),
+        (flags & 0x04 != 0, 'S'),
+    ] {
+        if present {
+            out.push(letter);
+        }
+    }
+    while out.len() < 4 {
+        out.push('_');
+    }
+    out
+}
+
+/// Render directory and read-only status from an explicitly supplied POSIX mode.
+pub fn display_posix_attributes(directory: bool, mode: u32) -> String {
+    display_dos_attributes(directory, u32::from(mode & 0o222 == 0))
+}
+
+#[cfg(test)]
+mod property_display_tests {
+    use super::*;
+
+    #[test]
+    fn compact_attributes_preserve_flags_and_pad_short_values() {
+        assert_eq!(display_dos_attributes(false, 0), "____");
+        assert_eq!(display_dos_attributes(true, 0), "D___");
+        assert_eq!(display_dos_attributes(false, 0x20), "A___");
+        assert_eq!(display_dos_attributes(false, 0x27), "ARHS");
+        assert_eq!(display_dos_attributes(true, 0x27), "DARHS");
+        assert_eq!(display_posix_attributes(false, 0o444), "R___");
+        assert_eq!(display_posix_attributes(true, 0o755), "D___");
+    }
+}
+
 /// Owned metadata of a physical record. Declared sizes are not verified payload sizes.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Entry {
@@ -244,6 +305,8 @@ pub struct Entry {
     pub password_supported: bool,
     /// Suspicious/unresolved name or unsupported special record; never safe-to-extract approval.
     pub warning: bool,
+    /// Optional declared properties, independent of extraction admission.
+    pub details: EntryDetails,
 }
 
 impl Entry {
@@ -327,11 +390,14 @@ impl Entry {
             }
         }
     }
-    /// Charge every owned name allocation, including retained original bytes.
-    pub fn name_capacity(&self) -> usize {
+    /// Charge every owned metadata allocation, including raw names and comments.
+    pub fn metadata_capacity(&self) -> usize {
         self.raw_name.capacity()
             + self.display_name.capacity()
             + self.decoded_name.as_ref().map_or(0, String::capacity)
+            + self.details.encryption.as_ref().map_or(0, String::capacity)
+            + self.details.attributes.as_ref().map_or(0, String::capacity)
+            + self.details.comment.capacity()
     }
 }
 

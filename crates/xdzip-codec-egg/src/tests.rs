@@ -45,6 +45,69 @@ fn archive(members: &[(&[u8], &[u8], u8)]) -> Vec<u8> {
     out
 }
 
+#[test]
+fn windows_info_exposes_egg_specific_attributes() {
+    let mut bytes = archive(&[(b"file.txt", b"data", 0)]);
+    let block = bytes.windows(4).position(|part| part == BLOCK_SIG).unwrap();
+    let mut info = vec![0x0b, 0x95, 0x86, 0x2c, 0, 9, 0];
+    info.extend_from_slice(&[0; 8]);
+    info.push(3);
+    bytes.splice(block - END_SIG.len()..block - END_SIG.len(), info);
+    let rows = EggCodec
+        .scan(
+            &mut Cursor::new(bytes),
+            &Cancellation::default(),
+            ScanLimits::default(),
+        )
+        .unwrap();
+    assert_eq!(rows[0].details.attributes.as_deref(), Some("RH__"));
+}
+
+#[test]
+fn comments_are_read_lazily_with_bounded_output() {
+    let mut bytes = archive(&[(b"file.txt", b"data", 0)]);
+    let block = bytes.windows(4).position(|part| part == BLOCK_SIG).unwrap();
+    let mut comments = Vec::new();
+    for text in ["中文注释".as_bytes(), b"second".as_slice()] {
+        comments.extend_from_slice(&[0x72, 0x36, 0xc6, 0x04, 0]);
+        comments.extend_from_slice(&(text.len() as u16).to_le_bytes());
+        comments.extend_from_slice(text);
+    }
+    bytes.splice(block - END_SIG.len()..block - END_SIG.len(), comments);
+    let control = Cancellation::default();
+    let mut source = Cursor::new(bytes);
+    let index = inspect(&mut source, &control, ScanLimits::default()).unwrap();
+    let region = index.records[0].comment_region.unwrap();
+    let (comment, truncated) = read_comment(&mut source, &control, region).unwrap();
+    assert_eq!(comment, "中文注释\nsecond".as_bytes());
+    assert!(!truncated);
+    let mut malformed = source.into_inner();
+    let last_byte = region.1 as usize - 1;
+    malformed[last_byte] ^= 1;
+    assert!(read_comment(&mut Cursor::new(malformed), &control, region).is_err());
+}
+
+#[test]
+fn oversized_comment_is_shortened_without_rejecting_the_archive() {
+    let mut bytes = archive(&[(b"file.txt", b"data", 0)]);
+    let block = bytes.windows(4).position(|part| part == BLOCK_SIG).unwrap();
+    let mut comment = vec![0x72, 0x36, 0xc6, 0x04, 1];
+    comment.extend_from_slice(&65_536u32.to_le_bytes());
+    comment.extend(std::iter::repeat_n(b'x', 65_536));
+    bytes.splice(block - END_SIG.len()..block - END_SIG.len(), comment);
+    let control = Cancellation::default();
+    let mut source = Cursor::new(bytes);
+    let index = inspect(&mut source, &control, ScanLimits::default()).unwrap();
+    let (comment, truncated) = read_comment(
+        &mut source,
+        &control,
+        index.records[0].comment_region.unwrap(),
+    )
+    .unwrap();
+    assert_eq!(comment.len(), 65_535);
+    assert!(truncated);
+}
+
 #[derive(Default)]
 struct Sink(Vec<u8>);
 impl DecodedSink for Sink {

@@ -62,7 +62,9 @@ void write_at(uint64_t offset, const void *data, size_t size);
 void metadata(uint64_t index, const std::wstring &name, uint8_t flags, uint64_t size,
               uint64_t packed, uint32_t dos, uint16_t method = 0);
 void metadata_bytes(uint64_t index, const std::string &name, uint8_t flags, uint64_t size,
-                    uint64_t packed, uint32_t dos, uint16_t method = 0);
+                    uint64_t packed, uint32_t dos, uint16_t method = 0,
+                    const std::string &encryption = {}, const std::string &crc = {},
+                    const std::string &attributes = {}, const std::string &comment = {});
 void entry_done(uint64_t index);
 void seven_run();
 void readonly_run();

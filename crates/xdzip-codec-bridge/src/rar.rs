@@ -1,6 +1,6 @@
 //! RAR read-only admission on borrowed, host-authorized streams. No filesystem
 //! or output path crosses this module; the codec owns format interpretation.
-use super::{Source, decode_rows_with_password, ffi, scan_wire};
+use super::{Source, decode_rows_with_password, scan_wire};
 use xdzip_codec_api::{Cancellation, MetadataCodec, ScanLimits};
 use xdzip_codec_rar::RarCodec;
 
@@ -66,15 +66,7 @@ pub(super) fn run(
                 | (u8::from(row.link) << 2)
                 | (u8::from(row.warning || !valid_utf8) << 3)
                 | (u8::from(!row.size_known) << 6);
-            let error = ffi::emit_row(
-                index as u64,
-                flags,
-                row.size,
-                row.packed_size,
-                row.modified_dos,
-                row.method,
-                name,
-            );
+            let error = crate::emit_metadata(index as u64, flags, row, name);
             if error != 0 {
                 return Err(error);
             }

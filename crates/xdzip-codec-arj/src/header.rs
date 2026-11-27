@@ -44,6 +44,8 @@ pub struct Record {
     pub first_size: u8,
     /// Complete filename bytes, before decoding or separator interpretation.
     pub raw_name: Vec<u8>,
+    /// Original NUL-terminated entry comment, excluding its terminator.
+    pub comment: Vec<u8>,
     /// Declared filename position, retained without basename truncation.
     pub name_position: u16,
     /// Required IEEE CRC-32 of the complete decoded payload.
@@ -314,6 +316,8 @@ pub fn inspect(
             return Err(ScanError::Unsupported);
         }
         let raw = name(body)?;
+        let comment_start = usize::from(body[0]) + raw.len() + 1;
+        let comment = body[comment_start..body.len() - 1].to_vec();
         if raw.len() > limits.name_bytes.min(4096) {
             return Err(ScanError::Limit);
         }
@@ -367,6 +371,7 @@ pub fn inspect(
             host: body[3],
             first_size: body[0],
             raw_name,
+            comment,
             name_position: word(body, 24)?,
             crc32: dword(body, 20)?,
             modified_dos,

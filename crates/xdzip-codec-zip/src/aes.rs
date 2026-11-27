@@ -20,6 +20,25 @@ pub(super) struct Profile {
     pub version: u16,
     pub method: u16,
 }
+// Display recognition is independent of payload admission, which accepts only AES-256.
+pub(super) fn display_profile(fields: ExtraFields<'_>) -> Option<(u16, u8)> {
+    let mut found = None;
+    for item in fields {
+        let (id, bytes) = item.ok()?;
+        if id != 0x9901 {
+            continue;
+        }
+        if found.is_some() || bytes.len() != 7 || &bytes[2..4] != b"AE" {
+            return None;
+        }
+        let version = u16::from_le_bytes([bytes[0], bytes[1]]);
+        if !matches!(version, 1 | 2) || !matches!(bytes[4], 1..=3) {
+            return None;
+        }
+        found = Some((version, bytes[4]));
+    }
+    found
+}
 pub(super) fn profile(fields: ExtraFields<'_>) -> Result<Option<Profile>, DecodeError> {
     let mut found = None;
     for item in fields {

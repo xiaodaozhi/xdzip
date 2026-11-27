@@ -69,11 +69,14 @@ Transfer read_bytes(std::uint64_t offset, rust::Slice<std::uint8_t> buffer) noex
 }
 std::uint8_t emit_row(std::uint64_t index, std::uint8_t flags, std::uint64_t size,
                       std::uint64_t packed, std::uint32_t dos, std::uint16_t method,
-                      rust::Slice<const std::uint8_t> name) noexcept {
+                      rust::Slice<const std::uint8_t> name, rust::Str encryption, rust::Str crc,
+                      rust::Str attributes, rust::Slice<const std::uint8_t> comment) noexcept {
     try {
-        xdzip::metadata_bytes(index,
-                              std::string(reinterpret_cast<const char *>(name.data()), name.size()),
-                              flags, size, packed, dos, method);
+        xdzip::metadata_bytes(
+            index, std::string(reinterpret_cast<const char *>(name.data()), name.size()), flags,
+            size, packed, dos, method, std::string(encryption), std::string(crc),
+            std::string(attributes),
+            std::string(reinterpret_cast<const char *>(comment.data()), comment.size()));
         return 0;
     } catch (const Failure &failure) {
         return failure.code;

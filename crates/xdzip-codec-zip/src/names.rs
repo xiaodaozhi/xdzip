@@ -35,6 +35,29 @@ pub(super) fn unicode_path(raw: &[u8], utf8: bool, fields: &[u8]) -> Result<Opti
     Ok(name)
 }
 
+/// Use an Info-ZIP Unicode Comment only when its CRC binds it to the raw comment.
+pub(super) fn unicode_comment(raw: &[u8], fields: &[u8]) -> Option<Vec<u8>> {
+    let checksum = xdzip_compression::crc32(raw);
+    let mut found = None;
+    for field in ExtraFields::new(fields) {
+        let (id, bytes) = field.ok()?;
+        if id != 0x6375 {
+            continue;
+        }
+        if bytes.len() < 5
+            || bytes[0] != 1
+            || u32::from_le_bytes(bytes[1..5].try_into().ok()?) != checksum
+        {
+            continue;
+        }
+        if found.is_some() || std::str::from_utf8(&bytes[5..]).is_err() {
+            return None;
+        }
+        found = Some(bytes[5..].to_vec());
+    }
+    found
+}
+
 /// Recheck the frozen resolution using the original bytes, flag and Unicode extra. A
 /// detector is not run a second time during payload reads, so selection cannot drift.
 pub(super) fn matches(entry: &Entry, utf8: bool, fields: &[u8]) -> bool {

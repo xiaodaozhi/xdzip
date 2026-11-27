@@ -153,6 +153,23 @@ Item {
             compare(action.background.color, Ui.Theme.controlPressed);
             mouseRelease(action, action.width / 2, action.height / 2);
         }
+        function test_inspector_optional_properties_data() {
+            return [{tag: "normal", scale: 1}, {tag: "large", scale: 1.25}, {tag: "larger", scale: 1.5}];
+        }
+        function test_inspector_optional_properties(data) {
+            Ui.Theme.fontScale = data.scale;
+            inspector.selectionCount = 1;
+            inspector.detail = {id: "1", name: "a.txt", method: "Store", encryptionMethod: "AES-256", crc: "00000000", attributes: "D___", comment: "hello"};
+            for (let i = 0; i < 4; ++i) {
+                const value = findChild(inspector, "inspectorPropertyValue" + (i + 4));
+                verify(value !== null);
+                compare(value.text, ["AES-256", "00000000", "D___", "hello"][i]);
+            }
+            inspector.detail = {id: "2", name: "b.txt", method: "Store"};
+            for (let i = 4; i < 8; ++i)
+                compare(findChild(inspector, "inspectorPropertyValue" + i).text, "");
+            inspector.selectionCount = 0;
+        }
         function test_shell_extract_layout_data() {
             return [{tag: "normal", scale: 1}, {tag: "large", scale: 1.25}, {tag: "larger", scale: 1.5}];
         }

@@ -304,6 +304,37 @@ pub struct Row {
     pub encrypted: bool,
     /// Metadata requiring review.
     pub warning: bool,
+    /// Display-only optional metadata from the physical record.
+    pub encryption_method: String,
+    /// Declared CRC, formatted in hexadecimal.
+    pub crc: String,
+    /// Container-specific attributes.
+    pub attributes: String,
+    /// Safely decoded per-entry comment.
+    pub comment: String,
+}
+
+fn display_comment(entry: &xdzip_codec_api::Entry) -> String {
+    use xdzip_codec_api::names::{NameEncoding, decode_legacy};
+    let raw = &entry.details.comment;
+    let decoded = match (entry.details.comment_utf8, entry.name_encoding) {
+        (true, _) => std::str::from_utf8(raw).ok().map(str::to_owned),
+        (false, NameEncoding::Legacy(label)) => decode_legacy(raw, label),
+        (false, _) => decode_legacy(raw, "CP437"),
+    }
+    .unwrap_or_else(|| String::from_utf8_lossy(raw).into_owned());
+    let mut result: String = decoded.chars().map(|ch| {
+        if (ch.is_control() && !matches!(ch, '\n' | '\r' | '\t'))
+            || matches!(ch, '\u{061c}' | '\u{200e}' | '\u{200f}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}') {
+            '\u{fffd}'
+        } else {
+            ch
+        }
+    }).collect();
+    if entry.details.comment_truncated {
+        result.push('…');
+    }
+    result
 }
 /// Advisory selection metadata. Creation always takes a new frozen input tree.
 #[derive(Debug)]
@@ -416,7 +447,16 @@ impl Payload {
             } => {
                 folder_name.len()
                     + source_group.len()
-                    + rows.iter().map(|row| row.name.len()).sum::<usize>()
+                    + rows
+                        .iter()
+                        .map(|row| {
+                            row.name.capacity()
+                                + row.encryption_method.capacity()
+                                + row.crc.capacity()
+                                + row.attributes.capacity()
+                                + row.comment.capacity()
+                        })
+                        .sum::<usize>()
                     + navigation
                         .iter()
                         .flatten()
@@ -1211,6 +1251,16 @@ fn execute(
                     directory: entry.directory,
                     encrypted: entry.encrypted,
                     warning: entry.warning,
+                    encryption_method: entry.details.encryption.clone().unwrap_or_default(),
+                    crc: entry
+                        .details
+                        .crc
+                        .map(|(value, bits)| {
+                            format!("{:0width$X}", value, width = usize::from(bits / 4))
+                        })
+                        .unwrap_or_default(),
+                    attributes: entry.details.attributes.clone().unwrap_or_default(),
+                    comment: display_comment(&entry),
                 },
                 crate::query::QueryRow::Directory(node) => Row {
                     id: 0,
@@ -1224,6 +1274,10 @@ fn execute(
                     directory: true,
                     encrypted: false,
                     warning: false,
+                    encryption_method: String::new(),
+                    crc: String::new(),
+                    attributes: String::new(),
+                    comment: String::new(),
                 },
             })
             .collect(),
@@ -1235,6 +1289,22 @@ mod tests {
     use super::*;
     use std::sync::mpsc;
     use std::time::{Duration, Instant};
+
+    #[test]
+    fn comment_decoding_keeps_utf8_and_legacy_text_safe() {
+        let control = Cancellation::default();
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/zip/normal.zip");
+        let archive = crate::Archive::open(&path, &control).unwrap();
+        let mut entry = archive.rows[0].clone();
+        entry.details.comment_utf8 = true;
+        entry.details.comment = "中文 <plain>\n\u{202e}".as_bytes().to_vec();
+        assert_eq!(display_comment(&entry), "中文 <plain>\n�");
+        entry.details.comment_utf8 = false;
+        entry.name_encoding = xdzip_codec_api::names::NameEncoding::Utf8;
+        entry.details.comment = b"caf\x82".to_vec();
+        assert_eq!(display_comment(&entry), "café");
+    }
 
     fn submit(client: &Client, make: impl Fn() -> Command) -> u64 {
         let deadline = Instant::now() + Duration::from_secs(3);
@@ -1396,6 +1466,10 @@ mod tests {
                     directory: false,
                     encrypted: false,
                     warning: false,
+                    encryption_method: String::new(),
+                    crc: String::new(),
+                    attributes: String::new(),
+                    comment: String::new(),
                 }],
             })
         })

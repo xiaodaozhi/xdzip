@@ -82,6 +82,7 @@ impl MetadataCodec for NsisCodec {
         }
         let id = EntryId::try_from(1u64).map_err(|_| ScanError::Limit)?;
         Ok(vec![Entry {
+            details: Default::default(),
             format: Format::Nsis,
             id,
             raw_name: FIRSTHEADER_NAME.as_bytes().to_vec(),

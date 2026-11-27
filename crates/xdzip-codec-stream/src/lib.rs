@@ -119,6 +119,7 @@ impl StreamCodec {
         Ok(StreamInfo {
             all_zero,
             entry: Entry {
+                details: Default::default(),
                 format: self.format,
                 id: EntryId::try_from(1).expect("nonzero"),
                 raw_name: name.into_bytes(),

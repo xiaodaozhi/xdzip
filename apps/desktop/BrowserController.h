@@ -32,6 +32,10 @@ struct BrowserRow {
     bool physical = true;
     bool sizeKnown = true;
     QString modifiedDateTime = {};
+    QString encryptionMethod = {};
+    QString crc = {};
+    QString attributes = {};
+    QString comment = {};
 };
 class ArchiveTableModel final : public QAbstractTableModel {
     Q_OBJECT

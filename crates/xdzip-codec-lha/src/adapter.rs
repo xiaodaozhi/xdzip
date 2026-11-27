@@ -138,6 +138,16 @@ fn project(
                 || (format == Format::Lha && method == 2 && record.crc16.is_none())
                 || (format == Format::Pma && record.level != 0);
             Ok(Entry {
+                details: xdzip_codec_api::EntryDetails {
+                    crc: record.crc16.map(|crc| (u32::from(crc), 16)),
+                    attributes: (record.unix_mode != 0).then(|| {
+                        xdzip_codec_api::display_posix_attributes(
+                            record.directory,
+                            u32::from(record.unix_mode),
+                        )
+                    }),
+                    ..Default::default()
+                },
                 format,
                 id: EntryId::try_from(at as u64 + 1).map_err(|_| ScanError::Limit)?,
                 raw_name: record.raw_name.clone(),

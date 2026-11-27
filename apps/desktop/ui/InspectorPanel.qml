@@ -69,6 +69,7 @@ Rectangle {
     }
     ScrollView {
         id: scroll
+        objectName: "inspectorScroll"
         anchors.top: header.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -313,10 +314,28 @@ Rectangle {
                     {
                         label: qsTrId("ui.9e9d1bfc0746"),
                         value: panel.detail.method || ""
+                    },
+                    {
+                        label: qsTrId("inspector.encryptionMethod"),
+                        value: panel.detail.encryptionMethod || ""
+                    },
+                    {
+                        label: qsTrId("inspector.crc"),
+                        value: panel.detail.crc || ""
+                    },
+                    {
+                        label: qsTrId("inspector.attributes"),
+                        value: panel.detail.attributes || ""
+                    },
+                    {
+                        label: qsTrId("inspector.comment"),
+                        value: panel.detail.comment || ""
                     }
                 ]
                 GridLayout {
                     required property var modelData
+                    required property int index
+                    objectName: "inspectorPropertyRow" + index
                     columns: Theme.fontScale > 1.3 ? 1 : 2
                     rowSpacing: Theme.mainUnits(4)
                     columnSpacing: Theme.mainUnits(10)
@@ -325,10 +344,14 @@ Rectangle {
                     Layout.minimumHeight: Math.max(Theme.contentPreviewSpinnerSize, Theme.mainPropertySize * 1.6 + Theme.mainUnits(8))
                     Text {
                         text: parent.modelData.label
+                        Layout.preferredWidth: parent.columns === 2 ? Math.max(0, (scroll.availableWidth - parent.columnSpacing) / 2) : scroll.availableWidth
+                        Layout.maximumWidth: Layout.preferredWidth
+                        wrapMode: Text.Wrap
                         color: Theme.textSecondary
                         font.pixelSize: Theme.mainPropertySize
                     }
                     Text {
+                        objectName: "inspectorPropertyValue" + parent.index
                         Layout.fillWidth: true
                         text: parent.modelData.value
                         textFormat: Text.PlainText
@@ -336,6 +359,7 @@ Rectangle {
                         horizontalAlignment: Text.AlignRight
                         color: Theme.text
                         font.pixelSize: Theme.mainPropertySize
+                        font.family: parent.index === 7 ? Theme.userDataFontFamily : Theme.uiFontFamily
                     }
                 }
             }

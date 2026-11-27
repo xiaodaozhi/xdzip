@@ -1,4 +1,26 @@
 use super::*;
+#[test]
+fn entry_comment_and_crc_reach_metadata() {
+    let original = fixture("m1-phrase.arj");
+    let control = Cancellation::default();
+    let index = inspect(&mut Cursor::new(&original), &control, ScanLimits::default()).unwrap();
+    let at = index.records[0].header_offset as usize;
+    let size = u16::from_le_bytes(original[at + 2..at + 4].try_into().unwrap()) as usize;
+    let mut body = original[at + 4..at + 4 + size].to_vec();
+    assert_eq!(body.pop(), Some(0));
+    body.extend_from_slice(b"owned note\0");
+    let mut bytes = original[..at].to_vec();
+    bytes.extend_from_slice(&[0x60, 0xea]);
+    bytes.extend_from_slice(&(body.len() as u16).to_le_bytes());
+    bytes.extend_from_slice(&body);
+    bytes.extend_from_slice(&xdzip_compression::crc32(&body).to_le_bytes());
+    bytes.extend_from_slice(&original[at + 8 + size..]);
+    let rows = ArjCodec
+        .scan(&mut Cursor::new(bytes), &control, ScanLimits::default())
+        .unwrap();
+    assert_eq!(rows[0].details.comment, b"owned note");
+    assert_eq!(rows[0].details.crc, Some((index.records[0].crc32, 32)));
+}
 use crate::{test_cases as cases, test_known as known};
 use std::io::{Cursor, Read, Seek};
 fn fixture(name: &str) -> Vec<u8> {

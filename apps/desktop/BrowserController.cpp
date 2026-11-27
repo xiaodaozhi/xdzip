@@ -646,6 +646,10 @@ void BrowserController::showRowDetail(int row) {
                 {"type", item->cells[3]},
                 {"modified", item->modifiedDateTime},
                 {"method", item->method},
+                {"encryptionMethod", item->encryptionMethod},
+                {"crc", item->crc},
+                {"attributes", item->attributes},
+                {"comment", item->comment},
                 {"status", item->status},
                 {"attention", item->attention},
                 {"directory", item->directory},
@@ -2173,7 +2177,11 @@ void BrowserController::receivePage(const xdzip::reader::Event &event) {
              row.physical,
              row.size_known,
              modified.isEmpty() ? QString{}
-                                : modified + " " + time.toString(QStringLiteral("HH:mm:ss"))});
+                                : modified + " " + time.toString(QStringLiteral("HH:mm:ss")),
+             eventText(row.encryption_method),
+             eventText(row.crc),
+             eventText(row.attributes),
+             eventText(row.comment)});
     }
     m_hasPayload = true;
 }

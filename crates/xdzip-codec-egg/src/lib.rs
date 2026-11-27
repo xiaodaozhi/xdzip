@@ -5,7 +5,7 @@ mod content;
 mod header;
 pub use adapter::EggCodec;
 pub use content::Reader;
-pub use header::{Index, Record, inspect};
+pub use header::{Index, Record, inspect, read_comment};
 
 #[cfg(test)]
 mod tests;

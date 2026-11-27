@@ -298,7 +298,9 @@ void metadata(uint64_t index, const std::wstring &name, uint8_t flags, uint64_t 
     metadata_bytes(index, utf8(name), flags, size, packed, dos, method);
 }
 void metadata_bytes(uint64_t index, const std::string &name, uint8_t flags, uint64_t size,
-                    uint64_t packed, uint32_t dos, uint16_t method) {
+                    uint64_t packed, uint32_t dos, uint16_t method, const std::string &encryption,
+                    const std::string &crc, const std::string &attributes,
+                    const std::string &comment) {
     std::lock_guard<std::recursive_mutex> guard(io_mutex);
     auto path = name;
     if (path.size() > request.name_bytes)
@@ -315,6 +317,10 @@ void metadata_bytes(uint64_t index, const std::string &name, uint8_t flags, uint
     put32(frame, dos);
     put32(frame, method);
     put_string(frame, path);
+    put_string(frame, encryption);
+    put_string(frame, crc);
+    put_string(frame, attributes);
+    put_string(frame, comment);
     send(Row, frame);
     ack();
 }

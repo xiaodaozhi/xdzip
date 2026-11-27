@@ -124,6 +124,7 @@ mod tests {
     use super::*;
     fn entry(id: u64, name: &str, warning: bool) -> Entry {
         Entry {
+            details: Default::default(),
             format: xdzip_codec_api::Format::Zip,
             id: id.try_into().unwrap(),
             raw_name: name.as_bytes().to_vec(),

@@ -484,6 +484,10 @@ fn encrypted_headers_require_password_and_retry_without_partial_index() {
             Some("native fixture password"),
         )
         .unwrap();
+    assert!(
+        rows.iter()
+            .any(|row| row.details.encryption.as_deref() == Some("AES-256"))
+    );
     let mut reader = codec
         .open_payload_with_password(
             &mut source,
