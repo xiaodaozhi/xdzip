@@ -196,13 +196,24 @@ fn archive_comment_admission_and_cancel_preserve_the_source() {
     assert_eq!(fs::read(&path).unwrap(), original);
 
     let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+    let modified = fs::metadata(&path).unwrap().modified().unwrap();
     original[length_at + 2] = 0;
     fs::write(&path, &original).unwrap();
+    let file = fs::OpenOptions::new().write(true).open(&path).unwrap();
+    file.set_times(fs::FileTimes::new().set_modified(modified))
+        .unwrap();
+    drop(file);
     assert_eq!(
         archive
             .archive_comment(&Cancellation::default())
             .unwrap_err(),
         xdzip_codec_api::ScanError::SourceChanged
+    );
+    assert_eq!(
+        archive
+            .comment_job("stale draft".into(), &Cancellation::default())
+            .err(),
+        Some("source_changed")
     );
     let archive = Archive::open(&path, &Cancellation::default()).unwrap();
     let note = archive.archive_comment(&Cancellation::default()).unwrap();

@@ -456,7 +456,7 @@ These are capability acceptance requirements, not pre-recorded passes. Record ac
 
 ## Large indexes and content preview
 
-**ARCHIVE-COMMENT:** Open the archive comment from the toolbar in an actual desktop session. Check archive identity, keyboard focus, selectable plain text, draft confirmation and edit/view states in Chinese and English at supported scales. Verify successful ZIP/ZIP64 comment replacement and removal with an independent reader, including byte equality before the EOCD length field. Cover legacy decoding, the UTF-8 limit, split and disk indexes, read-only and derived archives, cancellation, source changes and failed publication. Through the real RAR worker, check legacy and modern archive comments, entry-comment separation, invalid data, limits and header-password handling.
+**ARCHIVE-COMMENT:** Open the archive comment from the toolbar in an actual desktop session. Check archive identity, keyboard focus, selectable plain text, draft confirmation and edit/view states in Chinese and English at supported scales. Verify successful ZIP/ZIP64 comment replacement and removal with an independent reader, including byte equality before the EOCD length field. Cover legacy decoding, the UTF-8 limit, split and disk indexes, read-only and derived archives, cancellation, source changes including same-size rewrites with the original timestamp, and failed publication. Through the real RAR worker, check legacy and modern archive comments, entry-comment separation, invalid data, limits and header-password handling.
 
 | Item | Required checks and pass criteria |
 | --- | --- |

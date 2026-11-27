@@ -64,6 +64,24 @@ fn display(text: String, writable: bool) -> Comment {
     }
 }
 
+fn verify_source_comment(
+    source: &mut Source,
+    comment: &ZipComment,
+    control: &Cancellation,
+) -> Result<(), ScanError> {
+    // A same-size rewrite can retain the filesystem's modification timestamp.
+    // Recheck the bounded original EOCD before trusting the session's comment.
+    comment
+        .verify(source, control, &comment.bytes)
+        .map_err(|error| {
+            if error == ScanError::Cancelled {
+                error
+            } else {
+                ScanError::SourceChanged
+            }
+        })
+}
+
 impl Archive {
     fn can_replace_zip_comment(&self, comment: &ZipComment) -> Result<bool, ScanError> {
         let ordinary_suffix = self
@@ -97,6 +115,9 @@ impl Archive {
         control.check()?;
         self.source.validate()?;
         let comment = if let Some(comment) = &self.zip_comment {
+            if !self.source.is_split() {
+                verify_source_comment(&mut self.source.fork()?, comment, control)?;
+            }
             display(
                 zip_text(&comment.bytes),
                 self.can_replace_zip_comment(comment)?,
@@ -152,8 +173,16 @@ impl Archive {
         if text == original.text {
             return Err("comment_unchanged");
         }
+        let mut source = self.source.fork().map_err(|_| "source_changed")?;
+        verify_source_comment(&mut source, comment, cancel).map_err(|error| {
+            if error == ScanError::Cancelled {
+                "cancelled"
+            } else {
+                "source_changed"
+            }
+        })?;
         Ok(Job {
-            source: self.source.fork().map_err(|_| "source_changed")?,
+            source,
             comment: Arc::clone(comment),
             text,
             session: self.key.session.get(),
@@ -209,8 +238,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         let identity = job.source.identities().map_err(|_| "source_changed")?;
         let authority =
             ArchiveUpdate::open(job.source.display_path(), identity[0]).map_err(output)?;
-        job.comment
-            .verify(&mut job.source, &control.cancel, &job.comment.bytes)
+        verify_source_comment(&mut job.source, &job.comment, &control.cancel)
             .map_err(|_| "source_changed")?;
         job.source.validate().map_err(|_| "source_changed")?;
         let w = workspace.insert(authority.workspace(id).map_err(output)?);
