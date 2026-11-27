@@ -78,6 +78,7 @@ pub(crate) enum Block {
         number: Option<u64>,
         solid: bool,
         encrypted: bool,
+        comment: Option<legacy::InlineComment>,
     },
     Record(Box<Part>),
     End {
@@ -101,6 +102,14 @@ pub(crate) struct Index {
     pub parts: Vec<Part>,
     pub files: Vec<File>,
     pub protection: Protection,
+    pub archive_comment: Option<ArchiveComment>,
+}
+
+pub(crate) enum ArchiveComment {
+    Inline(legacy::InlineComment),
+    Service(usize),
+    Unsupported,
+    Ambiguous,
 }
 
 fn signature(reader: &mut Reader<'_>, volume: usize) -> Result<(Generation, u64), ScanError> {
@@ -289,6 +298,7 @@ pub(crate) fn parse(
         parts: Vec::new(),
         files: Vec::new(),
         protection: Protection::default(),
+        archive_comment: None,
     };
     let mut generation = None;
     let mut pending = None;
@@ -308,6 +318,7 @@ pub(crate) fn parse(
         }
         generation = Some(family);
         let mut main = false;
+        let mut seen_file = false;
         let mut ended = false;
         let mut next = false;
         let mut global_solid = false;
@@ -351,6 +362,7 @@ pub(crate) fn parse(
                     number,
                     solid,
                     encrypted,
+                    comment,
                 } => {
                     if main || index.parts.iter().any(|part| part.volume == volume) {
                         return Err(ScanError::Invalid);
@@ -368,12 +380,33 @@ pub(crate) fn parse(
                     header_encrypted = *encrypted;
                     main = true;
                     global_solid = *solid;
+                    if volume == 0 {
+                        index.archive_comment = if family == Generation::Ancient {
+                            Some(ArchiveComment::Unsupported)
+                        } else {
+                            comment.take().map(ArchiveComment::Inline)
+                        };
+                    }
                 }
                 Block::Record(part) => {
                     if !main {
                         return Err(ScanError::Invalid);
                     }
                     part.description.ancient = family == Generation::Ancient;
+                    if volume == 0
+                        && part.service
+                        && !part.description.service_child
+                        && part.description.name == b"CMT"
+                        && (family == Generation::Legacy
+                            || (family == Generation::Modern && !seen_file))
+                    {
+                        index.archive_comment = Some(if index.archive_comment.is_some() {
+                            ArchiveComment::Ambiguous
+                        } else {
+                            ArchiveComment::Service(index.parts.len())
+                        });
+                    }
+                    seen_file |= !part.service;
                     if family != Generation::Modern && part.description.method <= 15 {
                         part.description.solid = if part.before {
                             pending

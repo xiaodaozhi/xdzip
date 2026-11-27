@@ -22,6 +22,7 @@ std::uint8_t emit_row(std::uint64_t index, std::uint8_t flags, std::uint64_t siz
                       rust::Slice<const std::uint8_t> name, rust::Str encryption, rust::Str crc,
                       rust::Str attributes, rust::Slice<const std::uint8_t> comment) noexcept;
 std::uint8_t emit_data(rust::Slice<const std::uint8_t> bytes) noexcept;
+std::uint8_t emit_archive_comment(bool present, rust::Str text) noexcept;
 std::uint8_t emit_precharged_data(rust::Slice<const std::uint8_t> bytes) noexcept;
 std::uint8_t emit_work(std::uint64_t bytes) noexcept;
 std::uint8_t emit_auxiliary(std::uint64_t bytes) noexcept;

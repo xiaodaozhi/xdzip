@@ -5,6 +5,24 @@
 #include <new>
 
 namespace xdzip::codec_bridge {
+std::uint8_t emit_archive_comment(bool present, rust::Str text) noexcept {
+    try {
+        if (request.format != 4 || request.operation != 5 || text.size() > 3 * UINT16_MAX)
+            return 4;
+        std::vector<std::uint8_t> frame{static_cast<std::uint8_t>(present)};
+        put_string(frame, std::string(text));
+        send(ArchiveComment, frame);
+        ack();
+        return 0;
+    } catch (const Failure &failure) {
+        return failure.code;
+    } catch (const std::bad_alloc &) {
+        return 4;
+    } catch (...) {
+        return 2;
+    }
+}
+
 std::uint8_t emit_creation_progress(std::uint64_t bytes,
                                     rust::Slice<const std::uint8_t> name) noexcept {
     try {

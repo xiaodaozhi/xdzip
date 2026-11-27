@@ -369,6 +369,20 @@ impl Source {
             .map(|p| p.version.protected_identity)
             .collect())
     }
+    pub fn is_read_only(&self) -> Result<bool, ScanError> {
+        let part = &self.parts[0];
+        let file = self
+            .reopen_part(&part.path)
+            .map_err(|_| ScanError::SourceChanged)?;
+        if SourceVersion::read(&file)? != part.version {
+            return Err(ScanError::SourceChanged);
+        }
+        Ok(file
+            .metadata()
+            .map_err(|_| ScanError::Io)?
+            .permissions()
+            .readonly())
+    }
     #[cfg(windows)]
     pub fn origin_zone(&self) -> Result<Option<xdzip_io::OriginZone>, ScanError> {
         let mut zone = None;

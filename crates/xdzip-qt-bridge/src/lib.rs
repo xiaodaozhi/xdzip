@@ -43,6 +43,8 @@ mod ffi {
         Move,
         RenameEntry,
         DeleteEntries,
+        ArchiveComment,
+        SaveArchiveComment,
     }
     struct MetadataLimits {
         entries: u64,
@@ -179,6 +181,7 @@ mod ffi {
         TargetChecked,
         Inputs,
         ExportManifest,
+        ArchiveComment,
     }
     struct Event {
         kind: EventKind,
@@ -223,6 +226,7 @@ mod ffi {
         fn event_mailbox_bytes(event: &Event) -> usize;
         fn supports_preview_name(name: &str) -> bool;
         fn valid_entry_name(name: &str) -> bool;
+        fn valid_archive_comment(text: &str) -> bool;
         fn sum_declared_sizes(values: &[u64]) -> String;
         fn new_runtime() -> Result<Box<Runtime>>;
         fn take_client(self: &mut Runtime) -> Result<Box<CommandClient>>;
@@ -238,6 +242,9 @@ mod ffi {
         fn shutdown(self: &CommandClient) -> u64;
         fn next_event(self: &mut EventReceiver) -> Event;
     }
+}
+fn valid_archive_comment(text: &str) -> bool {
+    service::valid_archive_comment(text)
 }
 fn mailbox_byte_limit() -> usize {
     service::MAX_EVENT_BYTES
@@ -424,6 +431,11 @@ impl CommandClient {
             None
         };
         use service::{Command, Rejection};
+        let max_text = if command.kind == ffi::CommandKind::SaveArchiveComment {
+            service::MAX_ARCHIVE_COMMENT_BYTES
+        } else {
+            1024
+        };
         if command.inputs.len() > xdzip_codec_api::MAX_ENTRIES
             || command
                 .inputs
@@ -432,7 +444,7 @@ impl CommandClient {
             || command.inputs.iter().map(String::len).sum::<usize>() > 4 * 1024 * 1024
             || command.path.len() > 4096
             || command.directory.len() > 21
-            || command.text.len() > 1024
+            || command.text.len() > max_text
             || command.selected.len() > 128
             || command.sort > 12
             || command.selectors.len() > xdzip_codec_api::MAX_ENTRIES
@@ -454,6 +466,13 @@ impl CommandClient {
             return admission(Err(Rejection::Invalid));
         };
         let value = match command.kind {
+            ffi::CommandKind::ArchiveComment => Command::ArchiveComment {
+                session: command.session,
+            },
+            ffi::CommandKind::SaveArchiveComment => Command::SaveArchiveComment {
+                session: command.session,
+                text: command.text,
+            },
             ffi::CommandKind::FreezeSelection => Command::FreezeSelection {
                 session: command.session,
                 selectors: command.selectors,
@@ -734,6 +753,15 @@ impl EventReceiver {
                 self.export_request = value.request;
                 self.export_rows = rows.into();
                 event.rows = self.export_batch();
+            }
+            service::Payload::ArchiveComment(comment) => {
+                event.kind = ffi::EventKind::ArchiveComment;
+                event.content_kind = if comment.unavailable {
+                    2
+                } else {
+                    u8::from(comment.editable)
+                };
+                event.content = comment.text.into_bytes();
             }
             service::Payload::Page {
                 session,

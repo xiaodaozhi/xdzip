@@ -14,8 +14,10 @@ OperationWindow {
     property bool creating: false
     property string operationKind: creating ? "create" : "extract"
     readonly property bool checking: operationKind === "check"
-    readonly property bool entryEdit: operationKind === "rename" || operationKind === "delete"
-    readonly property string entryEditHeading: operationKind === "rename"
+    readonly property bool entryEdit: ["rename", "delete", "comment"].includes(operationKind)
+    readonly property string entryEditHeading: operationKind === "comment"
+        ? (terminal ? qsTrId("archive.comment.title") : qsTrId("archive.comment.saving"))
+        : operationKind === "rename"
         ? (terminal ? qsTrId("entry.edit.renameResult") : qsTrId("entry.edit.renaming"))
         : (terminal ? qsTrId("entry.edit.deleteResult") : qsTrId("entry.edit.deleting"))
     property bool sampleData: false
@@ -168,7 +170,18 @@ OperationWindow {
             OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTrId("ui.26bd480adc53"); primary: true; onClicked: root.conflictRequested() }
             OperationFooterButton { visible: root.taskStatus === "waiting_password"; text: qsTrId("password.open"); primary: true; onClicked: root.passwordRequested() }
             OperationFooterButton { objectName: "openOutputButton"; visible: root.terminal && !root.checking && !root.entryEdit; enabled: !root.resultTask.openPath || root.taskStatus === "succeeded"; text: root.resultTask.openPath ? qsTrId("action.openExtractedFile") : qsTrId("ui.aee023c587c7"); onClicked: root.openOutputRequested() }
-            OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTrId("ui.8a99be840844") : root.checking ? qsTrId("ui.4d761bdef85f") : root.entryEdit ? (root.operationKind === "rename" ? qsTrId("entry.edit.cancelRename") : qsTrId("entry.edit.cancelDelete")) : qsTrId("ui.537d17f1c531"); enabled: !root.stopping; onClicked: root.cancelRequested() }
+            OperationFooterButton {
+                objectName: "cancelButton"
+                visible: !root.terminal
+                text: root.stopping ? qsTrId("ui.8a99be840844")
+                    : root.checking ? qsTrId("ui.4d761bdef85f")
+                    : root.operationKind === "comment" ? qsTrId("archive.comment.cancelSave")
+                    : root.operationKind === "rename" ? qsTrId("entry.edit.cancelRename")
+                    : root.operationKind === "delete" ? qsTrId("entry.edit.cancelDelete")
+                    : qsTrId("ui.537d17f1c531")
+                enabled: !root.stopping
+                onClicked: root.cancelRequested()
+            }
         }
     }
 }

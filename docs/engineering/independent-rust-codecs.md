@@ -154,3 +154,9 @@ Independent samples must have verifiable generating tools or provenance and know
 | ISO, UDF | ISO9660, Joliet, Rock Ridge, UDF, hybrid-image selection | Volume/partition mappings, namespaces, extents, directory graphs, and special-item restrictions |
 
 Each switch requires bidirectional interoperability (independent sample reading for read-only formats), corruption/truncation, numeric overflow, resource limits, cancellation, and actual host business-path regression. An in-house encoder and decoder succeeding together does not prove compatibility. Fuzzing and benchmarks use pinned sources and record actual coverage and duration; limited random mutation tests are not called long-term fuzzing. Actual Windows, Linux, and Apple Silicon automated and desktop checks are recorded separately. Formal release still requires independent license review.
+
+## Archive comments
+
+ZIP reads the EOCD comment from the validated central-directory snapshot, including the disk index. Unmarked text uses strict UTF-8 first, then the existing legacy detector with a CP437 fallback. Text requiring replacement of control characters is read-only. Saving accepts up to 65,535 UTF-8 bytes and verifies every byte preceding the comment length against the source before replacing it through a private same-volume stage. The regular ZIP/ZIPX profile excludes split, encrypted, signed, self-extracting, disk-indexed and derived archives, and uses the existing file access, source version and cancellation checks.
+
+RAR reads archive comments on demand in the isolated worker. It recognizes legacy main-header comments, non-child RAR 3/4 CMT records, and stored UTF-8 RAR 5/7 CMT records before the first file. The worker checks declared size and checksums and uses the session password for encrypted headers. RAR 1.4, separately encrypted or split comment payloads, and comments exceeding 65,535 source bytes are unavailable.

@@ -232,16 +232,19 @@ fn parse_header(
             if n < 13 {
                 return Err(ScanError::Invalid);
             }
-            if flags & 2 != 0 {
-                let _ = comment(&header[13..])?;
+            let archive_comment = if flags & 2 != 0 {
+                Some(comment(&header[13..])?)
             } else if n != 13 {
                 return Err(ScanError::Unsupported);
-            }
+            } else {
+                None
+            };
             Block::Main {
                 volume: flags & 1 != 0,
                 number: if flags & 0x100 != 0 { Some(0) } else { None },
                 solid: flags & 8 != 0,
                 encrypted: flags & 0x80 != 0,
+                comment: archive_comment,
             }
         }
         0x74 | 0x7a => {
@@ -456,6 +459,7 @@ pub(crate) fn ancient(
                 number: None,
                 solid: flags & 8 != 0,
                 encrypted: false,
+                comment: None,
             },
             next: at.checked_add(n).ok_or(ScanError::Invalid)?,
         });

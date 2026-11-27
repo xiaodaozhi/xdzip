@@ -79,6 +79,7 @@ Item {
             : task.kind === "move" ? qsTrId("move.task")
             : task.kind === "rename" ? qsTrId("entry.edit.renameTask")
             : task.kind === "delete" ? qsTrId("entry.edit.deleteTask")
+            : task.kind === "comment" ? qsTrId("archive.comment.task")
             : task.kind === "update" ? qsTrId("tasks.add")
             : ["export", "export-copy"].includes(task.kind) ? qsTrId("tasks.export")
             : task.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449");

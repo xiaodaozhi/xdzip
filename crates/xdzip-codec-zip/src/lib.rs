@@ -12,6 +12,7 @@ mod streaming;
 mod writer;
 #[cfg(test)]
 use std::io::{Read, Seek, SeekFrom};
+pub use streaming::ArchiveComment;
 use xdzip_codec_api::{Cancellation, Entry, MetadataCodec, ReadSource, ScanError, ScanLimits};
 use xdzip_domain::identity::EntryId;
 

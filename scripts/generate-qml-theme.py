@@ -83,6 +83,8 @@ lines.append(f'    readonly property real operationCreateDensity: {layout["opera
 for key, value in layout['operation']['confirmation'].items():
     scale = ' * fontScale' if key.endswith('Size') else ''
     lines.append(f'    readonly property real confirmation{key[0].upper() + key[1:]}: {value}{scale}')
+for key, value in layout['operation']['archive_comment'].items():
+    lines.append(f'    readonly property real archiveComment{key[0].upper() + key[1:]}: {value}')
 for key, value in layout['operation']['footer'].items():
     lines.append(f'    readonly property real operationFooter{key[0].upper() + key[1:]}: {value} * fontScale')
 for key, value in layout['operation']['header'].items():

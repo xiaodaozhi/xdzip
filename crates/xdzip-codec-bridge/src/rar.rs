@@ -16,7 +16,7 @@ pub(super) fn run(
     password: &str,
     has_password: bool,
 ) -> Result<(), u8> {
-    if !matches!(operation, 0 | 1 | 3 | 4) {
+    if !matches!(operation, 0 | 1 | 3 | 4 | 5) {
         return Err(3);
     }
     if volumes.len() > 1024
@@ -49,6 +49,13 @@ pub(super) fn run(
         password,
     )
     .map_err(scan_wire)?;
+    if operation == 5 {
+        let text = index
+            .archive_comment(&mut source, &control)
+            .map_err(scan_wire)?;
+        let error = super::ffi::emit_archive_comment(text.is_some(), text.as_deref().unwrap_or(""));
+        return if error == 0 { Ok(()) } else { Err(error) };
+    }
     if operation == 4 {
         let ids = comment_ids
             .iter()

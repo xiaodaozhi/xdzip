@@ -86,6 +86,7 @@ mod ffi {
             comment: &[u8],
         ) -> u8;
         fn emit_data(bytes: &[u8]) -> u8;
+        fn emit_archive_comment(present: bool, text: &str) -> u8;
         fn emit_precharged_data(bytes: &[u8]) -> u8;
         fn emit_work(bytes: u64) -> u8;
         fn emit_auxiliary(bytes: u64) -> u8;

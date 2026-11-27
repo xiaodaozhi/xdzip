@@ -90,6 +90,160 @@ fn execute(job: Job, control: &Control, mut hook: impl FnMut(&Snapshot)) -> Snap
     result.unwrap()
 }
 
+#[test]
+fn archive_comment_round_trip_changes_only_the_zip_end_fields() {
+    for (extension, wide) in [("zip", false), ("zipx", false), ("zip", true)] {
+        let fixture = Fixture::new();
+        // The ordinary ZIP source is valid regardless of the display extension.
+        let source = fixture.archive("zip");
+        let path = source.with_extension(extension);
+        if path != source {
+            fs::rename(&source, &path).unwrap();
+        }
+        let mut original = fs::read(&path).unwrap();
+        if wide {
+            let end_at = original.len() - 22;
+            let mut end = original.split_off(end_at);
+            assert_eq!(&end[..4], b"PK\x05\x06");
+            let entries = u64::from(u16::from_le_bytes(end[10..12].try_into().unwrap()));
+            let size = u64::from(u32::from_le_bytes(end[12..16].try_into().unwrap()));
+            let central = u64::from(u32::from_le_bytes(end[16..20].try_into().unwrap()));
+            original.extend(b"PK\x06\x06");
+            original.extend(44u64.to_le_bytes());
+            original.extend(45u16.to_le_bytes());
+            original.extend(45u16.to_le_bytes());
+            original.extend([0; 8]); // Single disk.
+            for field in [entries, entries, size, central] {
+                original.extend(field.to_le_bytes());
+            }
+            original.extend(b"PK\x06\x07");
+            original.extend(0u32.to_le_bytes());
+            original.extend((end_at as u64).to_le_bytes());
+            original.extend(1u32.to_le_bytes());
+            end[8..20].fill(0xff);
+            original.extend(end);
+            fs::write(&path, &original).unwrap();
+        }
+        let prefix = &original[..original.len() - 2];
+        let cancel = Cancellation::default();
+        let replacement = if wide {
+            "字".repeat(usize::from(u16::MAX) / 3)
+        } else {
+            "Changé".into()
+        };
+        for (old, new) in [
+            ("", "压缩包\n<文字>\t说明"),
+            ("压缩包\n<文字>\t说明", replacement.as_str()),
+            (replacement.as_str(), ""),
+        ] {
+            let archive = Archive::open(&path, &cancel).unwrap();
+            let note = archive.archive_comment(&cancel).unwrap();
+            assert!(note.editable);
+            assert_eq!(note.text, old);
+            assert_eq!(
+                archive.comment_job(old.into(), &cancel).err(),
+                Some("comment_unchanged")
+            );
+            let job = archive.comment_job(new.into(), &cancel).unwrap();
+            drop(archive);
+            let mut status = None;
+            comment::run(job, 2, &Control::default(), &mut |snap| {
+                if snap.status.terminal() {
+                    status = Some(snap);
+                }
+            });
+            let status = status.unwrap();
+            assert_eq!(status.status, Status::Succeeded, "{}", status.error);
+            let current = fs::read(&path).unwrap();
+            assert_eq!(&current[..prefix.len()], prefix);
+            assert_eq!(
+                &current[prefix.len()..prefix.len() + 2],
+                &(new.len() as u16).to_le_bytes()
+            );
+            assert_eq!(&current[prefix.len() + 2..], new.as_bytes());
+        }
+    }
+}
+
+#[test]
+fn archive_comment_admission_and_cancel_preserve_the_source() {
+    let fixture = Fixture::new();
+    let path = fixture.archive("zip");
+    let mut original = fs::read(&path).unwrap();
+    let length_at = original.len() - 2;
+    original[length_at..].copy_from_slice(&[1, 0]);
+    original.push(0x82);
+    fs::write(&path, &original).unwrap();
+    let control = Control::default();
+    let archive = Archive::open(&path, &control.cancel).unwrap();
+    assert_eq!(archive.archive_comment(&control.cancel).unwrap().text, "é");
+    assert!(comment::valid_archive_comment(&"字".repeat(21_845)));
+    assert!(!comment::valid_archive_comment(&"字".repeat(21_846)));
+    assert!(!comment::valid_archive_comment("text\u{202e}"));
+    let job = archive
+        .comment_job("draft".into(), &control.cancel)
+        .unwrap();
+    drop(archive);
+    let mut status = None;
+    comment::run(job, 2, &control, &mut |snap| {
+        if snap.status == Status::Verifying {
+            control.cancel();
+        } else if snap.status.terminal() {
+            status = Some(snap.status);
+        }
+    });
+    assert_eq!(status, Some(Status::Cancelled));
+    assert_eq!(fs::read(&path).unwrap(), original);
+
+    let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+    original[length_at + 2] = 0;
+    fs::write(&path, &original).unwrap();
+    assert_eq!(
+        archive
+            .archive_comment(&Cancellation::default())
+            .unwrap_err(),
+        xdzip_codec_api::ScanError::SourceChanged
+    );
+    let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+    let note = archive.archive_comment(&Cancellation::default()).unwrap();
+    assert!(!note.editable);
+    assert_eq!(note.text, "\u{fffd}");
+}
+
+#[test]
+fn archive_comment_commit_conflict_cannot_overwrite_a_changed_file() {
+    use std::io::Write;
+    let fixture = Fixture::new();
+    let path = fixture.archive("zip");
+    let control = Control::default();
+    let archive = Archive::open(&path, &control.cancel).unwrap();
+    let job = archive
+        .comment_job("draft".into(), &control.cancel)
+        .unwrap();
+    drop(archive);
+    let mut expected = fs::read(&path).unwrap();
+    expected.extend(b"external update");
+    let mut status = None;
+    comment::run(job, 2, &control, &mut |snap| {
+        if snap.status == Status::Committing {
+            fs::OpenOptions::new()
+                .append(true)
+                .open(&path)
+                .unwrap()
+                .write_all(b"external update")
+                .unwrap();
+        } else if snap.status.terminal() {
+            status = Some(snap);
+        }
+    });
+    let status = status.unwrap();
+    assert_eq!(
+        (status.status, status.error.as_str()),
+        (Status::Failed, "source_changed")
+    );
+    assert_eq!(fs::read(&path).unwrap(), expected);
+}
+
 #[cfg(windows)]
 #[test]
 fn zip_update_preserves_the_archive_origin_zone() {

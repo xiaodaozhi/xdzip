@@ -518,9 +518,18 @@ mod tests {
     }
     #[test]
     fn hundred_thousand_rows_share_one_order_and_reject_each_stale_key() {
-        let (_owned, path) = owned(&zip64_fixture::archive(100_000));
+        let mut bytes = zip64_fixture::archive(100_001);
+        let comment = b"indexed ZIP64 comment";
+        let len = bytes.len();
+        bytes[len - 2..].copy_from_slice(&(comment.len() as u16).to_le_bytes());
+        bytes.extend(comment);
+        let (_owned, path) = owned(&bytes);
         let control = Cancellation::default();
         let mut archive = Archive::open(&path, &control).unwrap();
+        assert!(archive.index_disk_bytes() > 0);
+        let note = archive.archive_comment(&control).unwrap();
+        assert_eq!(note.text.as_bytes(), comment);
+        assert!(!note.editable);
         let request = |offset, expected, generation, text| QueryRequest {
             directory: "",
             text,
@@ -532,11 +541,11 @@ mod tests {
         let page = archive
             .query_page(request(0, None, 1, ""), &control)
             .unwrap();
-        assert_eq!(page.total, 100_000);
-        assert_eq!(page.rows[0].path(), "item-099999.txt");
+        assert_eq!(page.total, 100_001);
+        assert_eq!(page.rows[0].path(), "item-100000.txt");
         let key = page.key;
         let mut received = page.rows.len();
-        while received < 100_000 {
+        while received < 100_001 {
             let page = archive
                 .query_page(request(received as u64, Some(key), 1, ""), &control)
                 .unwrap();
@@ -544,7 +553,7 @@ mod tests {
             received += page.rows.len();
         }
         assert_eq!(archive.next_query, 1);
-        assert_eq!(received, 100_000);
+        assert_eq!(received, 100_001);
         let mut stale = [key; 4];
         stale[0].session = (key.session.get() + 1).try_into().unwrap();
         stale[1].query = 2.try_into().unwrap();

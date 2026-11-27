@@ -413,6 +413,8 @@ static QString archiveEditOperation(xdzip::reader::CommandKind kind) {
         return QStringLiteral("rename");
     case CommandKind::DeleteEntries:
         return QStringLiteral("delete");
+    case CommandKind::SaveArchiveComment:
+        return QStringLiteral("comment");
     default:
         return {};
     }
@@ -423,13 +425,15 @@ static bool isEntryEdit(const QString &kind) {
 }
 
 static bool isArchiveEditTask(const QString &kind) {
-    return kind == "update" || kind == "move" || isEntryEdit(kind);
+    return kind == "update" || kind == "move" || kind == "comment" || isEntryEdit(kind);
 }
 
 QString BrowserController::explain(const QString &code) {
     if (code.isEmpty())
         return {};
     const QHash<QString, QString> taskErrors = {
+        {"comment_invalid", qtTrId("archive.comment.invalid")},
+        {"comment_unchanged", qtTrId("archive.comment.unchanged")},
         {"move_same_directory", qtTrId("move.same")},
         {"entry_name_invalid", qtTrId("entry.edit.invalidName")},
         {"entry_name_unrepresentable", qtTrId("archive.create.nameUnrepresentable")},
@@ -1577,10 +1581,15 @@ void BrowserController::cancel() {
             beginCancelledOpenCleanup();
             return;
         }
+        const bool cancellingComment = m_archiveOperation == "comment";
         m_busy = false;
         m_archiveOperation.clear();
         restoreQuery();
         m_message = explain("cancelled");
+        if (cancellingComment) {
+            m_result = {};
+            emit archiveCommentSaveChanged({{"status", "cancelled"}, {"error", m_message}});
+        }
         emit changed();
         return;
     }
@@ -1876,7 +1885,10 @@ BrowserController::RequestKind BrowserController::requestKind(xdzip::reader::Com
     case CommandKind::Move:
     case CommandKind::RenameEntry:
     case CommandKind::DeleteEntries:
+    case CommandKind::SaveArchiveComment:
         return RequestKind::ArchiveEdit;
+    case CommandKind::ArchiveComment:
+        return RequestKind::ArchiveComment;
     case CommandKind::Check:
         return RequestKind::ArchiveCheck;
     case CommandKind::ExportManifest:
@@ -1980,6 +1992,10 @@ void BrowserController::attemptSubmission() {
         }
         restoreQuery();
         m_message = explain(code);
+        if (m_result.kind == RequestKind::ArchiveComment) {
+            m_result = {};
+            emit archiveCommentLoaded({{"error", m_message}});
+        }
         if (m_result.quickExtraction)
             m_toolbarError = m_message;
         if (m_result.isCreationTask())
@@ -1987,6 +2003,8 @@ void BrowserController::attemptSubmission() {
         if (m_result.kind == RequestKind::ArchiveEdit) {
             if (isEntryEdit(m_archiveOperation))
                 m_entryEditError = m_message;
+            if (m_archiveOperation == "comment")
+                emit archiveCommentSaveChanged({{"status", "failed"}, {"error", m_message}});
             m_archiveOperation.clear();
         }
         if (m_result.kind == RequestKind::Export && m_export)
@@ -2101,6 +2119,8 @@ void BrowserController::receiveTaskUpdate(const xdzip::reader::Event &event) {
     const bool firstSuccess =
         status == "succeeded" && !m_tasks.value(t.id).value("terminal").toBool();
     m_tasks.insert(t.id, projectTaskSnapshot(t, status, terminal));
+    if (eventText(t.kind) == "comment" && QString::number(t.session) == m_session)
+        emit archiveCommentSaveChanged(m_tasks.value(t.id));
     if (firstSuccess && !t.open_path.empty())
         openTemporaryOutput(t.id);
     if (isArchiveEditTask(eventText(t.kind)) && terminal &&
@@ -2356,6 +2376,21 @@ void BrowserController::finishRequest(const xdzip::reader::Event &event) {
     }
     if (!m_hasPayload && m_result.error.isEmpty())
         m_result.error = "runtime_unavailable";
+    if (m_result.kind == RequestKind::ArchiveComment) {
+        auto comment = std::move(m_result.report);
+        const auto error = m_result.error;
+        if (!error.isEmpty())
+            comment = {{"error", explain(error)}};
+        if (error == "source_changed" || error == "stale_session")
+            invalidateSnapshot();
+        if (comment.value("editable").toBool())
+            m_editableCommentSession = m_session;
+        m_message = explain(error);
+        m_result = {};
+        emit changed();
+        emit archiveCommentLoaded(comment);
+        return;
+    }
     if (m_result.kind == RequestKind::FreezeSelection) {
         if (m_result.error.isEmpty()) {
             m_extractionSelectors = std::move(m_result.frozenSelectors);
@@ -2442,6 +2477,7 @@ void BrowserController::finishRequest(const xdzip::reader::Event &event) {
         const bool extraction = m_result.kind == RequestKind::Extraction;
         const bool creating = m_result.isCreationTask();
         const bool updating = m_result.kind == RequestKind::ArchiveEdit;
+        const bool savingComment = updating && m_archiveOperation == "comment";
         const bool checking = m_result.kind == RequestKind::ArchiveCheck;
         if (creating)
             m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
@@ -2449,6 +2485,9 @@ void BrowserController::finishRequest(const xdzip::reader::Event &event) {
         if (updating && taskId.isEmpty()) {
             if (isEntryEdit(m_archiveOperation))
                 m_entryEditError = m_message;
+            if (savingComment)
+                emit archiveCommentSaveChanged(
+                    {{"status", "failed"}, {"error", m_message}, {"errorCode", m_result.error}});
             m_archiveOperation.clear();
         }
         m_extractionIntent.insert("error", m_message);
@@ -2460,6 +2499,8 @@ void BrowserController::finishRequest(const xdzip::reader::Event &event) {
         emit tasksChanged();
         if (extraction && !taskId.isEmpty())
             emit extractionStarted(taskId);
+        if (savingComment)
+            return;
         if (updating && !taskId.isEmpty())
             emit updateStarted(taskId);
         else if (creating && !taskId.isEmpty())
@@ -2617,6 +2658,15 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             } else
                 m_openAfterTasks.insert(event.task.id);
         }
+    } else if (event.kind == EventKind::ArchiveComment &&
+               m_result.kind == RequestKind::ArchiveComment) {
+        m_result.report = {
+            {"session", QString::number(m_result.taskSession)},
+            {"editable", event.content_kind == 1},
+            {"unavailable", event.content_kind == 2},
+            {"text", QString::fromUtf8(reinterpret_cast<const char *>(event.content.data()),
+                                       static_cast<qsizetype>(event.content.size()))}};
+        m_hasPayload = true;
     } else if (event.kind == EventKind::Inputs) {
         if (event.inputs.size() != static_cast<std::size_t>(m_result.previewPaths.size()))
             m_result.error = "resource_limit";

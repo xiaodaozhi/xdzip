@@ -116,6 +116,7 @@ QString text(const QString &command) {
         {QStringLiteral("moveTask"), [] { return qtTrId("desktop.moveTask"); }},
         {QStringLiteral("renameTask"), [] { return qtTrId("entry.edit.rename"); }},
         {QStringLiteral("deleteTask"), [] { return qtTrId("entry.edit.delete"); }},
+        {QStringLiteral("commentTask"), [] { return qtTrId("archive.comment.title"); }},
         {QStringLiteral("extractTask"), [] { return qtTrId("desktop.extractTask"); }},
         {QStringLiteral("checkTask"), [] { return qtTrId("desktop.checkTask"); }},
         {QStringLiteral("trayEnabled"), [] { return qtTrId("desktop.trayEnabled"); }},
@@ -609,7 +610,8 @@ void DesktopIntegration::retranslateMenus() {
 }
 static QString taskActionKey(const QVariantMap &task) {
     const auto kind = task.value("kind").toString();
-    if (kind == "move" || kind == "rename" || kind == "delete" || kind == "check")
+    if (kind == "move" || kind == "rename" || kind == "delete" || kind == "check" ||
+        kind == "comment")
         return kind + QStringLiteral("Task");
     return task.value("creating").toBool() ? QStringLiteral("createTask")
                                            : QStringLiteral("extractTask");

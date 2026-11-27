@@ -2,6 +2,28 @@
   "notes": "当前设计与历史原稿按功能平铺保存，SHA-256 固定图片。主窗口及多级目录胶囊修订保留静态图，不替代独立量测；旧图片与切片来源保持不变。统一素材位于 design/assets，历史迁移见 ../assets/migration.json。",
   "screens": [
     {
+      "file": "screens/archive-comment-edit-light.svg",
+      "title": "压缩包注释，编辑，浅色",
+      "group": "current",
+      "role": "fixed-design-artwork",
+      "size": [
+        491,
+        399
+      ],
+      "sha256": "fa47a3126e5b812c54c717815c5c22c426ad2876a43cebaf192717a7128ad077"
+    },
+    {
+      "file": "screens/archive-comment-read-dark.svg",
+      "title": "压缩包注释，只读，深色",
+      "group": "current",
+      "role": "fixed-design-artwork",
+      "size": [
+        491,
+        399
+      ],
+      "sha256": "3a8cddd353ab39298e4367a114e4149a13bd813a9a87f03356c4b97ce8db3b3e"
+    },
+    {
       "file": "screens/welcome-top-light.png",
       "title": "W01 起始页，顶部布局，浅色",
       "group": "current",

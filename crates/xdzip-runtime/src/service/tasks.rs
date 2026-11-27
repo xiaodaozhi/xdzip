@@ -5,6 +5,7 @@ use crate::extraction::{self, ConflictPolicy, Control, Snapshot, Status};
 pub(super) enum Job {
     ExportCopy(crate::exporting::Job),
     Update(crate::updating::Job),
+    Comment(crate::updating::comment::Job),
     Export(extraction::Job),
     Extract(extraction::Job),
     Create(crate::creation::Job),
@@ -15,6 +16,7 @@ impl Job {
         match self {
             Self::ExportCopy(j) => j.retained_bytes(),
             Self::Update(j) => j.retained_bytes(),
+            Self::Comment(j) => j.retained_bytes(),
             Self::Export(j) => j.retained_bytes(),
             Self::Extract(j) => j.retained_bytes(),
             Self::Create(j) => j.retained_bytes(),
@@ -25,6 +27,7 @@ impl Job {
         match self {
             Self::ExportCopy(j) => crate::exporting::initial(j, id),
             Self::Update(j) => crate::updating::initial(j, id),
+            Self::Comment(j) => crate::updating::comment::initial(j, id),
             Self::Export(j) => {
                 let mut s = extraction::initial(j, id);
                 s.kind = extraction::TaskKind::Export;
@@ -39,6 +42,7 @@ impl Job {
         match self {
             Self::ExportCopy(j) => crate::exporting::run(j, id, control, publish),
             Self::Update(j) => crate::updating::run(j, id, control, publish),
+            Self::Comment(j) => crate::updating::comment::run(j, id, control, publish),
             Self::Export(j) => extraction::run(j, id, control, &mut |mut s| {
                 s.kind = extraction::TaskKind::Export;
                 publish(s);

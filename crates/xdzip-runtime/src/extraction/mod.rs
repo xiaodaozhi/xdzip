@@ -222,6 +222,8 @@ pub enum TaskKind {
     Rename,
     /// Remove archive entries through a verified whole-container rewrite.
     Delete,
+    /// Replace only the archive-wide ZIP comment.
+    Comment,
     /// Publish a prepared private item to a native file-promise destination.
     ExportCopy,
     /// Verified private copies offered to an external copy operation.
@@ -247,6 +249,7 @@ impl TaskKind {
             Self::Move => "move",
             Self::Rename => "rename",
             Self::Delete => "delete",
+            Self::Comment => "comment",
             Self::Check => "check",
         }
     }

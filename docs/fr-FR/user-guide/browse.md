@@ -10,3 +10,7 @@
 Un double-clic sur un fichier ordinaire extrait une copie temporaire et demande au système de l’ouvrir. Les modifications de la copie ne mettent pas l’archive à jour. Pour conserver une copie, extrayez le fichier vers la destination de votre choix. [Ouverture temporaire](../engineering/archive-opening.md)
 
 Les archives s’ouvrent par défaut dans des onglets. Un réglage permet de les ouvrir dans des fenêtres distinctes. Un ZIP/ZIP64 ordinaire sous forme de fichier unique peut indexer jusqu’à un million d’enregistrements physiques. Les grands index chargent les lignes à la demande. Un ZIP indexé sur disque peut toujours permettre d’extraire des fichiers sélectionnés. La vérification de toute l’archive et les modifications sont désactivées. [Limites des grandes archives](../engineering/large-index.md)
+
+## Afficher le commentaire de l’archive
+
+Ouvrez une archive ZIP ou RAR, puis choisissez **Plus → Commentaire de l’archive** dans la barre d’outils. Vous pouvez sélectionner et copier le texte. Pour un ZIP, ZIP64 ou ZIPX ordinaire accessible en écriture, modifiez le texte puis choisissez **Enregistrer**. Videz le texte puis enregistrez pour supprimer le commentaire. La limite est de 65 535 octets en UTF-8. Les ZIP fractionnés, autoextractibles, chiffrés ou indexés sur disque, les paquets signés ou dérivés et les commentaires RAR sont en lecture seule.

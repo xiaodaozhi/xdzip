@@ -49,6 +49,7 @@ pub(crate) struct Directory {
     pub base_offset: u64,
     pub end_offset: u64,
     pub source_length: u64,
+    pub ordinary_comment_layout: bool,
 }
 
 /// A malformed field yields one error and then terminates, never hiding a tail.
@@ -348,25 +349,10 @@ fn parse_directory(
     max_directory: u64,
     visitor: &mut dyn FnMut(Record) -> Result<(), ScanError>,
 ) -> Result<Directory, ScanError> {
-    let source_length = source.seek(SeekFrom::End(0)).map_err(io_error)?;
-    if source_length < 22 {
-        return Err(ScanError::Invalid);
-    }
-    let tail_size =
-        usize::try_from(source_length.min(MAX_END_SEARCH as u64)).map_err(|_| ScanError::Limit)?;
-    let mut tail = vec![0; tail_size];
-    read_exact_at(source, source_length - tail_size as u64, &mut tail)?;
-    let mut candidates = (0..=tail.len() - 22).rev().filter(|&at| {
-        &tail[at..at + 4] == b"PK\x05\x06"
-            && at + 22 + usize::from(n16(&tail, at + 20)) == tail.len()
-    });
-    let end = candidates.next().ok_or(ScanError::Invalid)?;
-    if candidates.next().is_some() {
-        return Err(ScanError::Invalid);
-    }
-    let end_offset = source_length - tail_size as u64 + end as u64;
-    let comment = tail[end + 22..].to_vec();
-    let footer = footer(source, &tail[end..end + 22], end_offset, control)?;
+    let end = read_end_record(source, control)?;
+    let source_length = end.source_length;
+    let end_offset = end.offset;
+    let footer = footer(source, &end.fixed, end_offset, control)?;
     if footer.count > limits.entries.min(max_entries) as u64 || footer.size > max_directory {
         return Err(ScanError::Limit);
     }
@@ -469,15 +455,66 @@ fn parse_directory(
             return Err(ScanError::Invalid);
         }
     }
+    // APK signing blocks may be present even behind a .zip suffix. Their
+    // signature calculation covers the end record, including the comment.
+    let mut apk_magic = [0; 16];
+    let ordinary_comment_layout = base_offset == 0
+        && first_local.unwrap_or(central_offset) == 0
+        && position == footer.records_end
+        && match central_offset.checked_sub(16) {
+            Some(at) => {
+                read_exact_at(source, at, &mut apk_magic)?;
+                &apk_magic != b"APK Sig Block 42"
+            }
+            None => true,
+        };
     control.check()?;
     Ok(Directory {
         records: Vec::new(),
-        comment,
+        comment: end.comment,
         central_offset,
         central_size: footer.size,
         base_offset,
         end_offset,
         source_length,
+        ordinary_comment_layout,
+    })
+}
+
+pub(crate) struct EndRecord {
+    pub offset: u64,
+    pub source_length: u64,
+    pub fixed: [u8; 22],
+    pub comment: Vec<u8>,
+}
+
+pub(crate) fn read_end_record(
+    source: &mut (impl Read + Seek + ?Sized),
+    control: &Cancellation,
+) -> Result<EndRecord, ScanError> {
+    control.check()?;
+    let source_length = source.seek(SeekFrom::End(0)).map_err(io_error)?;
+    if source_length < 22 {
+        return Err(ScanError::Invalid);
+    }
+    let tail_size = source_length.min(MAX_END_SEARCH as u64) as usize;
+    let mut tail = vec![0; tail_size];
+    read_exact_at(source, source_length - tail_size as u64, &mut tail)?;
+    let mut candidates = (0..=tail.len() - 22).rev().filter(|&at| {
+        &tail[at..at + 4] == b"PK\x05\x06"
+            && at + 22 + usize::from(n16(&tail, at + 20)) == tail.len()
+    });
+    let end = candidates.next().ok_or(ScanError::Invalid)?;
+    if candidates.next().is_some() {
+        return Err(ScanError::Invalid);
+    }
+    Ok(EndRecord {
+        offset: source_length - tail_size as u64 + end as u64,
+        source_length,
+        fixed: tail[end..end + 22]
+            .try_into()
+            .expect("complete ZIP end record"),
+        comment: tail[end + 22..].to_vec(),
     })
 }
 fn wide_fields(fixed: &[u8; 46], extra: &[u8]) -> Result<(u64, u64, u64, u32), ScanError> {

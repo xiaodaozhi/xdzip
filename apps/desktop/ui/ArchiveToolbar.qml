@@ -23,6 +23,10 @@ Rectangle {
     signal clearSelectionRequested
     signal detailsRequested
     signal settingsRequested
+    signal archiveCommentRequested
+    property bool archiveCommentSupported: false
+    property bool canOpenArchiveComment: false
+    function focusMore() { moreButton.forceActiveFocus(Qt.OtherFocusReason); }
     signal recentArchiveRequested(string path)
     signal revealRequested
     signal quickExtractRequested(string destination)
@@ -200,6 +204,7 @@ Rectangle {
                 tooltipEnabled: false
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
+                id: moreButton
                 objectName: "archiveMore"
                 Layout.preferredWidth: Theme.mainToolbarMoreWidth
                 leftPadding: Theme.mainToolbarActionInset
@@ -217,6 +222,13 @@ Rectangle {
                         text: qsTrId("desktop.revealArchive")
                         enabled: root.canReveal
                         onTriggered: root.revealRequested()
+                    }
+                    CommandMenuItem {
+                        objectName: "toolbarArchiveComment"
+                        text: qsTrId("archive.comment.title")
+                        commandVisible: root.archiveCommentSupported
+                        enabled: root.canOpenArchiveComment
+                        onTriggered: root.archiveCommentRequested()
                     }
                     CommandMenuItem {
                         text: qsTrId("settings.title")

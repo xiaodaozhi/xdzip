@@ -10,3 +10,7 @@
 Al hacer doble clic en un archivo normal, se extrae una copia temporal y se pide al sistema operativo que la abra. Los cambios en esa copia no actualizan el archivo comprimido. Para obtener una copia permanente, extráela al destino elegido. [Apertura temporal](../engineering/archive-opening.md)
 
 Los archivos comprimidos se abren en pestañas de forma predeterminada. Puedes cambiar el ajuste para abrirlos en ventanas separadas. Un ZIP/ZIP64 normal en un único archivo puede indexar hasta un millón de registros físicos. En los índices grandes, las filas se cargan cuando hacen falta. El índice en disco de un ZIP puede permitir la extracción de archivos seleccionados. La comprobación de todo el archivo comprimido y la modificación están desactivadas. [Límites de los archivos grandes](../engineering/large-index.md)
+
+## Ver el comentario del archivo
+
+Abre un archivo ZIP o RAR y elige **Más → Comentario del archivo** en la barra de herramientas. Puedes seleccionar y copiar el texto. En un ZIP, ZIP64 o ZIPX normal con permisos de escritura, edita el texto y elige **Guardar**. Para eliminar el comentario, borra el texto y guarda. El límite es de 65 535 bytes en UTF-8. Los ZIP divididos, autoextraíbles, cifrados o indexados en disco, los paquetes firmados o derivados y los comentarios RAR son de solo lectura.

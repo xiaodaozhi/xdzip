@@ -267,6 +267,42 @@ bool BrowserController::validEntryName(const QString &name) const {
     const auto utf8 = name.toUtf8();
     return xdzip::reader::valid_entry_name(rust::Str(utf8.constData(), utf8.size()));
 }
+bool BrowserController::requestArchiveComment() {
+    if (!archiveCommentSupported() || !runtimeAvailable() || !m_ready || m_busy || m_closing ||
+        m_updateActive || m_browsingDetached)
+        return false;
+    m_editableCommentSession.clear();
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::ArchiveComment;
+    command.session = m_session.toULongLong();
+    submit(std::move(command));
+    return true;
+}
+
+int BrowserController::archiveCommentBytes(const QString &text) const {
+    return int(qMin<qsizetype>(text.toUtf8().size(), std::numeric_limits<int>::max()));
+}
+
+bool BrowserController::validArchiveComment(const QString &text) const {
+    if (text.size() > 65535 || !text.isValidUtf16())
+        return false;
+    const auto utf8 = text.toUtf8();
+    return xdzip::reader::valid_archive_comment(rust::Str(utf8.constData(), utf8.size()));
+}
+
+bool BrowserController::saveArchiveComment(const QString &session, const QString &text) {
+    if (!runtimeAvailable() || !m_ready || m_busy || m_updateActive || m_closing ||
+        m_browsingDetached || session != m_session || session != m_editableCommentSession ||
+        !validArchiveComment(text))
+        return false;
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::SaveArchiveComment;
+    command.session = session.toULongLong();
+    command.text = text.toStdString();
+    submitArchiveEdit(std::move(command));
+    return true;
+}
+
 bool BrowserController::startEntryEdit(const QString &token, const QString &name) {
     if (!entryEditCurrent(token) ||
         (m_entryEdit->rename && (name == m_entryEdit->originalName || !validEntryName(name))))

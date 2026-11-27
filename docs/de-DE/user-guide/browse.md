@@ -10,3 +10,7 @@
 Ein Doppelklick auf eine reguläre Datei entpackt eine temporäre Kopie und übergibt sie zum Öffnen an das Betriebssystem. Änderungen an dieser Kopie gelangen nicht zurück ins Archiv. Für eine dauerhafte Kopie entpacken Sie die Datei an einem selbst gewählten Ort. [Temporäres Öffnen](../engineering/archive-opening.md)
 
 Archive öffnen sich standardmäßig in Tabs. In den Einstellungen können Sie separate Fenster wählen. Ein gewöhnliches ZIP/ZIP64 in einer einzelnen Datei kann bis zu eine Million tatsächliche Einträge indizieren. Bei großen Indizes werden Zeilen nach Bedarf geladen. ZIP-Archive mit Index auf der Festplatte können das Entpacken ausgewählter Dateien unterstützen. Das Prüfen des gesamten Archivs und das Ändern bleiben deaktiviert. [Grenzen für große Archive](../engineering/large-index.md)
+
+## Archivkommentar anzeigen
+
+Öffnen Sie ein ZIP- oder RAR-Archiv und wählen Sie in der Symbolleiste **Mehr → Archivkommentar**. Sie können den Text auswählen und kopieren. Bearbeiten Sie den Text bei einem gewöhnlichen, beschreibbaren ZIP-, ZIP64- oder ZIPX-Archiv und wählen Sie **Speichern**. Zum Löschen leeren Sie das Feld und speichern es. Die Grenze beträgt 65.535 Bytes in UTF-8. Geteilte, selbstentpackende, verschlüsselte und auf dem Datenträger indizierte ZIPs, signierte oder abgeleitete Pakete und RAR-Kommentare sind schreibgeschützt.

@@ -22,7 +22,8 @@ enum Kind : uint8_t {
     Ack = 21,
     Next = 22,
     PrechargedData = 23,
-    AuxWork = 24
+    AuxWork = 24,
+    ArchiveComment = 25
 };
 struct Failure {
     uint8_t code;
