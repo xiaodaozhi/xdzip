@@ -3,6 +3,9 @@
   "locale": "ko-KR",
   "name": "한국어",
   "messages": {
+    "desktop.destinationAccessDenied": "현재 계정은 이 위치에 압축을 푼 파일을 만들 수 없습니다. 쓰기 가능한 폴더를 선택하세요.",
+    "desktop.destinationMissing": "압축 풀기 대상이나 리디렉션된 위치가 없습니다. 폴더를 다시 선택하세요.",
+    "desktop.destinationType": "이 위치에는 압축을 풀 수 없습니다. 다른 폴더를 선택하세요.",
     "tasks.clearFinished": "끝난 작업 지우기",
     "tasks.check": "검사 작업 %1",
     "tasks.add": "추가 작업 %1",

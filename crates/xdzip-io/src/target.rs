@@ -16,7 +16,181 @@ pub struct Grant {
     source: Arc<[FileIdentity]>,
     created_directories: Arc<AtomicU64>,
     parent_grant: Option<Arc<Grant>>,
+    #[cfg(windows)]
+    selected: Option<Arc<crate::windows_extraction::Selected>>,
     _temporary_lock: Option<File>,
+}
+
+/// The host-selected extraction location, with authority to write directly or
+/// to reserve one protected child. A shared parent never becomes a write grant.
+pub struct ExtractionTarget {
+    kind: ExtractionTargetKind,
+}
+
+enum ExtractionTargetKind {
+    Direct(Arc<Grant>),
+    #[cfg(windows)]
+    Shared(
+        Arc<crate::windows_extraction::Selected>,
+        Arc<[FileIdentity]>,
+    ),
+}
+
+impl ExtractionTarget {
+    /// Bind the selected location and protect the supplied input identities.
+    pub fn open(path: &Path, sources: &[FileIdentity]) -> Result<Self, OutputError> {
+        if sources.len() > 1024 {
+            return Err(OutputError::UnsafeTarget);
+        }
+        let sources: Arc<[FileIdentity]> = Arc::from(sources);
+        match Grant::authorize(path, Arc::clone(&sources)) {
+            Ok(grant) => Ok(Self {
+                kind: ExtractionTargetKind::Direct(grant),
+            }),
+            #[cfg(windows)]
+            Err(OutputError::UnsafeTarget | OutputError::Io) => {
+                let selected = Arc::new(crate::windows_extraction::Selected::open(path)?);
+                let kind = match private::check(selected.file(), true) {
+                    Ok(()) => ExtractionTargetKind::Direct(Grant::from_selected(
+                        Arc::clone(&selected),
+                        selected.resolved().to_path_buf(),
+                        selected.file().try_clone().map_err(extraction_failure)?,
+                        sources,
+                        0,
+                    )?),
+                    Err(OutputError::UnsafeTarget) => {
+                        selected.check_create_access()?;
+                        ExtractionTargetKind::Shared(selected, sources)
+                    }
+                    Err(error) => return Err(error),
+                };
+                Ok(Self { kind })
+            }
+            Err(error) => Err(error),
+        }
+    }
+
+    /// Identity of the selected directory, before choosing any child layout.
+    pub fn identity(&self) -> FileIdentity {
+        match &self.kind {
+            ExtractionTargetKind::Direct(grant) => grant.identity(),
+            #[cfg(windows)]
+            ExtractionTargetKind::Shared(selected, _) => selected.identity(),
+        }
+    }
+
+    /// Require the same directory that was checked for this request.
+    pub fn require_identity(&self, expected: Option<FileIdentity>) -> Result<(), OutputError> {
+        if expected.is_some_and(|identity| identity != self.identity()) {
+            return Err(OutputError::TargetChanged);
+        }
+        Ok(())
+    }
+
+    /// Probe direct staging or verify shared-directory creation access without
+    /// reserving an output folder during UI preflight.
+    pub fn probe(&self) -> Result<usize, OutputError> {
+        let leftovers = self.leftover_count()?;
+        match &self.kind {
+            ExtractionTargetKind::Direct(grant) => {
+                let workspace = grant.workspace(0)?;
+                workspace.cleanup().map_err(|_| OutputError::Cleanup)?;
+            }
+            #[cfg(windows)]
+            ExtractionTargetKind::Shared(selected, _) => selected.check_create_access()?,
+        }
+        Ok(leftovers)
+    }
+
+    /// Count leftovers only for directories admitted as direct workspaces.
+    pub fn leftover_count(&self) -> Result<usize, OutputError> {
+        match &self.kind {
+            ExtractionTargetKind::Direct(grant) => grant.leftover_count(),
+            #[cfg(windows)]
+            ExtractionTargetKind::Shared(..) => Ok(0),
+        }
+    }
+
+    /// Whether a fresh child is required before the first payload write.
+    pub fn needs_isolated_folder(&self) -> bool {
+        match &self.kind {
+            ExtractionTargetKind::Direct(_) => false,
+            #[cfg(windows)]
+            ExtractionTargetKind::Shared(..) => true,
+        }
+    }
+
+    /// Acquire the final output capability before staging or publishing data.
+    pub fn output(
+        self,
+        folder: Option<&PortablePath>,
+        unique: bool,
+        check_cancelled: impl Fn() -> bool,
+    ) -> Result<Arc<Grant>, OutputError> {
+        if check_cancelled() {
+            return Err(OutputError::Cancelled);
+        }
+        match self.kind {
+            ExtractionTargetKind::Direct(grant) => match folder {
+                Some(name) if unique => grant.unique_subdirectory(name),
+                Some(name) => grant.subdirectory(name),
+                None => Ok(grant),
+            },
+            #[cfg(windows)]
+            ExtractionTargetKind::Shared(selected, sources) => {
+                let name = folder.ok_or(OutputError::UnsafeTarget)?;
+                let [base] = name.parts() else {
+                    return Err(OutputError::UnsafeTarget);
+                };
+                for index in 0..10_000 {
+                    if check_cancelled() {
+                        return Err(OutputError::Cancelled);
+                    }
+                    let text = numbered_folder(base, index);
+                    let length = text.encode_utf16().count();
+                    if length > 255 {
+                        return Err(OutputError::Limit);
+                    }
+                    match selected.create_child(&text) {
+                        Ok((path, file)) => {
+                            return Grant::from_selected(selected, path, file, sources, 1);
+                        }
+                        Err(OutputError::Conflict) => continue,
+                        Err(error) => return Err(error),
+                    }
+                }
+                Err(OutputError::Limit)
+            }
+        }
+    }
+
+    /// Create one explicitly requested missing CLI component using this parent.
+    pub fn create_requested_child(self, name: &PortablePath) -> Result<Self, OutputError> {
+        let kind = match self.kind {
+            ExtractionTargetKind::Direct(grant) => {
+                ExtractionTargetKind::Direct(grant.create_subdirectory(name)?)
+            }
+            #[cfg(windows)]
+            ExtractionTargetKind::Shared(selected, sources) => {
+                let [leaf] = name.parts() else {
+                    return Err(OutputError::UnsafeTarget);
+                };
+                let (path, file) = selected.create_child(leaf)?;
+                ExtractionTargetKind::Direct(Grant::from_selected(
+                    selected, path, file, sources, 1,
+                )?)
+            }
+        };
+        Ok(Self { kind })
+    }
+}
+
+pub(crate) fn extraction_failure(error: io::Error) -> OutputError {
+    match error.kind() {
+        io::ErrorKind::PermissionDenied => OutputError::AccessDenied,
+        io::ErrorKind::NotFound => OutputError::TargetMissing,
+        _ => failure(error),
+    }
 }
 struct Parent {
     dir: Dir,
@@ -141,6 +315,30 @@ impl Grant {
             source,
             created_directories: Arc::new(AtomicU64::new(0)),
             parent_grant: None,
+            #[cfg(windows)]
+            selected: None,
+            _temporary_lock: None,
+        });
+        grant.validate()?;
+        Ok(grant)
+    }
+    #[cfg(windows)]
+    fn from_selected(
+        selected: Arc<crate::windows_extraction::Selected>,
+        path: PathBuf,
+        file: File,
+        source: Arc<[FileIdentity]>,
+        created: u64,
+    ) -> Result<Arc<Self>, OutputError> {
+        let identity = FileIdentity::read(&file).map_err(extraction_failure)?;
+        let grant = Arc::new(Self {
+            dir: Dir::from_std_file(file),
+            path,
+            identity,
+            source,
+            created_directories: Arc::new(AtomicU64::new(created)),
+            parent_grant: None,
+            selected: Some(selected),
             _temporary_lock: None,
         });
         grant.validate()?;
@@ -154,6 +352,10 @@ impl Grant {
     pub fn validate(&self) -> Result<(), OutputError> {
         if let Some(parent) = &self.parent_grant {
             parent.validate()?;
+        }
+        #[cfg(windows)]
+        if let Some(selected) = &self.selected {
+            selected.validate()?;
         }
         let m = std::fs::symlink_metadata(&self.path).map_err(|_| OutputError::TargetChanged)?;
         if m.file_type().is_symlink() || !m.is_dir() {
@@ -307,6 +509,8 @@ impl Grant {
             source: Arc::clone(&self.source),
             created_directories: Arc::clone(&self.created_directories),
             parent_grant: Some(Arc::clone(self)),
+            #[cfg(windows)]
+            selected: None,
             _temporary_lock: None,
         });
         child.validate()?;
@@ -323,23 +527,28 @@ impl Grant {
         }
         let base = &name.parts()[0];
         for index in 0..10_000 {
-            self.validate()?;
-            let text = if index == 0 {
-                base.clone()
-            } else {
-                format!("{base} ({})", index + 1)
-            };
+            let text = numbered_folder(base, index);
             let candidate = PortablePath::parse(&text).ok_or(OutputError::Limit)?;
-            match self.dir.create_dir_with(&text, &private_builder()) {
-                Ok(()) => {
-                    self.created_directories.fetch_add(1, Ordering::Relaxed);
-                    return self.subdirectory(&candidate);
-                }
-                Err(error) if error.kind() == io::ErrorKind::AlreadyExists => continue,
-                Err(error) => return Err(failure(error)),
+            match self.create_subdirectory(&candidate) {
+                Err(OutputError::Conflict) => continue,
+                result => return result,
             }
         }
         Err(OutputError::Limit)
+    }
+    fn create_subdirectory(
+        self: &Arc<Self>,
+        name: &PortablePath,
+    ) -> Result<Arc<Self>, OutputError> {
+        let [leaf] = name.parts() else {
+            return Err(OutputError::UnsafeTarget);
+        };
+        self.validate()?;
+        self.dir
+            .create_dir_with(leaf, &private_builder())
+            .map_err(failure)?;
+        self.created_directories.fetch_add(1, Ordering::Relaxed);
+        self.subdirectory(name)
     }
     /// Examine an existing ordinary leaf, refusing links, special objects and hard links.
     pub fn existing(&self, path: &PortablePath) -> Result<Option<ExistingFile>, OutputError> {
@@ -404,7 +613,7 @@ impl Grant {
         let name = format!("{prefix}{nonce}");
         self.dir
             .create_dir_with(&name, &private_builder())
-            .map_err(failure)?;
+            .map_err(extraction_failure)?;
         let dir = self.dir.open_dir_nofollow(&name).map_err(failure)?;
         let file = directory_file(&dir)?;
         private::check(&file, true)?;
@@ -578,6 +787,8 @@ impl Grant {
             source: Arc::clone(&root.source),
             created_directories: Arc::new(AtomicU64::new(0)),
             parent_grant: Some(root),
+            #[cfg(windows)]
+            selected: None,
             _temporary_lock: Some(lease),
         });
         let child =
@@ -585,6 +796,14 @@ impl Grant {
         child.validate()?;
         private::check_confidential(&directory_file(&child.dir)?, true)?;
         Ok(child)
+    }
+}
+
+fn numbered_folder(base: &str, index: usize) -> String {
+    if index == 0 {
+        base.to_owned()
+    } else {
+        format!("{base} ({})", index + 1)
     }
 }
 

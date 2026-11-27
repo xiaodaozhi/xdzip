@@ -77,9 +77,17 @@ def main():
         target.mkdir()
         result = json.loads(run([executable, '--extract-to', target, '--conflict', 'skip'], env=environment).stdout)
         assert result['status'] == 'succeeded' and result['committed_files'] == 4, result
+        assert Path(result['target']) == target, result
         assert contents(target) == expected
         assert (target / 'source/中文/empty').is_dir()
         assert not (target / 'source/EXECUTED').exists()
+        shared = output / ('shared-' + level)
+        shared.mkdir()
+        run(['icacls', shared, '/grant:r', '*S-1-1-0:(OI)(CI)(M)'])
+        isolated_result = json.loads(run([executable, '--extract-to', shared], env=environment).stdout)
+        actual = Path(isolated_result['target'])
+        assert isolated_result['status'] == 'succeeded' and actual.parent == shared, isolated_result
+        assert contents(actual) == expected
         # Test the ordinary-file policies on a member outside any renamed tree.
         (target / root_member.name).write_bytes(b'old destination')
         run([executable, '--extract-to', target, '--conflict', 'skip'], env=environment)

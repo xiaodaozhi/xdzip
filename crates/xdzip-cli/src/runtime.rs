@@ -291,7 +291,7 @@ impl Runtime {
                 }
                 let mut response = Response::success(
                     command,
-                    json!({"format":snapshot.format, "output":snapshot.open_path, "check_kind":xdzip_codec_api::registry::formats().iter().find(|format| format.label == snapshot.format).map_or("supported_content", |format| format.check_kind)}),
+                    json!({"format":snapshot.format, "output":if command == "extract" { &snapshot.target } else { &snapshot.open_path }, "check_kind":xdzip_codec_api::registry::formats().iter().find(|format| format.label == snapshot.format).map_or("supported_content", |format| format.check_kind)}),
                     if self.chinese {
                         format!(
                             "操作完成，已提交 {} 个文件，已跳过 {} 个文件。",
@@ -304,6 +304,16 @@ impl Runtime {
                         )
                     },
                 );
+                if command == "extract" {
+                    let label = if self.chinese {
+                        "解压目录"
+                    } else {
+                        "Extracted to"
+                    };
+                    response
+                        .text
+                        .push_str(&format!("\n{label}: {}", snapshot.target));
+                }
                 for detail in snapshot.details.iter() {
                     if let Some(original) = &detail.original_name {
                         response
@@ -436,6 +446,9 @@ fn summary(s: &Snapshot) -> Value {
             .collect();
         result["renamed"] = json!(renamed);
         result["omitted_details"] = json!(s.omitted_details);
+        if s.status == Status::Succeeded || s.committed_files > 0 || s.created_directories > 0 {
+            result["target"] = json!(s.target);
+        }
     }
     result
 }

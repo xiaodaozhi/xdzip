@@ -3,6 +3,9 @@
   "locale": "en-US",
   "name": "English (US)",
   "messages": {
+    "desktop.destinationAccessDenied": "This account cannot create extraction output here. Choose a writable folder.",
+    "desktop.destinationMissing": "The destination or its redirected location does not exist. Choose a folder again.",
+    "desktop.destinationType": "This location is not a supported extraction folder. Choose another folder.",
     "tasks.clearFinished": "Clear finished tasks",
     "tasks.check": "Check task %1",
     "tasks.add": "Add task %1",

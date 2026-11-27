@@ -144,9 +144,9 @@ fn authorize_target(target: &Path) -> Result<xdzip_io::FileIdentity, &'static st
     if !target.is_absolute() {
         return Err("unsafe_target");
     }
-    xdzip_io::Grant::for_creation(target)
-        .map(|grant| grant.identity())
-        .map_err(|_| "unsafe_target")
+    xdzip_io::ExtractionTarget::open(target, &[])
+        .map(|target| target.identity())
+        .map_err(xdzip_io::OutputError::code)
 }
 
 pub(super) fn run() -> i32 {
@@ -221,7 +221,7 @@ pub(super) fn run() -> i32 {
             };
             println!(
                 "{}",
-                serde_json::json!({"status":status,"error_code":error,"committed_files":snapshot.committed_files,"skipped_files":snapshot.skipped_files,"cleanup_warning":snapshot.cleanup_warning,"leftovers":snapshot.leftovers,"outcome_uncertain":snapshot.outcome_uncertain})
+                serde_json::json!({"status":status,"error_code":error,"target":snapshot.target,"committed_files":snapshot.committed_files,"skipped_files":snapshot.skipped_files,"cleanup_warning":snapshot.cleanup_warning,"leftovers":snapshot.leftovers,"outcome_uncertain":snapshot.outcome_uncertain})
             );
             i32::from(!succeeded)
         }

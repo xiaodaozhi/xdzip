@@ -15,7 +15,18 @@ fn write_sfx_messages(root: &std::path::Path) {
         }
         let catalog: serde_json::Value = serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
         for (id, value) in catalog["messages"].as_object().unwrap() {
-            if id.starts_with("sfx.") || id == "ui.3ca05aed62cc" {
+            if id.starts_with("sfx.")
+                || matches!(
+                    id.as_str(),
+                    "ui.3ca05aed62cc"
+                        | "ui.8c5b6e8cc7b3"
+                        | "ui.74b624993d20"
+                        | "ui.123399c0fb8b"
+                        | "desktop.destinationAccessDenied"
+                        | "desktop.destinationMissing"
+                        | "desktop.destinationType"
+                )
+            {
                 let text = value.as_str().unwrap();
                 generated.push_str(&format!("    ({locale:?}, {id:?}, {text:?}),\n"));
             }

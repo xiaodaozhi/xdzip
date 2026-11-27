@@ -278,6 +278,46 @@ class ShellTest : public QObject {
         QCOMPARE(client.exitCode(), 0);
         QCOMPARE(received, 1);
     }
+    void sharedWindowsDestinationUsesActualBatchOutputPaths() {
+#ifdef Q_OS_WIN
+        QTemporaryDir root;
+        QVERIFY(root.isValid());
+        const auto parent = root.filePath("shared");
+        QVERIFY(QDir().mkpath(parent));
+        QCOMPARE(QProcess::execute("icacls.exe", {parent, "/grant:r", "*S-1-1-0:(OI)(CI)(M)"}), 0);
+        const auto firstUse = parent + "/first-use";
+        QVERIFY(QDir().mkdir(firstUse));
+        const auto one = firstUse + "/one.zip";
+        const auto two = firstUse + "/two.zip";
+        const auto fixture = QStringLiteral(XDZIP_SHELL_FIXTURES "/stored.zip");
+        QVERIFY(QFile::copy(fixture, one));
+        QVERIFY(QFile::copy(fixture, two));
+        write(firstUse + "/one", "occupied");
+
+        ShellBatchController batch;
+        batch.begin(request("extract-here", {one, two}));
+        QTRY_VERIFY_WITH_TIMEOUT(batch.finished(), 15000);
+        const auto results = batch.results();
+        QCOMPARE(results.size(), 2);
+        QStringList actual;
+        for (const auto &item : results) {
+            const auto result = item.toMap();
+            QCOMPARE(result.value("status").toString(), QStringLiteral("succeeded"));
+            const auto target = QDir::fromNativeSeparators(result.value("target").toString());
+            actual.append(target);
+            QFile output(target + QStringLiteral("/说明.txt"));
+            QVERIFY(output.open(QIODevice::ReadOnly));
+            QCOMPARE(output.readAll(), QByteArray("xdzip 实际解压\n").repeated(100));
+        }
+        actual.sort();
+        QCOMPARE(actual, (QStringList{firstUse + "/one (2)", firstUse + "/two"}));
+        QFile occupied(firstUse + "/one");
+        QVERIFY(occupied.open(QIODevice::ReadOnly));
+        QCOMPARE(occupied.readAll(), QByteArray("occupied"));
+#else
+        QSKIP("Requires Windows NTFS ACL support");
+#endif
+    }
     void cancellationStopsRemainingJobs() {
         QTemporaryDir source;
         QStringList paths;

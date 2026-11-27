@@ -3,6 +3,9 @@
   "locale": "fr-FR",
   "name": "Français",
   "messages": {
+    "desktop.destinationAccessDenied": "Ce compte ne peut pas créer de fichiers extraits ici. Choisissez un dossier accessible en écriture.",
+    "desktop.destinationMissing": "La destination ou l’emplacement vers lequel elle est redirigée n’existe pas. Choisissez de nouveau un dossier.",
+    "desktop.destinationType": "Cet emplacement ne permet pas l’extraction. Choisissez un autre dossier.",
     "tasks.clearFinished": "Effacer les tâches terminées",
     "tasks.check": "Tâche de vérification %1",
     "tasks.add": "Tâche d’ajout %1",

@@ -3,6 +3,9 @@
   "locale": "ja-JP",
   "name": "日本語",
   "messages": {
+    "desktop.destinationAccessDenied": "このアカウントではここに展開ファイルを作成できません。書き込み可能なフォルダーを選択してください。",
+    "desktop.destinationMissing": "展開先またはリダイレクト先が存在しません。フォルダーを選び直してください。",
+    "desktop.destinationType": "この場所には展開できません。別のフォルダーを選択してください。",
     "tasks.clearFinished": "終了したタスクを消去",
     "tasks.check": "検証タスク %1",
     "tasks.add": "追加タスク %1",

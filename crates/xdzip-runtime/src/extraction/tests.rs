@@ -79,6 +79,99 @@ fn extraction_requires_the_checked_directory_identity() {
         }
     }
 }
+
+#[cfg(windows)]
+#[test]
+fn windows_shared_destination_preserves_extraction_results_and_cleanup() {
+    use crate::service::{Command, Payload, start};
+    let target = Target::new();
+    let permissions = std::process::Command::new("icacls")
+        .arg(&target.0)
+        .args(["/grant:r", "*S-1-1-0:(OI)(CI)(M)"])
+        .output()
+        .unwrap();
+    assert!(permissions.status.success());
+    std::fs::write(target.0.join("stored"), b"occupied").unwrap();
+    let archive = archive("stored.zip");
+    let control = Control::default();
+    assert!(control.cancel());
+    let cancelled = execute(&archive, target.options(), &control, |_| {});
+    assert_eq!(cancelled.status, Status::Cancelled);
+    assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 1);
+
+    let mut options = target.options();
+    options.shell_layout = 1;
+    let (client, mut receiver) = start().unwrap();
+    let source =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/extract/stored.zip");
+    let open = client
+        .submit_wait(Command::Open(source.to_str().unwrap().into()))
+        .unwrap();
+    let page = receiver.receive().unwrap();
+    let Payload::Page { session, .. } = page.payload else {
+        panic!("expected an archive session");
+    };
+    assert_eq!(page.request, open);
+    assert!(matches!(
+        receiver.receive().unwrap().payload,
+        Payload::Finished("")
+    ));
+    let checked = client
+        .submit_wait(Command::CheckTarget {
+            session,
+            path: options.target.clone(),
+            target_identity: None,
+        })
+        .unwrap();
+    let event = receiver.receive().unwrap();
+    assert_eq!(event.request, checked);
+    let Payload::TargetChecked(0, identity) = event.payload else {
+        panic!("shared target must pass preflight");
+    };
+    assert!(matches!(
+        receiver.receive().unwrap().payload,
+        Payload::Finished("")
+    ));
+    assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 1);
+    let extract = client
+        .submit_wait(Command::Extract {
+            session,
+            options,
+            target_identity: Some(identity),
+        })
+        .unwrap();
+    let succeeded = loop {
+        let event = receiver.receive().unwrap();
+        match event.payload {
+            Payload::Task(snapshot) if snapshot.status.terminal() => break snapshot,
+            Payload::Finished(code) if event.request == extract => assert_eq!(code, ""),
+            _ => {}
+        }
+    };
+    client.shutdown();
+    assert_eq!(succeeded.status, Status::Succeeded, "{}", succeeded.error);
+    let published = target.0.join("stored (2)");
+    assert_eq!(std::path::Path::new(&succeeded.target), published);
+    assert_eq!(succeeded.committed_files, 1);
+    assert_eq!(succeeded.created_directories, 1);
+    let entry = archive.rows.iter().find(|e| !e.directory).unwrap();
+    let name = std::str::from_utf8(&entry.raw_name).unwrap();
+    let direct = Target::new();
+    let control = execute(&archive, direct.options(), &Control::default(), |_| {});
+    assert_eq!(control.status, Status::Succeeded, "{}", control.error);
+    assert_eq!(
+        std::fs::read(published.join(name)).unwrap(),
+        std::fs::read(direct.0.join(name)).unwrap()
+    );
+    assert_eq!(std::fs::read(target.0.join("stored")).unwrap(), b"occupied");
+
+    let corrupted = self::archive("crc_bad.zip");
+    let failed = execute(&corrupted, target.options(), &Control::default(), |_| {});
+    assert_eq!(failed.status, Status::Failed);
+    assert_eq!(failed.committed_files, 0);
+    assert!(!failed.cleanup_warning);
+    assert_eq!(std::fs::read_dir(failed.target).unwrap().count(), 0);
+}
 #[test]
 fn actual_store_deflate_and_both_descriptor_widths_match_independent_fixture_bytes() {
     for name in [
