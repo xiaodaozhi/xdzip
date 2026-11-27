@@ -273,6 +273,62 @@ fn zip_update_preserves_the_archive_origin_zone() {
     assert_eq!(fs::read(&stream).unwrap(), marker);
 }
 
+#[cfg(windows)]
+#[test]
+fn shared_windows_archive_supports_add_rename_move_and_delete() {
+    let fixture = Fixture::new();
+    fs::create_dir(fixture.0.join("inputs/资料/目标")).unwrap();
+    let path = fixture.archive("zip");
+    let acl = std::process::Command::new("icacls")
+        .arg(&fixture.0)
+        .args(["/grant:r", "*S-1-1-0:(OI)(CI)(M)"])
+        .output()
+        .unwrap();
+    assert!(acl.status.success());
+    let acl = std::process::Command::new("icacls")
+        .arg(&path)
+        .args(["/grant:r", "*S-1-1-0:(M)"])
+        .output()
+        .unwrap();
+    assert!(acl.status.success());
+    let cancel = Cancellation::default();
+    let archive = Archive::open(&path, &cancel).unwrap();
+    let job = fixture.job(&archive, &row_id(&archive, "资料/"), ConflictPolicy::Ask);
+    drop(archive);
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    let archive = Archive::open(&path, &cancel).unwrap();
+    let options = edit_options(
+        &archive,
+        "资料/",
+        &["资料/新文件.txt"],
+        EntryEdit::Rename("renamed.txt".into()),
+    );
+    let archive = apply_entry_edit(&path, options, archive);
+    let options = move_options(
+        &archive,
+        &["资料/renamed.txt"],
+        "资料/目标/",
+        ConflictPolicy::Ask,
+    );
+    let job = archive.move_job(options, &cancel).unwrap();
+    drop(archive);
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    let archive = Archive::open(&path, &cancel).unwrap();
+    let options = edit_options(&archive, "资料/", &["资料/原文件.txt"], EntryEdit::Delete);
+    let archive = apply_entry_edit(&path, options, archive);
+    assert_eq!(
+        crate::native_backend_tests::known_contents(&archive),
+        BTreeMap::from([("资料/目标/renamed.txt".to_owned(), b"new bytes".to_vec())])
+    );
+    drop(archive);
+    if let Some(output) = std::env::var_os("XDZIP_UPDATE_INTEROP_OUTPUT") {
+        fs::create_dir_all(&output).unwrap();
+        fs::copy(&path, PathBuf::from(output).join("shared-edited.zip")).unwrap();
+    }
+}
+
 #[test]
 fn three_formats_preserve_old_content_and_add_to_current_directory() {
     for extension in ["zip", "tar", "tar.gz"] {
