@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def audit(directory):
     reference = json.loads((ROOT / 'specs/visual/qt-main-reference.json').read_text(encoding='utf-8'))
     layout = json.loads((ROOT / 'specs/visual/layout-scale.json').read_text(encoding='utf-8'))
+    welcome = json.loads((ROOT / 'specs/visual/welcome-reference.json').read_text(encoding='utf-8'))
     scale = reference['logical_width'] / reference['source_window'][2]
     geometry = {key: value * scale for key, value in reference['source_geometry'].items()}
     # Preserve the frozen artwork and apply its explicitly documented selection
@@ -104,7 +105,8 @@ def audit(directory):
         record('preview.height', preview['height'], geometry['previewHeight'])
         record('preview.left', preview['x'] - named('archiveInspector')['x'], geometry['inspectorLeftInset'])
         extract = named('inspectorExtract')
-        record('preview.actionFits', extract['y'] + extract['height'] <= named('browserStatus')['y'] - geometry['contentInset'], True)
+        scroll = named('inspectorScroll')
+        record('preview.actionInScrollContent', extract['path'].startswith(scroll['path'] + '/'), True)
 
         for row_index in range(9):
             row = named(f'entry-{row_index}-0')
@@ -146,12 +148,17 @@ def audit(directory):
         record('toolbar.font', search['fontPixelSize'], sizes['toolbar'], 0)
         icon = within(opened, lambda n: n['name'] == 'actionIcon')
         record('toolbar.iconSize', icon['width'], geometry['toolbarIconSize'], .05)
+        disclosure_width = welcome['recent_disclosure_width'] * layout['main']['interaction']['toolbarRecentWidthFactor']
+        split_width = max(geometry['toolbarActionWidth'], opened['implicitWidth'] + disclosure_width)
+        record('toolbar.openSplitWidth', named('toolbarOpenSplit')['width'], split_width, .05)
+        record('toolbar.disclosureWidth', named('toolbarRecentToggle')['width'], disclosure_width, .05)
+        split_delta = split_width - geometry['toolbarActionWidth']
         selected_view = within(named('browserViewMenuButton'), lambda n: n['name'] == 'actionIcon')
         record('view.selectedAsset', selected_view['source'].split('/')[-1], 'view-list-selected.png')
         for name, source_x in reference['toolbar_icon_source_x'].items():
             action = named(name)
             glyph = within(action, lambda n: n['name'] == 'actionIcon')
-            record(name + '.iconX', glyph['x'], source_x * scale, 1)
+            record(name + '.iconX', glyph['x'], source_x * scale + (split_delta if name != 'archiveOpen' else 0), 1)
         close, plus = named('archiveTabClose'), named('archiveNewTab')
         record('tab.closePlusCenterY', center(close), center(plus), .5)
         tab = named('activeArchiveTab')
@@ -172,6 +179,12 @@ def audit(directory):
                 record(name + '.width', button['width'], layout['main']['interaction']['captionButtonWidth'], .05)
                 record(name + '.center', center(button), center(tab), .5)
             record('caption.right', named('windowClose')['x'] + named('windowClose')['width'], data['width'], .05)
+
+    bottom = json.loads((directory / 'main-inspector-bottom.json').read_text(encoding='utf-8'))
+    bottom_nodes = {n['name']: n for n in bottom['nodes'] if n['visible'] and n['name'] in ('inspectorScroll', 'inspectorExtract')}
+    scroll, extract = bottom_nodes['inspectorScroll'], bottom_nodes['inspectorExtract']
+    check('main-inspector-bottom/actionInViewport',
+          extract['y'] >= scroll['y'] - .5 and extract['y'] + extract['height'] <= scroll['y'] + scroll['height'] + .5, True)
 
     # Check the composed proportions, not just unrelated main/menu token values.
     for scene in ['main-dropdown', 'main-context']:

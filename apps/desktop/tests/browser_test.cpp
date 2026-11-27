@@ -17345,6 +17345,21 @@ QtObject {
             // Layout evidence only: native Cocoa window buttons are not drawn by Qt.
             window->setProperty("integratedTitlebar", true);
             QVERIFY(visual_audit::save(window, captures, "main-integrated-layout"));
+            auto *inspectorScroll = findVisual(window->contentItem(), "inspectorScroll");
+            auto *extractAction = findVisual(window->contentItem(), "inspectorExtract");
+            auto *viewport = inspectorScroll
+                                 ? inspectorScroll->property("contentItem").value<QQuickItem *>()
+                                 : nullptr;
+            QVERIFY(viewport && extractAction);
+            const auto maximum =
+                qMax(qreal(0), viewport->property("contentHeight").toReal() - viewport->height());
+            QVERIFY(viewport->setProperty("contentY", maximum));
+            QTRY_VERIFY(extractAction->mapToItem(viewport, QPointF()).y() >= 0);
+            QTRY_VERIFY(
+                extractAction->mapToItem(viewport, QPointF(0, extractAction->height())).y() <=
+                viewport->height() + .5);
+            QVERIFY(visual_audit::save(window, captures, "main-inspector-bottom"));
+            QVERIFY(viewport->setProperty("contentY", 0));
         }
         auto *all = findVisual(window->contentItem(), "selectPage");
         QVERIFY(all);
