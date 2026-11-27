@@ -135,6 +135,8 @@ class BrowserController : public QObject {
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(bool searchActive READ searchActive NOTIFY changed)
     Q_PROPERTY(QString title READ title NOTIFY changed)
+    Q_PROPERTY(QString archiveFolder READ archiveFolder NOTIFY changed)
+    Q_PROPERTY(QString toolbarError READ toolbarError NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
     Q_PROPERTY(QString creationError READ creationError NOTIFY changed)
     Q_PROPERTY(QVariantList creationInputs READ creationInputs NOTIFY creationInputsChanged)
@@ -159,6 +161,12 @@ class BrowserController : public QObject {
     }
     QString sourcePath() const {
         return m_sourcePath;
+    }
+    QString archiveFolder() const {
+        return m_archiveFolder;
+    }
+    QString toolbarError() const {
+        return m_toolbarError;
     }
     void discardBrowsing();
     bool archiveMutationPending() const {
@@ -343,6 +351,8 @@ class BrowserController : public QObject {
     void finishCloseWhenTransfersDrain();
     void refreshAfterUpdate(const QString &session, const QString &source);
     Q_INVOKABLE void prepareExtraction(bool all, const QStringList &selectors = {});
+    Q_INVOKABLE void quickExtract(const QString &destination);
+    Q_INVOKABLE void revealArchiveLocation();
     Q_INVOKABLE QString chooseTarget(const QString &initial, QWindow *owner = nullptr);
     Q_INVOKABLE QStringList chooseCreationInputs(bool directories, QWindow *owner = nullptr);
     Q_INVOKABLE void inspectCreationInputs(const QStringList &paths);
@@ -439,6 +449,10 @@ class BrowserController : public QObject {
         ExportManifest,
         Export,
     };
+    struct QuickExtraction {
+        QString target;
+        bool createFolder = false;
+    };
     struct Result {
         RequestKind kind = RequestKind::None;
         bool isQuery() const {
@@ -458,6 +472,7 @@ class BrowserController : public QObject {
                    kind == RequestKind::InspectInputs || kind == RequestKind::ExportManifest;
         }
         QStringList frozenSelectors;
+        std::optional<QuickExtraction> quickExtraction;
         QStringList previewPaths;
         QVariantList inputInfo;
         QString taskId;
@@ -487,13 +502,16 @@ class BrowserController : public QObject {
         quint64 revision = 0, sequence = 0;
         bool creation = false;
         QString identity;
+        std::optional<bool> quickCreateFolder;
     };
     std::optional<DeferredQuery> m_deferredQuery;
     quint64 m_generation = 0;
     QueryState m_committedQuery;
     void restoreQuery();
     void fetchPage(int offset);
-    void presentExtractionIntent(bool all);
+    void prepareExtractionIntent(bool all, const QStringList &selectors,
+                                 std::optional<QuickExtraction> quick);
+    void presentExtractionIntent(bool all, const std::optional<QuickExtraction> &quick);
     void startContentPreview(quint64 entry, const QString &password = {}, bool supplied = false);
     void submitContentPreview();
     void receiveContentPreview(const xdzip::reader::Event &event);
@@ -588,6 +606,7 @@ class BrowserController : public QObject {
     bool m_updateActive = false;
     QString m_archiveOperation;
     QString m_entryEditError;
+    QString m_toolbarError;
     bool m_archiveCancellationRequested = false;
     bool m_restoreAfterUpdate = false;
     QString m_updateLocation;
@@ -613,9 +632,10 @@ class BrowserController : public QObject {
     bool m_creationPreviewPending = false;
     quint64 m_creationTargetRevision = 0, m_targetRevision = 0, m_targetSequence = 0;
     std::optional<TargetRequest> m_pendingCreationTarget, m_pendingTarget, m_activeTarget;
-    void queueTargetCheck(const QString &path, bool creation, const QString &identity = {});
-    void finishTargetCheck(const QString &error, quint64 leftovers = 0,
-                           const QString &identity = {});
+    void queueTargetCheck(const QString &path, bool creation, const QString &identity = {},
+                          std::optional<bool> quickCreateFolder = std::nullopt);
+    std::optional<bool> finishTargetCheck(const QString &error, quint64 leftovers = 0,
+                                          const QString &identity = {});
     void deferActiveTarget();
     QStringList m_createdArchivesToOpen;
     void drainCreationUiWhenIdle();

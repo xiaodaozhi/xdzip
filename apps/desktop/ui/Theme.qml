@@ -394,6 +394,8 @@ QtObject {
     readonly property real mainColumnMinimumWidth: 64
     readonly property real mainNameColumnMinimumWidth: 160
     readonly property real mainToolbarContentGap: 6
+    readonly property real mainToolbarRecentWidthFactor: 0.8
+    readonly property real mainToolbarRecentLabelGapFactor: 0.5
     readonly property real mainBreadcrumbHeight: 28
     readonly property real mainPopupGap: 4
     readonly property real mainTreeTrailingInset: 16

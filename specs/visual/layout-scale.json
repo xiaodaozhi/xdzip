@@ -52,6 +52,8 @@
       "columnMinimumWidth": 64,
       "nameColumnMinimumWidth": 160,
       "toolbarContentGap": 6,
+      "toolbarRecentWidthFactor": 0.8,
+      "toolbarRecentLabelGapFactor": 0.5,
       "breadcrumbHeight": 28,
       "popupGap": 4,
       "treeTrailingInset": 16,

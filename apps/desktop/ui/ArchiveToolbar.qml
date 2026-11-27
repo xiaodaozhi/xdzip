@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Xdzip.Settings 1.0
 
 Rectangle {
     id: root
@@ -22,6 +23,12 @@ Rectangle {
     signal clearSelectionRequested
     signal detailsRequested
     signal settingsRequested
+    signal recentArchiveRequested(string path)
+    signal revealRequested
+    signal quickExtractRequested(string destination)
+    property string archiveFolder: ""
+    property bool canQuickExtract: false
+    property bool canReveal: false
     function focusSearch() {
         searchField.forceActiveFocus(Qt.ShortcutFocusReason);
         searchField.selectAll();
@@ -46,21 +53,109 @@ Rectangle {
         RowLayout {
             Layout.preferredHeight: root.controlHeight
             spacing: 0
-            ArchiveAction {
-                id: openAction
-                toolbarStyle: true
-                tooltipEnabled: false
+            FocusScope {
+                id: openGroup
+                objectName: "toolbarOpenSplit"
+                readonly property real disclosureWidth: Math.round(Theme.welcomeRecentDisclosureWidth * Theme.fontScale) * Theme.mainToolbarRecentWidthFactor
+                readonly property bool splitVisible: enabled && (openAction.hovered || recentButton.hovered
+                    || recentButton.visualFocus || history.visible)
+                enabled: root.canOpen
+                implicitWidth: Math.max(Theme.mainToolbarActionWidth, openAction.implicitWidth + disclosureWidth)
+                Layout.preferredWidth: implicitWidth
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
-                objectName: "archiveOpen"
-                Layout.preferredWidth: Math.max(Theme.mainToolbarActionWidth, implicitWidth)
                 Layout.rightMargin: Math.floor(Theme.mainToolbarOpenGap)
-                leftPadding: Theme.mainToolbarActionInset
-                rightPadding: 0
-                text: qsTrId("ui.c771248e511f")
-                asset: "open"
-                enabled: root.canOpen
-                onClicked: root.openRequested()
+                onVisibleChanged: if (!visible) history.close()
+                onEnabledChanged: if (!enabled) history.close()
+
+                function showHistory() {
+                    recentButton.forceActiveFocus(Qt.OtherFocusReason);
+                    history.paths = AppSettings.recentArchives();
+                    history.open();
+                }
+                ArchiveAction {
+                    id: openAction
+                    objectName: "archiveOpen"
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: recentButton.left
+                    toolbarStyle: true
+                    tooltipEnabled: false
+                    leftPadding: Theme.mainToolbarActionInset
+                    rightPadding: Math.round(Theme.mainToolbarContentGap * Theme.fontScale) * Theme.mainToolbarRecentLabelGapFactor
+                    text: qsTrId("ui.c771248e511f")
+                    asset: "open"
+                    onClicked: root.openRequested()
+                    Keys.onDownPressed: event => {
+                        if (event.modifiers & Qt.AltModifier) {
+                            openGroup.showHistory();
+                            event.accepted = true;
+                        }
+                    }
+                    background: Rectangle {
+                        objectName: "toolbarOpenBackground"
+                        width: openGroup.splitVisible ? openAction.width : openGroup.width
+                        height: openAction.height
+                        radius: Theme.mainToolbarRadius
+                        topRightRadius: openGroup.splitVisible ? 0 : radius
+                        bottomRightRadius: topRightRadius
+                        color: !openAction.enabled ? "transparent" : openAction.down ? Theme.controlPressed
+                            : openAction.hovered ? Theme.controlHover : "transparent"
+                        border.color: Theme.accentInk
+                        border.width: openAction.visualFocus ? 1 : 0
+                    }
+                }
+                Button {
+                    id: recentButton
+                    objectName: "toolbarRecentToggle"
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: openGroup.disclosureWidth
+                    hoverEnabled: true
+                    focusPolicy: Qt.StrongFocus
+                    Accessible.name: qsTrId("desktop.recent")
+                    onClicked: openGroup.showHistory()
+                    Keys.onDownPressed: openGroup.showHistory()
+                    Keys.onReturnPressed: openGroup.showHistory()
+                    padding: 0
+                    contentItem: Item {
+                        Image {
+                            anchors.centerIn: parent
+                            width: Theme.welcomeRecentDisclosureIconSize
+                            height: width
+                            visible: openGroup.splitVisible
+                            source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "chevron-down.png"
+                            fillMode: Image.PreserveAspectFit
+                        }
+                    }
+                    background: Rectangle {
+                        objectName: "toolbarRecentBackground"
+                        visible: openGroup.splitVisible
+                        radius: Theme.mainToolbarRadius
+                        topLeftRadius: 0
+                        bottomLeftRadius: 0
+                        color: recentButton.down || history.visible ? Theme.controlPressed
+                            : recentButton.hovered ? Theme.controlHover : "transparent"
+                        border.color: Theme.accentInk
+                        border.width: recentButton.visualFocus ? 1 : 0
+                        Rectangle {
+                            width: 1
+                            height: parent.height
+                            color: Theme.border
+                            opacity: 0.8
+                        }
+                    }
+                }
+                WelcomeRecentPopup {
+                    id: history
+                    parent: openGroup
+                    focusReturn: recentButton
+                    x: 0
+                    onRecentSelected: path => root.recentArchiveRequested(path)
+                    onClearRequested: AppSettings.clearRecentArchives()
+                }
             }
             ArchiveAction {
                 toolbarStyle: true
@@ -117,6 +212,12 @@ Rectangle {
                     id: more
                     y: parent.height + Theme.mainPopupGap
                     objectName: "archiveMoreMenu"
+                    CommandMenuItem {
+                        objectName: "toolbarRevealArchive"
+                        text: qsTrId("desktop.revealArchive")
+                        enabled: root.canReveal
+                        onTriggered: root.revealRequested()
+                    }
                     CommandMenuItem {
                         text: qsTrId("settings.title")
                         onTriggered: root.settingsRequested()
@@ -241,6 +342,37 @@ Rectangle {
                         text: qsTrId("ui.a1fca7bde5d2")
                         enabled: root.canSearch && root.canSelect && root.hasSelection
                         onTriggered: root.extractRequested(false)
+                    }
+                    CommandMenu {
+                        objectName: "toolbarQuickMenu"
+                        title: qsTrId("desktop.quickExtract")
+                        enabled: root.canQuickExtract
+                        CommandMenuItem {
+                            objectName: "toolbarQuickCurrent"
+                            text: qsTrId("desktop.quickExtractHere")
+                            onTriggered: root.quickExtractRequested("here")
+                        }
+                        CommandMenuItem {
+                            objectName: "toolbarQuickSameName"
+                            text: qsTrId("desktop.quickExtractSameName").arg(root.archiveFolder)
+                            userData: true
+                            onTriggered: root.quickExtractRequested("sameName")
+                        }
+                        CommandMenuItem {
+                            objectName: "toolbarQuickDesktop"
+                            text: qsTrId("desktop.quickExtractDesktop")
+                            onTriggered: root.quickExtractRequested("desktop")
+                        }
+                        CommandMenuItem {
+                            objectName: "toolbarQuickDocuments"
+                            text: qsTrId("desktop.quickExtractDocuments")
+                            onTriggered: root.quickExtractRequested("documents")
+                        }
+                        CommandMenuItem {
+                            objectName: "toolbarQuickDownloads"
+                            text: qsTrId("desktop.quickExtractDownloads")
+                            onTriggered: root.quickExtractRequested("downloads")
+                        }
                     }
                     CommandMenuSeparator {}
                     CommandMenuItem {

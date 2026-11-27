@@ -28,6 +28,7 @@
       "linux_initial_placement": "On X11 center each newly created main window on the available geometry of the screen containing the pointer before its first presentation. Restoring an existing window retains its position. On Wayland initial placement follows the compositor.",
       "welcome_format_policy": "起始页在 608 逻辑像素内容区内显示可打开格式总数和文件关联入口。总数按登记的可读格式标签去重，排除仅展示安装器元数据的分类。尺寸依据 welcome-reference.json，高保真底稿为 design/hifi/screens/welcome-top-light.png。",
       "welcome_recent_policy": "打开压缩包卡片在悬停或键盘聚焦下显示右侧下拉入口。菜单沿用共享菜单密度，滚动区按已加载的行数确定高度，首批与后续每批最多显示 20 项。清空项固定在菜单底部。尺寸依据 welcome-reference.json。",
+      "archive_toolbar_policy": "文件页打开按钮右侧的历史入口沿用起始页箭头，宽度按 layout-scale.json 的比例缩窄。文字至分区为一半工具栏内容间距，随字号缩放。左右分区独立响应悬停，并共用起始页历史菜单。快速解压使用共享级联菜单和既有任务进度窗口。高保真底稿为 design/hifi/screens/main-capsule-light.png。",
       "statusbar_policy": "Welcome and archive pages share a 32-unit minimum status bar, growing by the same task-control metrics for larger text. Both task buttons use the same 16-unit task-list icon from layout-scale.json main.interaction.taskIconSize.",
       "reopen_wait_policy": "A pending reopen during an archive modification reuses the welcome opening overlay and its existing dimensions; the message identifies the wait and cancellation affects only the new open request.",
       "owned_dialog_policy": "Closing the main window dismisses all its dialogs and releases their native surfaces; retained tasks reopen views only on explicit task activation.",
