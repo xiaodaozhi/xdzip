@@ -4,6 +4,7 @@
   "name": "English (US)",
   "messages": {
     "archive.comment.title": "Archive comment",
+    "archive.comment.view": "View archive comment",
     "archive.comment.loading": "Reading comment…",
     "archive.comment.enter": "Enter an archive comment",
     "archive.comment.empty": "This archive has no comment.",

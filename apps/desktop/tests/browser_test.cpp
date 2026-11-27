@@ -15724,6 +15724,7 @@ QtObject {
         auto *action = window->findChild<QQuickItem *>("toolbarArchiveComment");
         auto *menu = window->findChild<QObject *>("archiveMoreMenu");
         QVERIFY(more && action && menu);
+        QCOMPARE(action->property("text").toString(), qtTrId("archive.comment.view"));
         window->resize(1024, 700);
         QVERIFY(QTest::qWaitForWindowExposed(window));
         const auto click = [](QQuickWindow *host, QQuickItem *item) {
@@ -15753,7 +15754,12 @@ QtObject {
         auto *text = findVisual(editorWindow->contentItem(), "archiveCommentText");
         auto *save = findVisual(editorWindow->contentItem(), "archiveCommentSave");
         QVERIFY(text && save);
+        QCOMPARE(editorWindow->title(), qtTrId("archive.comment.title"));
         QCOMPARE(editorWindow->property("clientWidth").toInt(), 491);
+        auto *body = findVisual(editorWindow->contentItem(), "archiveCommentBody");
+        auto *frame = findVisual(editorWindow->contentItem(), "archiveCommentEditorFrame");
+        QVERIFY(body && frame);
+        QTRY_COMPARE(frame->mapToItem(body, QPointF()).y(), 24.0);
         QVERIFY2(!text->property("readOnly").toBool(),
                  qPrintable(editorWindow->property("error").toString()));
         QVERIFY(!save->isEnabled());
@@ -15781,12 +15787,29 @@ QtObject {
         click(discard, keep);
         QTRY_VERIFY(!discard->isVisible() && editorWindow->isVisible());
         QCOMPARE(text->property("text").toString(), note);
+
+        auto *toolbar = findVisual(window->contentItem(), "archiveToolbar");
+        auto *create = findVisual(toolbar, "archiveNew");
+        auto *extract = findVisual(toolbar, "archiveExtract");
+        QVERIFY(toolbar && create && extract);
+        auto *createIcon = findVisual(create, "actionIcon");
+        auto *extractBackground = findVisual(extract, "actionBackground");
+        QVERIFY(createIcon && extractBackground);
+        QSignalSpy toolbarVisibility(toolbar, &QQuickItem::visibleChanged);
+        QSignalSpy createPaint(createIcon, &QQuickItem::opacityChanged);
+        QSignalSpy extractPaint(extractBackground, SIGNAL(colorChanged()));
+        QSignalSpy extractAvailability(extract, &QQuickItem::enabledChanged);
+        QVERIFY(extractPaint.isValid());
         click(editorWindow, save);
         QTRY_VERIFY_WITH_TIMEOUT(!editorWindow->property("saving").toBool(), 15000);
         const auto saveError = editorWindow->property("error").toString();
         QVERIFY2(saveError.isEmpty(), qPrintable(saveError));
         QTRY_VERIFY_WITH_TIMEOUT(
             !editorWindow->isVisible() && controller->ready() && !controller->busy(), 15000);
+        QVERIFY(extractAvailability.size() >= 2);
+        QCOMPARE(toolbarVisibility.size(), 0);
+        QCOMPARE(createPaint.size(), 0);
+        QCOMPARE(extractPaint.size(), 0);
         QVERIFY(QFile::copy(zip, cbz));
         controller->openPath(cbz);
         QTRY_VERIFY(controller->ready() && !controller->busy());

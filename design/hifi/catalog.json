@@ -8,9 +8,9 @@
       "role": "fixed-design-artwork",
       "size": [
         491,
-        399
+        335
       ],
-      "sha256": "fa47a3126e5b812c54c717815c5c22c426ad2876a43cebaf192717a7128ad077"
+      "sha256": "779fb55cd33852d5a57eb5a8a92312192e656ce2cc1a992637ae7e2d60216e85"
     },
     {
       "file": "screens/archive-comment-read-dark.svg",
@@ -19,9 +19,9 @@
       "role": "fixed-design-artwork",
       "size": [
         491,
-        399
+        335
       ],
-      "sha256": "3a8cddd353ab39298e4367a114e4149a13bd813a9a87f03356c4b97ce8db3b3e"
+      "sha256": "577ef34982f1d57ca84465b88311d90a88cd778a0abe64760a7761ebbc1f9019"
     },
     {
       "file": "screens/welcome-top-light.png",

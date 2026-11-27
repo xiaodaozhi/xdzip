@@ -13,4 +13,4 @@ Los archivos comprimidos se abren en pestañas de forma predeterminada. Puedes c
 
 ## Ver el comentario del archivo
 
-Abre un archivo ZIP o RAR y elige **Más → Comentario del archivo** en la barra de herramientas. Puedes seleccionar y copiar el texto. En un ZIP, ZIP64 o ZIPX normal con permisos de escritura, edita el texto y elige **Guardar**. Para eliminar el comentario, borra el texto y guarda. El límite es de 65 535 bytes en UTF-8. Los ZIP divididos, autoextraíbles, cifrados o indexados en disco, los paquetes firmados o derivados y los comentarios RAR son de solo lectura.
+Abre un archivo ZIP o RAR y elige **Más → Ver comentario del archivo** en la barra de herramientas. Puedes seleccionar y copiar el texto. En un ZIP, ZIP64 o ZIPX normal con permisos de escritura, edita el texto y elige **Guardar**. Para eliminar el comentario, borra el texto y guarda. El límite es de 65 535 bytes en UTF-8. Los ZIP divididos, autoextraíbles, cifrados o indexados en disco, los paquetes firmados o derivados y los comentarios RAR son de solo lectura.

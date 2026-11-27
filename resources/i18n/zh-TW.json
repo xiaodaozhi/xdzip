@@ -4,6 +4,7 @@
   "name": "中文 (繁体)",
   "messages": {
     "archive.comment.title": "壓縮檔註解",
+    "archive.comment.view": "查看壓縮檔註解",
     "archive.comment.loading": "正在讀取註解…",
     "archive.comment.enter": "輸入壓縮檔註解",
     "archive.comment.empty": "此壓縮檔沒有註解。",

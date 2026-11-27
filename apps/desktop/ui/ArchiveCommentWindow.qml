@@ -8,7 +8,6 @@ OperationWindow {
     objectName: "archiveCommentWindow"
     required property var controller
     required property DiscardArchiveCommentWindow discardWindow
-    property string archiveName: ""
     property string session: ""
     property string original: ""
     property string error: ""
@@ -29,7 +28,7 @@ OperationWindow {
     readonly property bool canSave: editable && dirty && valid && !loading && !saving
         && controller.ready && !controller.busy && controller.sessionId === session
     readonly property bool canCancelSave: saving && !cancelling
-        && !["committing", "cleaning"].includes(task.status)
+        && !["committing", "cleaning", "succeeded"].includes(task.status)
     title: qsTrId("archive.comment.title")
     clientWidth: Theme.confirmationLogicalWidth
     requestedHeight: Math.min(Math.ceil(content.implicitHeight + footer.implicitHeight),
@@ -42,7 +41,6 @@ OperationWindow {
             present();
             return;
         }
-        archiveName = controller.title;
         session = controller.sessionId;
         original = "";
         editor.text = "";
@@ -93,6 +91,14 @@ OperationWindow {
             error = qsTrId("archive.comment.saveFailed");
         }
     }
+    function finishCommittedSave() {
+        if (!saving || task.status !== "succeeded" || controller.busy
+                || controller.archiveOperation === "comment")
+            return;
+        saving = false;
+        original = editor.text;
+        close();
+    }
     onClosing: event => {
         if (saving || dirty) {
             event.accepted = false;
@@ -109,6 +115,10 @@ OperationWindow {
     Connections {
         target: root.controller
         function onChanged() {
+            if (root.saving && root.task.status === "succeeded") {
+                Qt.callLater(root.finishCommittedSave);
+                return;
+            }
             if (!root.visible)
                 return;
             if (!root.controller.runtimeAvailable && (root.saving || root.loading)) {
@@ -155,9 +165,7 @@ OperationWindow {
                 return;
             root.task = value;
             if (value.status === "succeeded") {
-                root.saving = false;
-                root.original = editor.text;
-                root.close();
+                Qt.callLater(root.finishCommittedSave);
             } else if (value.status === "failed" || value.status === "cancelled") {
                 root.saving = false;
                 root.cancelling = false;
@@ -193,25 +201,8 @@ OperationWindow {
                     Layout.fillWidth: true
                     Layout.margins: Theme.confirmationContentInset
                     spacing: Theme.confirmationSectionGap
-                    Text {
-                        Layout.fillWidth: true
-                        text: root.title
-                        textFormat: Text.PlainText
-                        color: Theme.text
-                        font.pixelSize: Theme.confirmationTitleSize
-                        font.weight: Font.DemiBold
-                        wrapMode: Text.Wrap
-                    }
-                    Text {
-                        Layout.fillWidth: true
-                        text: root.archiveName
-                        textFormat: Text.PlainText
-                        color: Theme.textSecondary
-                        font.family: Theme.userDataFontFamily
-                        font.pixelSize: Theme.confirmationBodySize
-                        wrapMode: Text.Wrap
-                    }
                     OperationFrame {
+                        objectName: "archiveCommentEditorFrame"
                         Layout.fillWidth: true
                         Layout.preferredHeight: Theme.archiveCommentEditorHeight
                         control: editor

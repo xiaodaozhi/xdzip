@@ -907,6 +907,7 @@ Item {
             canTest: reader.ready && reader.browserQueryAvailable && !reader.taskStarting
             archiveCommentSupported: reader.archiveCommentSupported
             canOpenArchiveComment: reader.ready && reader.browserQueryAvailable && !reader.busy
+            preserveActionAppearance: archiveCommentWindow.visible
             onArchiveCommentRequested: archiveCommentWindow.openForCurrentArchive()
             canInspect: reader.ready && reader.browserQueryAvailable && reader.canPreflight
             canQuickExtract: reader.ready && reader.browserQueryAvailable && !reader.busy && !extractWindow.visible
@@ -2230,7 +2231,7 @@ Item {
         y: pageColumn.y + archiveWorkspace.y
         width: archiveWorkspace.width
         height: archiveWorkspace.height
-        busy: root.archiveOperationVisible && !root.closedPage
+        busy: root.archiveOperationVisible && !root.closedPage && !archiveCommentWindow.visible
         cancellationPending: reader.archiveCancelling
         backdropColor: "transparent"
         archiveName: reader.title

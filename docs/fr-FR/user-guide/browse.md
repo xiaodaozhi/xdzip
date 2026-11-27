@@ -13,4 +13,4 @@ Les archives s’ouvrent par défaut dans des onglets. Un réglage permet de les
 
 ## Afficher le commentaire de l’archive
 
-Ouvrez une archive ZIP ou RAR, puis choisissez **Plus → Commentaire de l’archive** dans la barre d’outils. Vous pouvez sélectionner et copier le texte. Pour un ZIP, ZIP64 ou ZIPX ordinaire accessible en écriture, modifiez le texte puis choisissez **Enregistrer**. Videz le texte puis enregistrez pour supprimer le commentaire. La limite est de 65 535 octets en UTF-8. Les ZIP fractionnés, autoextractibles, chiffrés ou indexés sur disque, les paquets signés ou dérivés et les commentaires RAR sont en lecture seule.
+Ouvrez une archive ZIP ou RAR, puis choisissez **Plus → Voir le commentaire de l’archive** dans la barre d’outils. Vous pouvez sélectionner et copier le texte. Pour un ZIP, ZIP64 ou ZIPX ordinaire accessible en écriture, modifiez le texte puis choisissez **Enregistrer**. Videz le texte puis enregistrez pour supprimer le commentaire. La limite est de 65 535 octets en UTF-8. Les ZIP fractionnés, autoextractibles, chiffrés ou indexés sur disque, les paquets signés ou dérivés et les commentaires RAR sont en lecture seule.

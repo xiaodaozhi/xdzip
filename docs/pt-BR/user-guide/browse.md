@@ -13,4 +13,4 @@ Por padrão, os arquivos compactados abrem em abas. Altere a configuração para
 
 ## Ver o comentário do arquivo
 
-Abra um arquivo ZIP ou RAR e escolha **Mais → Comentário do arquivo** na barra de ferramentas. Você pode selecionar e copiar o texto. Em um ZIP, ZIP64 ou ZIPX comum que permita gravação, edite o texto e escolha **Salvar**. Para excluir o comentário, apague o texto e salve. O limite é de 65.535 bytes em UTF-8. ZIPs divididos, autoextraíveis, criptografados ou com índice em disco, pacotes assinados ou derivados e comentários de RAR são somente leitura.
+Abra um arquivo ZIP ou RAR e escolha **Mais → Ver comentário do arquivo** na barra de ferramentas. Você pode selecionar e copiar o texto. Em um ZIP, ZIP64 ou ZIPX comum que permita gravação, edite o texto e escolha **Salvar**. Para excluir o comentário, apague o texto e salve. O limite é de 65.535 bytes em UTF-8. ZIPs divididos, autoextraíveis, criptografados ou com índice em disco, pacotes assinados ou derivados e comentários de RAR são somente leitura.

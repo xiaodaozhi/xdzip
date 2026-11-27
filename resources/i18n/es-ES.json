@@ -4,6 +4,7 @@
   "name": "Español",
   "messages": {
     "archive.comment.title": "Comentario del archivo",
+    "archive.comment.view": "Ver comentario del archivo",
     "archive.comment.loading": "Leyendo el comentario…",
     "archive.comment.enter": "Escribe un comentario",
     "archive.comment.empty": "Este archivo no tiene comentarios.",
