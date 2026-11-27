@@ -369,7 +369,13 @@ fn windows_shared_extraction_reserves_a_private_numbered_directory() {
     let output = target
         .output(Some(&path("sample")), false, || false)
         .unwrap();
-    assert_eq!(output.display_path(), inherited.join("sample (4)"));
+    assert_eq!(output.display_path().file_name().unwrap(), "sample (4)");
+    // The runner can supply TEMP through an 8.3 alias, while the grant reports
+    // the path resolved by Windows.
+    assert_eq!(
+        fs::canonicalize(output.display_path()).unwrap(),
+        fs::canonicalize(inherited.join("sample (4)")).unwrap()
+    );
     assert_eq!(output.created_directories(), 1);
     assert!(fs::rename(output.display_path(), inherited.join("renamed")).is_err());
     let mut work = output.workspace(27).unwrap();
@@ -404,7 +410,11 @@ fn windows_selected_junction_resolves_to_its_checked_identity() {
     assert_eq!(selected.probe(), Ok(0));
     let identity = selected.identity();
     let grant = selected.output(None, false, || false).unwrap();
-    assert_eq!(grant.display_path(), destination.0);
+    assert_eq!(grant.display_path().file_name(), destination.0.file_name());
+    assert_eq!(
+        fs::canonicalize(grant.display_path()).unwrap(),
+        fs::canonicalize(&destination.0).unwrap()
+    );
     fs::remove_dir(&alias).unwrap();
     junction(&parent.0, "selected", &different.0);
     assert_eq!(grant.validate(), Err(OutputError::TargetChanged));
