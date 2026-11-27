@@ -114,6 +114,39 @@ fn service_comment(bytes: &[u8], child: bool) -> Vec<u8> {
     record
 }
 
+#[test]
+fn archive_comment_is_independent_of_inline_and_service_entry_comments() {
+    let control = Cancellation::default();
+    let file = file_with_comment(b"entry");
+    let child = service_comment(b"child", true);
+    let mut inline = b"Rar!\x1a\x07\x00".to_vec();
+    inline.extend(main_with_comment("压缩包".as_bytes()));
+    inline.extend(&file);
+    inline.extend(&child);
+    for (bytes, expected) in [
+        (inline, Some("压缩包")),
+        (
+            old_archive(&[
+                file.clone(),
+                child.clone(),
+                service_comment(b"archive", false),
+            ]),
+            Some("archive"),
+        ),
+        (old_archive(&[file, child]), None),
+    ] {
+        let mut source = Cursor::new(bytes);
+        let mut index = read_index(&mut source, &control, ScanLimits::default(), None).unwrap();
+        assert_eq!(
+            index
+                .archive_comment(&mut source, &control)
+                .unwrap()
+                .as_deref(),
+            expected
+        );
+    }
+}
+
 fn service_comment_with_time(
     bytes: &[u8],
     subdata: &[u8],

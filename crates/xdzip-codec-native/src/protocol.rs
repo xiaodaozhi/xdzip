@@ -25,6 +25,7 @@ pub const ACK: u8 = 21;
 pub const NEXT: u8 = 22;
 pub const PRECHARGED_DATA: u8 = 23;
 pub const AUX_WORK: u8 = 24;
+pub const ARCHIVE_COMMENT: u8 = 25;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Fault {

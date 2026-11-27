@@ -87,6 +87,7 @@
 #include <QtTest>
 #include <atomic>
 #include <cmath>
+#include <fstream>
 #include <thread>
 #ifdef Q_OS_WIN
 #ifndef NOMINMAX
@@ -15662,6 +15663,153 @@ QtObject {
         QVERIFY(!controller.navigationLimited());
         QCOMPARE(tree->rowCount(), 0);
     }
+    void archiveCommentWindowFlows_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<QString>("theme");
+        QTest::addColumn<double>("scale");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const auto &theme : {QStringLiteral("light"), QStringLiteral("dark")})
+                for (const double scale : {1.0, 1.25, 1.5}) {
+                    const auto tag = QString("%1-%2-%3").arg(language, theme).arg(scale);
+                    QTest::newRow(qPrintable(tag)) << language << theme << scale;
+                }
+    }
+
+    void archiveCommentWindowFlows() {
+        QFETCH(QString, language);
+        QFETCH(QString, theme);
+        QFETCH(double, scale);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        // Inherit the private runtime root's access policy for the ZIP edit.
+        const QDir temp(test_environment::processValue("XDZIP_BROWSER_TEST_TEMP_ROOT"));
+        const auto leaf =
+            QStringLiteral("archive-comment-") + QUuid::createUuid().toString(QUuid::WithoutBraces);
+        QVERIFY(temp.mkdir(leaf));
+        const QDir owned(temp.filePath(leaf));
+        const auto zip = owned.filePath("comment.zip");
+        const auto cbz = owned.filePath("comment.cbz");
+        const auto cleanup = qScopeGuard([&] {
+            QFile::remove(zip);
+            QFile::remove(cbz);
+            temp.rmdir(leaf);
+        });
+        const auto fixture = QStringLiteral(XDZIP_FIXTURES "/normal.zip");
+        QFile input(fixture);
+        QVERIFY(input.open(QIODevice::ReadOnly));
+        const auto original = input.readAll();
+        {
+            std::ofstream source(QFileInfo(zip).filesystemFilePath(), std::ios::binary);
+            QVERIFY(source);
+            source.write(original.constData(), original.size());
+            source.close();
+            QVERIFY(source);
+        }
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(preferences->saveDetails(theme, scale, language, "standard", false, false, false,
+                                         "tabs"));
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(zip);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        auto *editorWindow = window->findChild<QQuickWindow *>("archiveCommentWindow");
+        QVERIFY(editorWindow);
+        auto *more = findVisual(window->contentItem(), "archiveMore");
+        auto *action = window->findChild<QQuickItem *>("toolbarArchiveComment");
+        auto *menu = window->findChild<QObject *>("archiveMoreMenu");
+        QVERIFY(more && action && menu);
+        window->resize(1024, 700);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto click = [](QQuickWindow *host, QQuickItem *item) {
+            const auto center =
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
+            moveTestPointer(host, center);
+            QTest::mouseClick(host, Qt::LeftButton, Qt::NoModifier, center);
+        };
+        QTRY_VERIFY(findVisual(window->contentItem(), "entryName-0"));
+        auto *entryName = findVisual(window->contentItem(), "entryName-0");
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("opened").toBool() && action->isVisible() &&
+                    action->isEnabled());
+        QCOMPARE(menu->property("width").toDouble(), 240.0 * scale);
+        const auto menuSize = menu->property("font").value<QFont>().pixelSize();
+        const auto ratio =
+            menuSize / double(entryName->property("font").value<QFont>().pixelSize());
+        QVERIFY(ratio >= .95 && ratio <= 1.10);
+        const auto captures = qEnvironmentVariable("XDZIP_COMMENT_VISUAL_AUDIT");
+        if (nativeSystemPointer() && !captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(window, captures,
+                                       QStringLiteral("comment-menu-") + QTest::currentDataTag()));
+        }
+        click(window, action);
+        QTRY_VERIFY(editorWindow->isVisible() && !editorWindow->property("loading").toBool());
+        auto *text = findVisual(editorWindow->contentItem(), "archiveCommentText");
+        auto *save = findVisual(editorWindow->contentItem(), "archiveCommentSave");
+        QVERIFY(text && save);
+        QCOMPARE(editorWindow->property("clientWidth").toInt(), 491);
+        QVERIFY2(!text->property("readOnly").toBool(),
+                 qPrintable(editorWindow->property("error").toString()));
+        QVERIFY(!save->isEnabled());
+        QString note = QString::fromUtf8("压缩包说明\n<plain text> 📌");
+        if (language == "en-US" && theme == "light" && scale == 1.0)
+            note += QStringLiteral("\n") + QString(1100, QChar(0x5B57));
+        QVERIFY(text->setProperty("text", note));
+        QVERIFY(save->isEnabled());
+        QCOMPARE(editorWindow->property("byteCount").toInt(), note.toUtf8().size());
+        QVERIFY(text->setProperty("text", QString(21846, QChar(0x5B57))));
+        QVERIFY(!save->isEnabled());
+        QVERIFY(text->setProperty("text", note));
+        if (nativeSystemPointer() && !captures.isEmpty()) {
+            QVERIFY(visual_audit::save(editorWindow, captures,
+                                       QString("comment-edit-%1").arg(QTest::currentDataTag())));
+        }
+        QTRY_VERIFY(text->hasActiveFocus());
+        auto *discard = qobject_cast<QQuickWindow *>(
+            editorWindow->property("discardWindow").value<QObject *>());
+        QVERIFY(discard);
+        QTest::keyClick(editorWindow, Qt::Key_Escape);
+        QTRY_VERIFY(discard->isVisible());
+        auto *keep = findVisual(discard->contentItem(), "keepArchiveComment");
+        QVERIFY(keep);
+        click(discard, keep);
+        QTRY_VERIFY(!discard->isVisible() && editorWindow->isVisible());
+        QCOMPARE(text->property("text").toString(), note);
+        click(editorWindow, save);
+        QTRY_VERIFY_WITH_TIMEOUT(!editorWindow->property("saving").toBool(), 15000);
+        const auto saveError = editorWindow->property("error").toString();
+        QVERIFY2(saveError.isEmpty(), qPrintable(saveError));
+        QTRY_VERIFY_WITH_TIMEOUT(
+            !editorWindow->isVisible() && controller->ready() && !controller->busy(), 15000);
+        QVERIFY(QFile::copy(zip, cbz));
+        controller->openPath(cbz);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QVERIFY(QMetaObject::invokeMethod(menu, "open"));
+        QTRY_VERIFY(menu->property("opened").toBool() && action->isVisible() &&
+                    action->isEnabled());
+        click(window, action);
+        QTRY_VERIFY(editorWindow->isVisible() && !controller->busy());
+        QVERIFY(text->property("readOnly").toBool());
+        QVERIFY(!save->isVisible());
+        QCOMPARE(text->property("text").toString(), note);
+        if (nativeSystemPointer() && !captures.isEmpty()) {
+            QVERIFY(visual_audit::save(editorWindow, captures,
+                                       QString("comment-view-%1").arg(QTest::currentDataTag())));
+            if (language == "en-US" && theme == "light" && scale == 1.0)
+                QVERIFY(QFile::copy(zip, QDir(captures).filePath("archive-comment-saved.zip")));
+        }
+        QTRY_VERIFY(text->hasActiveFocus());
+        QTest::keyClick(editorWindow, Qt::Key_Escape);
+        QTRY_VERIFY(!editorWindow->isVisible());
+        QTRY_VERIFY(more->hasActiveFocus());
+    }
+
     void inspectorPropertiesNativeVisual() {
         const auto directory = qEnvironmentVariable("XDZIP_INSPECTOR_VISUAL_AUDIT");
         if (!nativeSystemPointer() || directory.isEmpty())

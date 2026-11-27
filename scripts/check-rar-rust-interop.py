@@ -103,6 +103,9 @@ def main():
         environment['XDZIP_NATIVE_CODEC_WORKER'] = str(worker)
         environment['XDZIP_NATIVE_CODEC'] = str(worker)
         report['fixture_sources'] = sources
+        comments, comment_sources = prepare.prepare_comments(output / 'comments', args.archives, args.offline)
+        environment.update(comments)
+        report['comment_fixture_sources'] = comment_sources
         include, library, headers = bridge_inputs(worker)
         report['os_probe_inputs'] = dict(
             archive=dict(relative_to_worker=str(library.relative_to(worker.parent)),
@@ -136,6 +139,26 @@ def main():
         # required data. A narrower local run is explicitly recorded above.
         test('runtime-native-batch', 'xdzip-runtime', args.runtime_filter)
         native = module('rar_native_helper', 'check-native-codecs.py')
+        password = environment['XDZIP_RAR_FIXTURE_PASSWORD']
+        archive_cases = [
+            ('FCOMM.RAR', None, None),
+            ('rar202-comment-nopsw.rar', None, 'RARcomment'),
+            ('rar3-comment-plain.rar', None, 'RARcomment\n'),
+            ('rar3-comment-hpsw.rar', password, None),
+            ('rar3-comment-psw.rar', password, 'RARcomment\n'),
+        ]
+        for name, secret, expected in archive_cases:
+            archive = (Path(comments['XDZIP_RAR_COMMENT_FIXTURES']) / name).read_bytes()
+            try:
+                _, text = native.run_worker(worker, [archive], password=secret, format_id=4,
+                                            archive_comment=True)
+            except native.WorkerError as error:
+                if expected is not None or str(error) != 'native_error_3':
+                    raise
+            else:
+                if expected is None or text != expected:
+                    raise ValueError('archive comment result differs for ' + name)
+        report['archive_comment_fixtures'] = dict(status='passed', cases=len(archive_cases))
         tiny = ROOT / 'crates/xdzip-codec-rar/tests/fixtures/filter-author/rar29-e8e9-auto.rar'
         archive = tiny.read_bytes()
         if hashlib.sha256(archive).hexdigest() != 'df693c44b99e9eeebd261f1cb55760047efe5add584c22f050bfb58258ef842a':

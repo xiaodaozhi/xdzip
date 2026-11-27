@@ -68,6 +68,90 @@ impl RarIndex {
         &self.0.rows
     }
 
+    /// Read the archive-level comment. Missing, unsupported and damaged
+    /// comments are distinct results; entry comments have no bearing on them.
+    pub fn archive_comment(
+        &mut self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+    ) -> Result<Option<String>, ScanError> {
+        use index::ArchiveComment;
+        control.check()?;
+        let (bytes, utf16) = match &self.0.archive_comment {
+            None => return Ok(None),
+            Some(ArchiveComment::Unsupported) => return Err(ScanError::Unsupported),
+            Some(ArchiveComment::Ambiguous) => return Err(ScanError::Invalid),
+            Some(ArchiveComment::Inline(inline)) => (
+                comment::inline(inline, control)?.ok_or(ScanError::Invalid)?,
+                false,
+            ),
+            Some(ArchiveComment::Service(at)) => {
+                let part = &self.0.parts[*at];
+                let d = &part.description;
+                if part.before || part.after || d.encrypted || d.redirection || d.special {
+                    return Err(ScanError::Unsupported);
+                }
+                let size = d.size.ok_or(ScanError::Unsupported)?;
+                if size > u64::from(u16::MAX) {
+                    return Err(ScanError::Limit);
+                }
+                let mut reader = source::Reader::new(source, control, METADATA_LIMIT)?;
+                if !d.legacy {
+                    if d.compression != 0 {
+                        return Err(ScanError::Unsupported);
+                    }
+                    if part.packed != size {
+                        return Err(ScanError::Invalid);
+                    }
+                    if reader.bytes(part.volume, part.header_at, part.header.len())? != part.header
+                    {
+                        return Err(ScanError::SourceChanged);
+                    }
+                    let bytes = reader.bytes(part.volume, part.data_at, size as usize)?;
+                    comment::verify_modern(d, &bytes)?;
+                    return String::from_utf8(bytes)
+                        .map(|text| Some(text.trim_end_matches('\0').to_owned()))
+                        .map_err(|_| ScanError::Invalid);
+                }
+                let utf16 = d.service_comment_utf16.ok_or(ScanError::Invalid)?;
+                if part.packed > 1024 * 1024 {
+                    return Err(ScanError::Limit);
+                }
+                let bytes = comment::service(
+                    &mut reader,
+                    &self.0.parts,
+                    &[*at],
+                    control,
+                    None,
+                    &mut self.0.protection,
+                )?
+                .ok_or(ScanError::Invalid)?;
+                (bytes, utf16)
+            }
+        };
+        let text = if utf16 {
+            let (pairs, tail) = bytes.as_chunks::<2>();
+            if !tail.is_empty() {
+                return Err(ScanError::Invalid);
+            }
+            let units: Vec<_> = pairs.iter().map(|pair| u16::from_le_bytes(*pair)).collect();
+            String::from_utf16(&units).map_err(|_| ScanError::Invalid)?
+        } else if let Ok(text) = String::from_utf8(bytes.clone()) {
+            text
+        } else {
+            use xdzip_codec_api::names::{NameSample, decode_legacy};
+            let mut sample = NameSample::default();
+            sample.observe_bytes(&bytes);
+            sample
+                .finish(true)
+                .decode_unmarked(&bytes)
+                .map(|(text, _)| text)
+                .or_else(|| decode_legacy(&bytes, "CP437"))
+                .ok_or(ScanError::Invalid)?
+        };
+        Ok(Some(text.trim_end_matches('\0').to_owned()))
+    }
+
     /// Decode only requested entry comments, without using them for file identity.
     pub fn entry_comments(
         &mut self,

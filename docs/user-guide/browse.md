@@ -10,3 +10,7 @@ English | [简体中文](../zh-CN/user-guide/browse.md) | [繁體中文](../zh-T
 Double-clicking a regular file extracts a temporary copy and asks the operating system to open it. Editing that copy does not update the archive. Extract to a chosen location when you need a permanent copy. [Temporary opening](../engineering/archive-opening.md)
 
 Archives open in tabs by default. Change the setting to open them in separate windows. An ordinary single-file ZIP/ZIP64 can index up to one million physical records. Large indexes load rows on demand. Disk-indexed ZIP archives can still support selected-file extraction, but whole-archive testing and modification are disabled. [Large archive limits](../engineering/large-index.md)
+
+## View the archive comment
+
+Open a ZIP or RAR archive and choose **More → Archive comment** in the toolbar. You can select and copy the text. For a writable, ordinary ZIP, ZIP64 or ZIPX archive, edit the text and choose **Save**. Clear it and save to remove it. The limit is 65,535 bytes in UTF-8. Split, self-extracting, encrypted and large disk-indexed ZIPs, signed or derived packages, and RAR comments are read-only.

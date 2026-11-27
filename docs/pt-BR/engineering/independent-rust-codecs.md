@@ -154,3 +154,9 @@ Amostras independentes devem ter ferramentas de geração ou procedência verifi
 | ISO, UDF | ISO9660, Joliet, Rock Ridge, UDF, seleção de imagens híbridas | Mapeamentos de volumes e partições, espaços de nomes, extensões, grafos de diretórios e restrições de itens especiais |
 
 Cada mudança exige interoperabilidade bidirecional (leitura de amostras independentes para formatos somente leitura), regressões de corrupção ou truncamento, estouro numérico, limites de recursos, cancelamento e percurso real do host. O sucesso conjunto de codificador e decodificador internos não comprova compatibilidade. Fuzzing e benchmarks usam fontes fixadas e registram cobertura e duração reais; testes limitados de mutação aleatória não são chamados de fuzzing de longa duração. As verificações automatizadas e de desktop reais de Windows, Linux e Apple Silicon são registradas separadamente. A publicação oficial ainda exige revisão independente de licenças.
+
+## Comentários do arquivo
+
+ZIP lê o comentário EOCD do diretório central validado, inclusive com índice em disco. Tenta UTF-8 estrito e depois o detector existente com CP437 como alternativa. Texto com substituição de caracteres de controle é somente leitura. O salvamento aceita até 65.535 bytes em UTF-8, compara todos os bytes antes do campo de tamanho e substitui o arquivo por meio de uma área privada no mesmo volume. ZIPs divididos, criptografados, assinados, autoextraíveis, indexados em disco ou derivados ficam fora da edição. As verificações de acesso, versão da origem e cancelamento são mantidas.
+
+O processo RAR isolado lê sob demanda comentários antigos do cabeçalho principal, registros CMT independentes do RAR 3/4 e CMT UTF-8 sem compactação antes do primeiro arquivo no RAR 5/7. Verifica comprimentos e somas declarados e usa a senha da sessão para cabeçalhos criptografados. Comentários do RAR 1.4, criptografados separadamente, divididos ou que excedem 65.535 bytes na origem ficam indisponíveis.

@@ -106,6 +106,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QAbstractItemModel *entries READ entries CONSTANT)
     Q_PROPERTY(QAbstractItemModel *directories READ directories CONSTANT)
     Q_PROPERTY(QString formatLabel READ formatLabel NOTIFY changed)
+    Q_PROPERTY(bool archiveCommentSupported READ archiveCommentSupported NOTIFY changed)
     Q_PROPERTY(QString directoryId READ directoryId NOTIFY changed)
     Q_PROPERTY(QVariantList breadcrumbs READ breadcrumbs NOTIFY changed)
     Q_PROPERTY(bool navigationLimited READ navigationLimited NOTIFY changed)
@@ -270,6 +271,9 @@ class BrowserController : public QObject {
     QString formatLabel() const {
         return m_format;
     }
+    bool archiveCommentSupported() const {
+        return m_format == "ZIP" || m_format == "RAR";
+    }
     QString title() const {
         return m_title;
     }
@@ -335,6 +339,10 @@ class BrowserController : public QObject {
     Q_INVOKABLE void discardEntryEdit(const QString &token);
     Q_INVOKABLE bool validEntryName(const QString &name) const;
     Q_INVOKABLE bool startEntryEdit(const QString &token, const QString &name);
+    Q_INVOKABLE bool requestArchiveComment();
+    Q_INVOKABLE bool saveArchiveComment(const QString &session, const QString &text);
+    Q_INVOKABLE int archiveCommentBytes(const QString &text) const;
+    Q_INVOKABLE bool validArchiveComment(const QString &text) const;
     Q_INVOKABLE QString directoryForRow(int row) const;
     Q_INVOKABLE QString beginInternalDrag(int row, QWindow *owner = nullptr);
     Q_INVOKABLE bool internalDragCurrent(const QString &token) const;
@@ -414,6 +422,8 @@ class BrowserController : public QObject {
     void extractionStarted(const QString &task);
     void creationStarted(const QString &task);
     void updateStarted(const QString &task);
+    void archiveCommentLoaded(const QVariantMap &comment);
+    void archiveCommentSaveChanged(const QVariantMap &task);
     void additionRequested(const QStringList &paths);
     void archiveTestStarted(const QString &task);
     void creationInputsChanged();
@@ -445,6 +455,7 @@ class BrowserController : public QObject {
         Extraction,
         Creation,
         ArchiveEdit,
+        ArchiveComment,
         ArchiveCheck,
         ExportManifest,
         Export,
@@ -610,6 +621,7 @@ class BrowserController : public QObject {
     bool m_archiveCancellationRequested = false;
     bool m_restoreAfterUpdate = false;
     QString m_updateLocation;
+    QString m_editableCommentSession;
     int m_updateSort = 0;
     bool restoreUpdatedLocation();
     bool m_closing = false;

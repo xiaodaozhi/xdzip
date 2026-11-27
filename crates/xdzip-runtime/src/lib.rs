@@ -69,6 +69,7 @@ pub struct Archive {
     next_query: u64,
     rows: Arc<Vec<Entry>>,
     disk: Option<disk_index::DiskIndex>,
+    zip_comment: Option<Arc<xdzip_codec_zip::ArchiveComment>>,
     payload_subset: bool,
     key: QueryKey,
     directories: Option<Vec<navigation::Directory>>,
@@ -99,7 +100,7 @@ impl Archive {
                 control,
                 password.as_ref().map(extraction::Password::expose),
             )
-            .map(|rows| (rows, None))
+            .map(|rows| (rows, None, None))
         };
         // Preserve validated self-extracting ZIP sources without using the suffix.
         // Budget/cancel/unsupported failures are authoritative and never retried.
@@ -110,7 +111,7 @@ impl Archive {
             match formats::discover_ambiguous_tar(&mut source, control) {
                 Ok(Some((candidate, rows))) => {
                     format = candidate;
-                    Ok((rows, None))
+                    Ok((rows, None, None))
                 }
                 Ok(None) | Err(ScanError::Invalid | ScanError::Unsupported) => scanned,
                 Err(error) => return Err(error),
@@ -127,7 +128,7 @@ impl Archive {
                 Err(ScanError::Invalid) => {
                     if let Some((candidate, rows)) = formats::discover_weak(&mut source, control)? {
                         format = candidate;
-                        Ok((rows, None))
+                        Ok((rows, None, None))
                     } else {
                         scanned
                     }
@@ -139,7 +140,7 @@ impl Archive {
         };
         control.check()?;
         source.validate()?;
-        let (rows, disk) = scanned?;
+        let (rows, disk, zip_comment) = scanned?;
         if source.is_split()
             && !matches!(
                 format,
@@ -213,6 +214,7 @@ impl Archive {
             next_query: 0,
             rows: Arc::new(rows),
             disk,
+            zip_comment,
             payload_subset: false,
             key,
         })
@@ -220,7 +222,7 @@ impl Archive {
     fn scan_zip(
         source: &mut source::Source,
         control: &Cancellation,
-    ) -> Result<(Vec<Entry>, Option<disk_index::DiskIndex>), ScanError> {
+    ) -> Result<ZipIndex, ScanError> {
         let mut rows = Vec::new();
         let mut disk = None;
         let mut retained = 0;
@@ -231,27 +233,33 @@ impl Archive {
             read_bytes: 512 * 1024 * 1024,
             ..Default::default()
         };
-        xdzip_codec_zip::ZipCodec.scan_index(source, control, limits, &mut |entry| {
-            retained += std::mem::size_of::<Entry>() + entry.metadata_capacity();
-            if disk.is_none()
-                && (retained > disk_index::HOT_BYTES || rows.len() >= xdzip_codec_api::MAX_ENTRIES)
-            {
-                let mut builder = disk_index::Builder::new()?;
-                for entry in rows.drain(..) {
-                    control.check()?;
-                    builder.push(&entry)?;
+        let comment =
+            xdzip_codec_zip::ZipCodec.scan_index(source, control, limits, &mut |entry| {
+                retained += std::mem::size_of::<Entry>() + entry.metadata_capacity();
+                if disk.is_none()
+                    && (retained > disk_index::HOT_BYTES
+                        || rows.len() >= xdzip_codec_api::MAX_ENTRIES)
+                {
+                    let mut builder = disk_index::Builder::new()?;
+                    for entry in rows.drain(..) {
+                        control.check()?;
+                        builder.push(&entry)?;
+                    }
+                    rows.shrink_to_fit();
+                    disk = Some(builder);
                 }
-                rows.shrink_to_fit();
-                disk = Some(builder);
-            }
-            if let Some(builder) = disk.as_mut() {
-                builder.push(&entry)?;
-            } else {
-                rows.push(entry);
-            }
-            Ok(())
-        })?;
-        Ok((rows, disk.map(disk_index::Builder::finish).transpose()?))
+                if let Some(builder) = disk.as_mut() {
+                    builder.push(&entry)?;
+                } else {
+                    rows.push(entry);
+                }
+                Ok(())
+            })?;
+        Ok((
+            rows,
+            disk.map(disk_index::Builder::finish).transpose()?,
+            Some(Arc::new(comment)),
+        ))
     }
     /// Private metadata bytes held on disk for this session, reclaimed when the session drops.
     pub fn index_disk_bytes(&self) -> u64 {
@@ -350,6 +358,7 @@ impl Archive {
             next_query: 0,
             rows: Arc::new(rows),
             disk: None,
+            zip_comment: None,
             payload_subset: true,
             key: self.key,
             directories: self.directories.clone(),
@@ -571,6 +580,12 @@ impl Archive {
         Ok(&self.rows[start..end])
     }
 }
+
+type ZipIndex = (
+    Vec<Entry>,
+    Option<disk_index::DiskIndex>,
+    Option<Arc<xdzip_codec_zip::ArchiveComment>>,
+);
 
 // Direction applies only within groups. Unknown sizes remain last in their group.
 fn entry_sort_group(entry: &Entry, sort: u8) -> u8 {

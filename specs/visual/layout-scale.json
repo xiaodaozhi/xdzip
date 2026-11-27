@@ -259,6 +259,10 @@
       "segmentedRadius": 5
     },
     "conflict_density": 0.8,
+    "archive_comment": {
+      "editorHeight": 196,
+      "editorInset": 12
+    },
     "confirmation": {
       "logicalWidth": 491,
       "maximumHeight": 600,

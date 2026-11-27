@@ -376,6 +376,10 @@ if(BUILD_TESTING)
     add_executable(xdzip-browser-tests tests/browser_test.cpp
         tests/BrowserRequestTests.cpp tests/BrowserRequestTests.h
         tests/test_environment.cpp tests/test_environment.h)
+    if(MSVC)
+        # The browser regression translation unit exceeds COFF's default section limit.
+        target_compile_options(xdzip-browser-tests PRIVATE /bigobj)
+    endif()
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_TEST_TEMP_ROOT="${PROJECT_SOURCE_DIR}/build/test-tmp")
     if(APPLE)
         target_sources(xdzip-browser-tests PRIVATE tests/native_dialog_mac.mm)

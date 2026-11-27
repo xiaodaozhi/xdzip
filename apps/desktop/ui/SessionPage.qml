@@ -140,6 +140,7 @@ Item {
         createWindow.close();
         updateWindow.close();
         entryEditWindow.close();
+        archiveCommentWindow.dismissOwner();
         extractWindow.close();
         operationTasks.taskWindow.close();
         preflightWindow.close();
@@ -192,6 +193,7 @@ Item {
     onVisibleChanged: if (!visible) {
         if (taskMenu) taskMenu.close();
         if (entryEditWindow) entryEditWindow.close();
+        if (archiveCommentWindow) archiveCommentWindow.dismissOwner();
         if (moveDrag && moveDrag.Drag.active) root.cancelTransfer();
     }
     readonly property var controller: reader
@@ -211,7 +213,9 @@ Item {
         rename: {title: qsTrId("entry.edit.renaming"), note: qsTrId("entry.edit.refreshNote"),
                  progress: qsTrId("entry.edit.renameProgress"), cancel: qsTrId("entry.edit.cancelRename")},
         delete: {title: qsTrId("entry.edit.deleting"), note: qsTrId("entry.edit.refreshNote"),
-                 progress: qsTrId("entry.edit.deleteProgress"), cancel: qsTrId("entry.edit.cancelDelete")}
+                 progress: qsTrId("entry.edit.deleteProgress"), cancel: qsTrId("entry.edit.cancelDelete")},
+        comment: {title: qsTrId("archive.comment.saving"), note: qsTrId("entry.edit.refreshNote"),
+                  progress: qsTrId("archive.comment.saving"), cancel: qsTrId("archive.comment.cancelSave")}
     })[reader.archiveOperation] || ({title: "", note: "", progress: "", cancel: ""})
     readonly property bool welcomeVisible: closedPage || (!reader.ready && !archiveOperationVisible)
     property bool externalFileOpening: false
@@ -485,6 +489,18 @@ Item {
     }
     UpdateWindow { id: updateWindow; owner: root.windowHost; controller: reader }
     ArchiveEntryEditWindow { id: entryEditWindow; owner: root.windowHost; controller: reader }
+    ArchiveCommentWindow {
+        id: archiveCommentWindow
+        owner: root.windowHost
+        controller: reader
+        discardWindow: archiveCommentDiscard
+        onDismissed: if (root.visible && toolbar.visible) Qt.callLater(toolbar.focusMore)
+    }
+    DiscardArchiveCommentWindow {
+        id: archiveCommentDiscard
+        owner: archiveCommentWindow
+        onConfirmed: archiveCommentWindow.discardDraft()
+    }
     CreateWindow {
         id: createWindow
         owner: root.windowHost
@@ -889,6 +905,9 @@ Item {
             canSelect: reader.ready && reader.browserQueryAvailable
             canSearch: reader.browserQueryAvailable
             canTest: reader.ready && reader.browserQueryAvailable && !reader.taskStarting
+            archiveCommentSupported: reader.archiveCommentSupported
+            canOpenArchiveComment: reader.ready && reader.browserQueryAvailable && !reader.busy
+            onArchiveCommentRequested: archiveCommentWindow.openForCurrentArchive()
             canInspect: reader.ready && reader.browserQueryAvailable && reader.canPreflight
             canQuickExtract: reader.ready && reader.browserQueryAvailable && !reader.busy && !extractWindow.visible
             canReveal: reader.ready
@@ -2149,7 +2168,7 @@ Item {
                                 text: taskData.archive || ""
                                 userData: true
                                 accessibleLabel: root.taskLabel(taskData) + qsTrId("common.separator") + text
-                                asset: taskData.kind === "check" ? "task-check" : taskData.kind === "update" ? "task-add" : ["move", "rename"].includes(taskData.kind) ? "task-move" : taskData.kind === "delete" ? "remove" : ["export", "export-copy"].includes(taskData.kind) ? "task-export" : taskData.creating ? "task-create" : "task-extract"
+                                asset: taskData.kind === "check" ? "task-check" : taskData.kind === "update" ? "task-add" : ["move", "rename", "comment"].includes(taskData.kind) ? "task-move" : taskData.kind === "delete" ? "remove" : ["export", "export-copy"].includes(taskData.kind) ? "task-export" : taskData.creating ? "task-create" : "task-extract"
                                 sequenceLabel: taskData.backendId || taskData.id
                                 statusLabel: root.taskStateLabel(root.taskStatus(taskData))
                                 statusInk: taskData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(taskData.status) ? Theme.resultWarningInk : taskData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk

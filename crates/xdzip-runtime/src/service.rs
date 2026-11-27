@@ -1,6 +1,7 @@
 //! Product command/event service. GUI admission is bounded; all archive work is worker-owned.
 use crate::Archive;
 mod tasks;
+pub use crate::updating::comment::{MAX_ARCHIVE_COMMENT_BYTES, valid_archive_comment};
 use std::collections::{BTreeMap, VecDeque};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -20,6 +21,18 @@ const MAX_COMMAND_BYTES: usize = 8 * 1024 * 1024;
 
 /// Owned bounded commands. Source paths are user-selected inputs, never output authority.
 pub enum Command {
+    /// Read the archive-wide comment for the current snapshot.
+    ArchiveComment {
+        /// Immutable source session.
+        session: u64,
+    },
+    /// Replace the ZIP tail comment through the archive task lane.
+    SaveArchiveComment {
+        /// Immutable source session.
+        session: u64,
+        /// Complete replacement text, including empty text to remove the comment.
+        text: String,
+    },
     /// Freeze a bounded logical query selection before presenting an output decision.
     FreezeSelection {
         /// Current immutable source session.
@@ -175,6 +188,7 @@ pub enum Command {
 impl Command {
     fn bytes(&self) -> usize {
         match self {
+            Self::SaveArchiveComment { text, .. } => text.capacity(),
             Self::FreezeSelection { selectors, .. } => {
                 selectors.iter().map(|s| s.capacity() + 24).sum()
             }
@@ -212,6 +226,7 @@ impl Command {
     }
     fn bounded(&self) -> bool {
         match self {
+            Self::SaveArchiveComment { text, .. } => text.len() <= MAX_ARCHIVE_COMMENT_BYTES,
             Self::FreezeSelection { selectors, .. } => {
                 !selectors.is_empty()
                     && selectors.len() <= 100_000
@@ -349,6 +364,8 @@ pub struct InputInfo {
 /// The sole payload event for one accepted request. Finished follows it exactly once.
 #[derive(Debug)]
 pub enum Payload {
+    /// Plain-text projection and edit capability for the current archive.
+    ArchiveComment(crate::updating::comment::Comment),
     /// Complete authenticated preview. Its bounded bytes participate in mailbox backpressure.
     Preview(crate::preview::Content),
     /// Headless page retaining physical identity and effective names.
@@ -422,6 +439,7 @@ impl Payload {
     /// Count retained string bytes for end-to-end mailbox admission (containers separately bounded).
     pub fn bytes(&self) -> usize {
         match self {
+            Self::ArchiveComment(comment) => comment.text.capacity(),
             Self::Preview(content) => {
                 content.bytes.capacity() + std::mem::size_of::<crate::preview::Content>()
             }
@@ -913,6 +931,26 @@ fn execute(
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
+            Command::ArchiveComment { session } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                return current
+                    .archive_comment(control)
+                    .map(Payload::ArchiveComment)
+                    .map_err(fail);
+            }
+            Command::SaveArchiveComment { session, text } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                let job = current.comment_job(text, control)?;
+                let id = shared.enqueue_task(request, tasks::Job::Comment(job))?;
+                *archive = None;
+                return Ok(Payload::TaskAccepted(id));
+            }
             Command::FreezeSelection { session, selectors } => {
                 let current = archive
                     .as_ref()

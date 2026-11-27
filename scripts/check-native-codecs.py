@@ -34,11 +34,13 @@ def exact(stream, size):
 
 
 def run_worker(worker, parts, *, password=None, selected=None, format_id=7, creation=None, solid=False, encrypt_headers=False,
-               volume_names=None, digest_only=False, comment_ids=None):
+               volume_names=None, digest_only=False, comment_ids=None, archive_comment=False):
     if comment_ids is not None and (format_id != 4 or selected is not None or creation is not None
                                     or not 1 <= len(comment_ids) <= 128 or len(set(comment_ids)) != len(comment_ids)):
         raise WorkerError('comment_request')
-    operation = 4 if comment_ids is not None else 2 if creation is not None else 0 if selected is None else 1
+    if archive_comment and (format_id != 4 or selected is not None or creation is not None or comment_ids is not None):
+        raise WorkerError('archive_comment_request')
+    operation = 5 if archive_comment else 4 if comment_ids is not None else 2 if creation is not None else 0 if selected is None else 1
     if digest_only and operation != 1:
         raise WorkerError('digest_payload_only')
     maximum_output = 8 * 1024**3 if digest_only else 32 * 1024**2
@@ -78,6 +80,7 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
     timer = threading.Timer(180 if digest_only else 45, child.kill)
     timer.start()
     rows, payload, reads = [], bytearray(), 0
+    comment_received, comment = False, None
     decoded, digest = 0, hashlib.sha256()
     work, credit, auxiliary = 0, 0, 0
     inputs = list((creation or {}).items())
@@ -105,7 +108,19 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                 if reads > 64 * 1024**2:
                     raise WorkerError('read_limit')
                 send(20, source[offset:offset + count])
+            elif kind == 25:
+                if not archive_comment or comment_received or len(value) < 5:
+                    raise WorkerError('unexpected_archive_comment')
+                present, size = struct.unpack_from('<BI', value)
+                if present not in (0, 1) or size != len(value) - 5 or size > 3 * 65535 or (not present and size):
+                    raise WorkerError('archive_comment_length')
+                comment_received = True
+                if present:
+                    comment = value[5:].decode('utf-8', errors='strict')
+                send(21)
             elif kind == 13:
+                if archive_comment:
+                    raise WorkerError('unexpected_archive_comment_row')
                 if len(value) < 37:
                     raise WorkerError('metadata_length')
                 index, flags, unpacked, packed, modified, method, length = struct.unpack('<QBQQIII', value[:37])
@@ -213,6 +228,10 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
             raise WorkerError('worker_exit')
         if declared is not None and decoded != declared:
             raise WorkerError('entry_output_bounds')
+        if archive_comment:
+            if not comment_received:
+                raise WorkerError('missing_archive_comment')
+            return rows, comment
         result = (dict(bytes=decoded, sha256=digest.hexdigest(), decoded_work=work, auxiliary_work=auxiliary)
                   if digest_only else bytes(payload))
         return rows, result
@@ -260,10 +279,64 @@ def rar_comment_fixture(worker):
     comments, _ = run_worker(worker, [archive], format_id=4, comment_ids=[1, 0])
     assert [row['index'] for row in comments] == [1, 0], 'rar_comment_order'
     assert [row['comment'] for row in comments] == [b'service comment', message], 'rar_comment_values'
+    _, whole = run_worker(worker, [archive], format_id=4, archive_comment=True)
+    assert whole == 'archive text', 'rar_archive_service_comment'
+    main = block(0x73, 2, bytes(6) + child, 13)
+    prefix = b'Rar!\x1a\x07\x00'
+    _, whole = run_worker(worker, [prefix + main + first], format_id=4, archive_comment=True)
+    assert whole == 'inline comment', 'rar_archive_inline_comment'
+    _, whole = run_worker(worker, [prefix + block(0x73, 0, bytes(6)) + first], format_id=4,
+                          archive_comment=True)
+    assert whole is None, 'rar_entry_comment_is_not_archive_comment'
     for row, expected in zip(rows, (b'alpha', b'beta')):
         _, decoded = run_worker(worker, [archive], format_id=4, selected=row['index'])
         assert decoded == expected, 'rar_comment_payload_identity'
     return dict(case='rar_entry_comments', files=2, status='passed')
+
+
+def rar_archive_comment_fixture(worker):
+    def vint(value):
+        out = bytearray()
+        while value > 127:
+            out.append((value & 127) | 128)
+            value >>= 7
+        return bytes(out + bytes([value]))
+
+    def block(kind, flags, fields, data=b''):
+        body = bytes([kind, flags]) + (vint(len(data)) if flags & 2 else b'') + fields
+        header = vint(len(body)) + body
+        return struct.pack('<I', zlib.crc32(header)) + header + data
+
+    prefix = b'Rar!\x1a\x07\x01\x00' + block(1, 0, b'\0')
+    end = block(5, 0, b'\0')
+
+    def cmt(data, *, child=False, crc=None):
+        crc = zlib.crc32(data) if crc is None else crc
+        fields = b'\x04' + vint(len(data)) + b'\0' + struct.pack('<I', crc)
+        return block(3, 34 if child else 2, fields + b'\0\0\x03CMT', data)
+
+    body = '归档\ncomment 🔖'.encode()
+    for blocks, expected in [(cmt(body), body.decode()), (cmt(body, child=True), None), (b'', None)]:
+        _, actual = run_worker(worker, [prefix + blocks + end], format_id=4, archive_comment=True)
+        assert actual == expected, 'rar5_archive_comment'
+    for record, code in [(cmt(body, crc=0), '2'), (cmt(b'\xff'), '2'), (cmt(b'x' * 65536), '4')]:
+        try:
+            run_worker(worker, [prefix + record + end], format_id=4, archive_comment=True)
+        except WorkerError as error:
+            assert str(error) == 'native_error_' + code
+        else:
+            raise WorkerError('rar5_archive_comment_rejection')
+    encrypted = (ROOT / 'tests/fixtures/native-archives/test_read_format_rar5_encrypted_filenames.rar').read_bytes()
+    try:
+        run_worker(worker, [encrypted], format_id=4, archive_comment=True)
+    except WorkerError as error:
+        assert str(error) == 'native_error_6'
+    else:
+        raise WorkerError('rar5_archive_comment_password_required')
+    _, expected_empty = run_worker(worker, [encrypted], password='password', format_id=4,
+                                   archive_comment=True)
+    assert expected_empty is None, 'rar5_archive_comment_opening_password'
+    return dict(case='rar_archive_comments', status='passed')
 
 
 def rar_fixtures(worker):
@@ -327,6 +400,7 @@ def rar_fixtures(worker):
     assert decoded == expected and hashlib.sha256(decoded).hexdigest() == modern['input']['sha256'], 'modern_rar_decoded_identity'
     results.append(dict(case='rar_7_23_rar5_compatible_compressed', unpack_version=50, decoded_bytes=len(decoded), status='passed'))
     results.append(rar_comment_fixture(worker))
+    results.append(rar_archive_comment_fixture(worker))
     return results
 
 

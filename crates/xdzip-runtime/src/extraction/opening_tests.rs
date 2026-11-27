@@ -118,6 +118,10 @@ fn pkzip_disk_relative_directory_is_normalized_without_reassembling_payload() {
         let output = Target::new();
         let mut b = bytes(fixture);
         let end = b.windows(4).rposition(|s| s == b"PK\x05\x06").unwrap();
+        let comment = "分卷注释";
+        assert_eq!(end + 22, b.len());
+        b[end + 20..end + 22].copy_from_slice(&(comment.len() as u16).to_le_bytes());
+        b.extend_from_slice(comment.as_bytes());
         let cd = u32::from_le_bytes(b[end + 16..end + 20].try_into().unwrap()) as usize;
         let size = if fixture == "tree.zip" { 4096 } else { 53 };
         let mut record = cd;
@@ -154,6 +158,9 @@ fn pkzip_disk_relative_directory_is_normalized_without_reassembling_payload() {
             let a = crate::Archive::open(part, &Cancellation::default())
                 .unwrap_or_else(|e| panic!("{fixture}: {e}"));
             assert_eq!(a.len(), archive(fixture).len());
+            let note = a.archive_comment(&Cancellation::default()).unwrap();
+            assert_eq!(note.text, comment);
+            assert!(!note.editable);
         }
         let a = crate::Archive::open(&parts[0], &Cancellation::default()).unwrap();
         assert_read_only_check(&a);

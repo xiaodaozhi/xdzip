@@ -1,4 +1,4 @@
-//! Bounded, display-only decoding of historical per-file comments.
+//! Bounded, display-only decoding of archive and per-file comments.
 use crate::algorithm::{Algorithm, Engine, WorkOutput};
 use crate::index::{Descriptor, Part};
 use crate::legacy::InlineComment;
@@ -8,6 +8,22 @@ use xdzip_codec_api::payload::{DecodeError, DecodedSink};
 use xdzip_codec_api::{Cancellation, ScanError};
 
 const WORK_LIMIT: u64 = 32 * 1024 * 1024;
+
+pub(crate) fn verify_modern(d: &Descriptor, bytes: &[u8]) -> Result<(), ScanError> {
+    if d.crc
+        .is_some_and(|expected| xdzip_compression::crc32(bytes) != expected)
+    {
+        return Err(ScanError::Invalid);
+    }
+    if let Some(expected) = d.hash {
+        let mut hash = xdzip_crypto::Blake2sp::new();
+        hash.update(bytes);
+        if hash.finish() != expected {
+            return Err(ScanError::Invalid);
+        }
+    }
+    Ok(())
+}
 
 struct Output<'a> {
     bytes: Vec<u8>,

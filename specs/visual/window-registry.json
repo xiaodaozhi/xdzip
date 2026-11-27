@@ -146,6 +146,21 @@
       "design": "design/hifi/screens/conflict.png",
       "design_reference_scope": "参考图仅为共享窗口基底，具体状态与交互以本登记和视觉规格为准，不视为专用状态图或验收证据。"
     },
+    "ArchiveCommentWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.confirmationLogicalWidth",
+      "reason": "使用 491 逻辑宽度的文字布局。标题下显示压缩包文件名，正文支持滚动和键盘选择，保存和关闭使用固定共享底栏。",
+      "design": "design/hifi/screens/archive-comment-edit-light.svg",
+      "readonly_design": "design/hifi/screens/archive-comment-read-dark.svg"
+    },
+    "DiscardArchiveCommentWindow": {
+      "parent": "OperationConfirmationWindow",
+      "role": "confirmation",
+      "reason": "丢弃注释草稿沿用共享确认布局，默认聚焦继续编辑。",
+      "design": "design/hifi/screens/conflict.png",
+      "design_reference_scope": "共享确认布局参考。"
+    },
     "ArchiveEntryEditWindow": {
       "parent": "OperationConfirmationWindow",
       "role": "confirmation",

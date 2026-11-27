@@ -359,10 +359,12 @@ fn parse_header(
                 number,
                 solid: flags & 4 != 0,
                 encrypted: false,
+                comment: None,
             }
         }
         2 | 3 => {
-            let description = file(&mut w, extra, limits, kind == 3)?;
+            let mut description = file(&mut w, extra, limits, kind == 3)?;
+            description.service_child = kind == 3 && flags & 32 != 0;
             Block::Record(Box::new(Part {
                 volume,
                 header_at: at,

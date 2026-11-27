@@ -10,3 +10,7 @@
 Com um clique duplo em um arquivo comum, o aplicativo extrai uma cópia temporária e pede ao sistema para abri-la. Editar essa cópia não atualiza o arquivo compactado. Extraia o arquivo para o local escolhido se precisar de uma cópia permanente. [Abertura temporária](../engineering/archive-opening.md)
 
 Por padrão, os arquivos compactados abrem em abas. Altere a configuração para abri-los em janelas separadas. Um ZIP/ZIP64 comum em arquivo único pode indexar até um milhão de registros físicos. Índices grandes carregam linhas sob demanda. Arquivos ZIP com índice em disco podem aceitar a extração de itens selecionados. A verificação do arquivo inteiro e as modificações ficam desativadas. [Limites de arquivos grandes](../engineering/large-index.md)
+
+## Ver o comentário do arquivo
+
+Abra um arquivo ZIP ou RAR e escolha **Mais → Comentário do arquivo** na barra de ferramentas. Você pode selecionar e copiar o texto. Em um ZIP, ZIP64 ou ZIPX comum que permita gravação, edite o texto e escolha **Salvar**. Para excluir o comentário, apague o texto e salve. O limite é de 65.535 bytes em UTF-8. ZIPs divididos, autoextraíveis, criptografados ou com índice em disco, pacotes assinados ou derivados e comentários de RAR são somente leitura.

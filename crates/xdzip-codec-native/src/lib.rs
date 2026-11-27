@@ -124,6 +124,62 @@ fn source_call<T>(
     }
 }
 impl NativeCodec {
+    /// Read one archive-wide RAR comment through its isolated worker.
+    pub fn rar_archive_comment(
+        &self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+        password: Option<&str>,
+    ) -> Result<Option<String>, ScanError> {
+        let mut read = || -> Result<Option<String>, Fault> {
+            if self.format != Format::Rar {
+                return Err(Fault::Invalid);
+            }
+            let limits = ScanLimits::default();
+            let length = source_call(control, || source.seek(SeekFrom::End(0)))?;
+            let request = Zeroizing::new(self.request(
+                5,
+                length,
+                password,
+                0,
+                limits,
+                (source.volume_lengths(), source.volume_names()),
+            )?);
+            let mut worker = Worker::start(&request)?;
+            let mut remaining = limits.read_bytes.saturating_add(2 * 1024 * 1024);
+            let mut result = None;
+            loop {
+                let frame = worker.next(control)?;
+                let mut fields = Fields(&frame);
+                match fields.byte()? {
+                    protocol::READ => {
+                        answer_read(&mut worker, source, &mut fields, &mut remaining, control)?
+                    }
+                    protocol::ARCHIVE_COMMENT if result.is_none() => {
+                        let present = fields.byte()?;
+                        let text = String::from_utf8(fields.bytes(3 * u16::MAX as usize)?)
+                            .map_err(|_| Fault::Invalid)?;
+                        fields.end()?;
+                        result = Some(match present {
+                            0 if text.is_empty() => None,
+                            1 => Some(text),
+                            _ => return Err(Fault::Invalid),
+                        });
+                        worker.send(protocol::ACK, &[])?;
+                    }
+                    protocol::ERROR => return Err(Fault::from_wire(fields.byte()?)),
+                    protocol::DONE => {
+                        fields.end()?;
+                        worker.finish(control)?;
+                        return result.ok_or(Fault::Invalid);
+                    }
+                    _ => return Err(Fault::Invalid),
+                }
+            }
+        };
+        read().map_err(scan_error)
+    }
+
     /// Read a bounded batch of advisory RAR comments in the isolated worker.
     pub fn rar_comments(
         &self,

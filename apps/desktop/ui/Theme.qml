@@ -150,6 +150,8 @@ QtObject {
     readonly property real confirmationTitleSize: 20 * fontScale
     readonly property real confirmationBodySize: 13 * fontScale
     readonly property real confirmationScreenMargin: 80
+    readonly property real archiveCommentEditorHeight: 196
+    readonly property real archiveCommentEditorInset: 12
     readonly property real operationFooterFontSize: 13 * fontScale
     readonly property real operationFooterNoteSize: 12 * fontScale
     readonly property real operationFooterIconSize: 16 * fontScale

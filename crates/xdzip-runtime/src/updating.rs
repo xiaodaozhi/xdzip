@@ -18,6 +18,7 @@ use xdzip_codec_api::{
 use xdzip_domain::path::archive_components;
 use xdzip_io::{ArchiveUpdate, InputTree};
 
+pub(crate) mod comment;
 mod entries;
 mod moving;
 use entries::Selection;
@@ -112,7 +113,21 @@ impl Archive {
     }
 }
 pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
-    let path = job.source.display_path();
+    let kind = match &job.operation {
+        Operation::Add => TaskKind::Update,
+        Operation::Move(_) => TaskKind::Move,
+        Operation::Edit(edit) => edit.kind(),
+    };
+    initial_for(job.source.display_path(), job.format, job.session, kind, id)
+}
+
+fn initial_for(
+    path: &std::path::Path,
+    format: xdzip_codec_api::Format,
+    session: u64,
+    kind: TaskKind,
+    id: u64,
+) -> Snapshot {
     let mut snapshot = creation::initial(
         &creation::Job {
             target_identity: None,
@@ -135,14 +150,10 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         },
         id,
     );
-    snapshot.kind = match &job.operation {
-        Operation::Add => TaskKind::Update,
-        Operation::Move(_) => TaskKind::Move,
-        Operation::Edit(edit) => edit.kind(),
-    };
+    snapshot.kind = kind;
     snapshot.source = path.to_string_lossy().into();
-    snapshot.session = job.session;
-    snapshot.format = job.format.label();
+    snapshot.session = session;
+    snapshot.format = format.label();
     snapshot
 }
 struct Additions<'a> {
