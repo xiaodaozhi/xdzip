@@ -28,8 +28,10 @@ def check(path, architecture):
     if any(run['exit_code'] != 0 or run['timed_out'] for run in runs):
         raise ValueError('A native group failed or timed out')
     cases = {
-        'cocoaMinimizeAtFullscreenEntry': {'minimize', 'restore-during-retry', 'destroy-during-retry'},
-        'cocoaMinimizeDuringFullscreenRestore': {'minimize', 'restore', 'normal', 'maximize'},
+        'cocoaMinimizeAtFullscreenEntry': {'minimize', 'minimize-native-request-ignored',
+                                            'restore-during-retry', 'destroy-during-retry'},
+        'cocoaMinimizeDuringFullscreenRestore': {'minimize', 'minimize-native-request-ignored',
+                                                 'restore', 'normal', 'maximize'},
         'directoryContextExpansionReasons': {f'{language}-{kind}' for language in ('zh-CN', 'en-US')
                                              for kind in ('mouse', 'menu', 'shift-f10')},
         'globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession': {

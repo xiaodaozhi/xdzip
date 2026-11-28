@@ -81,8 +81,10 @@ class NativeSessionGroupsTest(unittest.TestCase):
                         'post-after-password-present-control', 'other-session-notify-send-before-password-present',
                         'other-window-notify-send-before-password-present', 'notify-send-wait-resumes-password'],
                 },
-                'restore.log': {'cocoaMinimizeDuringFullscreenRestore': ['minimize', 'restore', 'normal', 'maximize']},
-                'entry.log': {'cocoaMinimizeAtFullscreenEntry': ['minimize', 'restore-during-retry', 'destroy-during-retry']},
+                'restore.log': {'cocoaMinimizeDuringFullscreenRestore': ['minimize', 'minimize-native-request-ignored',
+                                                                          'restore', 'normal', 'maximize']},
+                'entry.log': {'cocoaMinimizeAtFullscreenEntry': ['minimize', 'minimize-native-request-ignored',
+                                                                   'restore-during-retry', 'destroy-during-retry']},
             }
             for name, tests in rows.items():
                 (root / name).write_text(''.join(

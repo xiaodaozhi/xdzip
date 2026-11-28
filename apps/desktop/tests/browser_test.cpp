@@ -182,6 +182,9 @@ bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
 bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &action);
 bool runOnNativeFullscreenExit(QWindow *window, const std::function<void()> &action);
+bool ignoreNextNativeMinimize(QWindow *window);
+bool nativeMinimizeWasIgnored();
+void restoreNativeMinimize();
 bool runOnNativeDeminiaturize(QWindow *window, const std::function<void()> &action);
 void traceNativeWindowState(QWindow *window);
 bool verifyMacDesktopMenus();
@@ -5024,14 +5027,17 @@ QtObject {
 #ifdef Q_OS_MACOS
     void cocoaMinimizeAtFullscreenEntry_data() {
         QTest::addColumn<QString>("intervention");
-        QTest::newRow("minimize") << QStringLiteral("none");
-        QTest::newRow("restore-during-retry") << QStringLiteral("restore");
-        QTest::newRow("destroy-during-retry") << QStringLiteral("destroy");
+        QTest::addColumn<bool>("ignoreMinimize");
+        QTest::newRow("minimize") << QStringLiteral("none") << false;
+        QTest::newRow("minimize-native-request-ignored") << QStringLiteral("none") << true;
+        QTest::newRow("restore-during-retry") << QStringLiteral("restore") << false;
+        QTest::newRow("destroy-during-retry") << QStringLiteral("destroy") << false;
     }
     void cocoaMinimizeAtFullscreenEntry() {
         if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
             QSKIP("Native fullscreen transitions require Cocoa");
         QFETCH(QString, intervention);
+        QFETCH(bool, ignoreMinimize);
         WindowActivation::install(qApp);
         bool requested = false;
         bool interruptArmed = false;
@@ -5039,6 +5045,11 @@ QtObject {
         bool nextTurn = false;
         bool fullscreenExited = false;
         QWindow window;
+        struct RestoreNativeMinimize {
+            ~RestoreNativeMinimize() {
+                restoreNativeMinimize();
+            }
+        } restoreMinimize;
         window.setProperty("xdzipTraceActivation", true);
         window.resize(480, 320);
         window.show();
@@ -5060,6 +5071,8 @@ QtObject {
             }
         });
         QVERIFY(runOnNativeFullscreenEntry(&window, [&] {
+            if (ignoreMinimize && !ignoreNextNativeMinimize(&window))
+                return;
             window.showMinimized();
             traceNativeWindowState(&window);
             if (intervention == QStringLiteral("none")) {
@@ -5088,6 +5101,8 @@ QtObject {
                 QFAIL("The native window did not become minimized");
             }
             QVERIFY(window.windowStates().testFlag(Qt::WindowMinimized));
+            if (ignoreMinimize)
+                QVERIFY(nativeMinimizeWasIgnored());
             WindowActivation::reveal(&window);
             QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen));
         }
@@ -5103,19 +5118,27 @@ QtObject {
     }
     void cocoaMinimizeDuringFullscreenRestore_data() {
         QTest::addColumn<QString>("intervention");
-        QTest::newRow("minimize") << QStringLiteral("none");
-        QTest::newRow("restore") << QStringLiteral("restore");
-        QTest::newRow("normal") << QStringLiteral("normal");
-        QTest::newRow("maximize") << QStringLiteral("maximize");
+        QTest::addColumn<bool>("ignoreMinimize");
+        QTest::newRow("minimize") << QStringLiteral("none") << false;
+        QTest::newRow("minimize-native-request-ignored") << QStringLiteral("none") << true;
+        QTest::newRow("restore") << QStringLiteral("restore") << false;
+        QTest::newRow("normal") << QStringLiteral("normal") << false;
+        QTest::newRow("maximize") << QStringLiteral("maximize") << false;
     }
     void cocoaMinimizeDuringFullscreenRestore() {
         if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
             QSKIP("Native fullscreen transitions require Cocoa");
         QFETCH(QString, intervention);
+        QFETCH(bool, ignoreMinimize);
         WindowActivation::install(qApp);
         bool fullscreenExited = false;
         bool restoreFullscreenExited = false;
         QWindow window;
+        struct RestoreNativeMinimize {
+            ~RestoreNativeMinimize() {
+                restoreNativeMinimize();
+            }
+        } restoreMinimize;
         window.setProperty("xdzipTraceActivation", true);
         window.resize(480, 320);
         window.show();
@@ -5124,9 +5147,13 @@ QtObject {
         window.showFullScreen();
         QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen) &&
                     !cocoaActivationInFlight(&window));
+        if (ignoreMinimize)
+            QVERIFY(ignoreNextNativeMinimize(&window));
         window.showMinimized();
         traceNativeWindowState(&window);
         QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowMinimized));
+        if (ignoreMinimize)
+            QVERIFY(nativeMinimizeWasIgnored());
 
         bool requested = false;
         bool enteringAtRequest = false;

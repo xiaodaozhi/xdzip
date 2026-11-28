@@ -18,6 +18,7 @@ bool cocoaActivationIsMiniaturized(QWindow *window);
 bool cocoaActivationIsVisible(QWindow *window);
 bool cocoaFullscreenRetryReady(QWindow *window);
 void cocoaRetryFullscreenState(QWindow *window, Qt::WindowState state);
+void cocoaRetryMinimizeAfterFullscreenExit(QWindow *window);
 #endif
 
 // Showing an already visible QWindow chooses the platform default state. Keep
@@ -203,8 +204,10 @@ class WindowActivation final : public QObject {
         const bool pending =
             window->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() == generation;
         const auto state = window->windowState();
-        const bool unconfirmed = state == Qt::WindowMinimized && !cocoaActivationInFlight(window) &&
-                                 cocoaFullscreenRetryReady(window);
+        const bool unconfirmed = state == Qt::WindowMinimized &&
+                                 !cocoaActivationIsMiniaturized(window) &&
+                                 (window->property("xdzipCocoaFullTransition").toBool() ||
+                                  cocoaFullscreenRetryReady(window));
         if (!entering && !window->property("xdzipCocoaJustEnteredFullscreen").toBool() &&
             !pending && !unconfirmed)
             return;
@@ -268,33 +271,42 @@ class WindowActivation final : public QObject {
                 window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
                 return;
             }
-            if (cocoaActivationInFlight(window) || !cocoaFullscreenRetryReady(window)) {
+            if (cocoaActivationInFlight(window) ||
+                (!cocoaFullscreenRetryReady(window) &&
+                 !(state == Qt::WindowMinimized && cocoaActivationIsVisible(window)))) {
                 // A fullscreen completion notification can precede the next
                 // visible Space. Wait briefly for the observed native state.
                 if (remainingChecks > 1)
                     awaitCocoaFullscreenRetry(window, generation, remainingChecks - 1);
-                else
+                else if (!cocoaActivationInFlight(window))
                     window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
                 return;
             }
-            window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
+            if (state != Qt::WindowMinimized)
+                window->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
             const QPointer<QWindow> guarded(window);
             const auto reveal = window->property("xdzipCocoaRevealSerial").toULongLong();
             window->setProperty("xdzipCocoaSendingMinimizeRetry", true);
-            cocoaRetryFullscreenState(window, state);
+            if (cocoaFullscreenRetryReady(window))
+                cocoaRetryFullscreenState(window, state);
+            else
+                cocoaRetryMinimizeAfterFullscreenExit(window);
             if (!guarded)
                 return;
             guarded->setProperty("xdzipCocoaSendingMinimizeRetry", false);
             // A dispatched request may still have been ignored by AppKit.
             // Retry only if the same surface still shows the same unconfirmed intent.
             if (remainingChecks > 1 && state == Qt::WindowMinimized &&
-                guarded->windowState() == Qt::WindowMinimized &&
                 guarded->property("xdzipCocoaSurfaceGeneration").toULongLong() == generation &&
                 guarded->property("xdzipCocoaRevealSerial").toULongLong() == reveal &&
-                !cocoaActivationInFlight(guarded) && cocoaFullscreenRetryReady(guarded)) {
-                guarded->setProperty("xdzipCocoaPendingMinimizeGeneration", generation);
-                guarded->setProperty("xdzipCocoaPendingState", int(state));
+                guarded->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() ==
+                    generation &&
+                guarded->property("xdzipCocoaPendingState").toInt() == int(state)) {
                 awaitCocoaFullscreenRetry(guarded, generation, remainingChecks - 1);
+            } else if (remainingChecks <= 1 && !cocoaActivationInFlight(guarded) &&
+                       guarded->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() ==
+                           generation) {
+                guarded->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
             }
         });
     }

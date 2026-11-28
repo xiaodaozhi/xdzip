@@ -11,6 +11,13 @@ NSWindow *nativeWindow(QWindow *window) {
     return view.window;
 }
 
+bool pendingMinimize(QWindow *window) {
+    const auto generation = window->property("xdzipCocoaSurfaceGeneration").toULongLong();
+    return generation &&
+           window->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() == generation &&
+           window->property("xdzipCocoaPendingState").toInt() == int(Qt::WindowMinimized);
+}
+
 class CocoaActivationObserver final : public QObject {
   public:
     explicit CocoaActivationObserver(QWindow *window) : QObject(window), m_window(window) {
@@ -73,7 +80,7 @@ class CocoaActivationObserver final : public QObject {
                                       const bool entering = [event
                                           isEqualToString:NSWindowWillEnterFullScreenNotification];
                                       window->setProperty("xdzipCocoaFullEntering", entering);
-                                      if (!entering) {
+                                      if (!entering && !pendingMinimize(window)) {
                                           window->setProperty("xdzipCocoaPendingMinimizeGeneration",
                                                               QVariant());
                                           window->setProperty("xdzipCocoaStateCandidateGeneration",
@@ -95,7 +102,7 @@ class CocoaActivationObserver final : public QObject {
                                                   window->setProperty(
                                                       "xdzipCocoaJustEnteredFullscreen", false);
                                           });
-                                      } else
+                                      } else if (!pendingMinimize(window))
                                           window->setProperty("xdzipCocoaPendingMinimizeGeneration",
                                                               QVariant());
                                       window->setProperty("xdzipCocoaFullTransition", false);
@@ -183,9 +190,50 @@ void cocoaRetryFullscreenState(QWindow *window, Qt::WindowState state) {
         window->setWindowState(Qt::WindowFullScreen);
         if (guarded && guarded->property("xdzipCocoaRevealSerial").toULongLong() == revealSerial &&
             guarded->property("xdzipCocoaSurfaceGeneration").toULongLong() == surfaceGeneration &&
+            guarded->windowState() != Qt::WindowFullScreen) {
+            guarded->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
+            return;
+        }
+        if (guarded && guarded->property("xdzipCocoaRevealSerial").toULongLong() == revealSerial &&
+            guarded->property("xdzipCocoaSurfaceGeneration").toULongLong() == surfaceGeneration &&
             guarded->handle() && guarded->isVisible() &&
             guarded->windowState() == Qt::WindowFullScreen &&
-            !guarded->property("xdzipWakePending").toBool())
+            !guarded->property("xdzipWakePending").toBool()) {
             guarded->showMinimized();
+            if (guarded && guarded->windowState() != Qt::WindowMinimized &&
+                guarded->property("xdzipCocoaSurfaceGeneration").toULongLong() == surfaceGeneration)
+                guarded->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
+        }
+    }
+}
+
+void cocoaRetryMinimizeAfterFullscreenExit(QWindow *window) {
+    NSWindow *native = nativeWindow(window);
+    if (!native || !native.visible || native.miniaturized ||
+        (native.styleMask & NSWindowStyleMaskFullScreen))
+        return;
+    const QPointer<QWindow> guarded(window);
+    const auto revealSerial = window->property("xdzipCocoaRevealSerial").toULongLong();
+    const auto surfaceGeneration = window->property("xdzipCocoaSurfaceGeneration").toULongLong();
+    const auto state = window->windowState();
+    const auto expected = state == Qt::WindowMinimized ? Qt::WindowNoState : state;
+    if (state == Qt::WindowMinimized)
+        window->setWindowState(Qt::WindowNoState);
+    if (guarded && guarded->windowState() != expected) {
+        guarded->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
+        return;
+    }
+    if (guarded && guarded->handle() && guarded->isVisible() &&
+        guarded->property("xdzipCocoaRevealSerial").toULongLong() == revealSerial &&
+        guarded->property("xdzipCocoaSurfaceGeneration").toULongLong() == surfaceGeneration &&
+        guarded->property("xdzipCocoaPendingMinimizeGeneration").toULongLong() ==
+            surfaceGeneration &&
+        guarded->property("xdzipCocoaStateCandidateGeneration").toULongLong() !=
+            surfaceGeneration &&
+        !guarded->property("xdzipWakePending").toBool()) {
+        guarded->showMinimized();
+        if (guarded && guarded->windowState() != Qt::WindowMinimized &&
+            guarded->property("xdzipCocoaSurfaceGeneration").toULongLong() == surfaceGeneration)
+            guarded->setProperty("xdzipCocoaPendingMinimizeGeneration", QVariant());
     }
 }

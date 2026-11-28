@@ -9,6 +9,55 @@
 #include <QVariant>
 #include <QWindow>
 #include <functional>
+#import <objc/runtime.h>
+
+namespace {
+NSWindow *ignoredMinimizeTarget = nil;
+Method ignoredMinimizeMethod = nullptr;
+IMP originalMinimize = nullptr;
+bool ignoredMinimizeObserved = false;
+
+void ignoreOneMinimize(id self, SEL selector, id sender) {
+    if (self != ignoredMinimizeTarget) {
+        reinterpret_cast<void (*)(id, SEL, id)>(originalMinimize)(self, selector, sender);
+        return;
+    }
+    method_setImplementation(ignoredMinimizeMethod, originalMinimize);
+    ignoredMinimizeTarget = nil;
+    ignoredMinimizeMethod = nullptr;
+    originalMinimize = nullptr;
+    ignoredMinimizeObserved = true;
+}
+} // namespace
+
+bool ignoreNextNativeMinimize(QWindow *window) {
+    if (!window || !window->handle() || ignoredMinimizeMethod)
+        return false;
+    NSView *view = reinterpret_cast<NSView *>(window->winId());
+    NSWindow *native = view.window;
+    if (!native)
+        return false;
+    Method method = class_getInstanceMethod(object_getClass(native), @selector(miniaturize:));
+    if (!method)
+        return false;
+    ignoredMinimizeObserved = false;
+    ignoredMinimizeTarget = native;
+    ignoredMinimizeMethod = method;
+    originalMinimize = method_setImplementation(method, reinterpret_cast<IMP>(ignoreOneMinimize));
+    return true;
+}
+
+bool nativeMinimizeWasIgnored() {
+    return ignoredMinimizeObserved;
+}
+
+void restoreNativeMinimize() {
+    if (ignoredMinimizeMethod)
+        method_setImplementation(ignoredMinimizeMethod, originalMinimize);
+    ignoredMinimizeTarget = nil;
+    ignoredMinimizeMethod = nullptr;
+    originalMinimize = nullptr;
+}
 
 QStringList nativeDesktopMenuEntries(const QString &title) {
     NSMenu *bar = NSApp.mainMenu;
