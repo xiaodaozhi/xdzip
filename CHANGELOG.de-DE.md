@@ -8,6 +8,14 @@
 
 - Einen eigenständigen, schreibgeschützten SDK-Versuch mit begrenzter CBOR-Verarbeitung, kontrollierter Ein-/Ausgabe, zwei unabhängigen Protokollimplementierungen und einer Sandbox-Prüfung hinzufügen, die unsichere Ausführung ablehnt. Drittanbietererweiterungen bleiben im Produkt deaktiviert.
 
+## 0.3.3
+
+- Archivkommentare anzeigen und Kommentare gewöhnlicher beschreibbarer ZIP-, ZIP64- und ZIPX-Archive bearbeiten. Weitere Eintragskommentare und Attribute in der Vorschau anzeigen.
+- Die Behandlung von Namen und Pfaden beim Erstellen, Bearbeiten und Entpacken verbessern, auch in freigegebenen Windows-Ordnern.
+- Zuletzt geöffnete Archive, schnelles Entpacken und das Öffnen des Archivspeicherorts ergänzen. Anwendungs- und Dokumentsymbole aktualisieren.
+
+Die [Versionshinweise](release-notes/0.3.3.md) und das [GitHub-Release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.3) beschreiben Plattformen, Prüfumfang und bekannte Einschränkungen.
+
 ## 0.3.2
 
 - Native Desktop- und eigenständige CLI-Pakete für Intel-Macs ab macOS 14 veröffentlichen. Beide Mac-Architekturen erhalten jeweils authentifizierte Updates.

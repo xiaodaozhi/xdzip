@@ -6,6 +6,14 @@ English | [简体中文](CHANGELOG.zh-CN.md) | [繁體中文](CHANGELOG.zh-TW.md
 
 - Add a standalone read-only SDK trial with bounded CBOR, controlled I/O, two independent protocol implementations and a sandbox gate that refuses unsafe execution. Third-party extensions remain disabled in the product.
 
+## 0.3.3
+
+- View archive comments and edit comments in ordinary writable ZIP, ZIP64 and ZIPX archives. Display additional entry comments and attributes in the file preview.
+- Improve filename and path handling when creating, editing and extracting archives, including editing and extraction in shared Windows directories.
+- Add recent archives, quick extraction and an action to open the archive location. Update application and document icons.
+
+See the [release notes](release-notes/0.3.3.md) and [GitHub release](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.3) for platform support, verification scope and known limitations.
+
 ## 0.3.2
 
 - Publish native macOS Intel desktop and standalone CLI packages for macOS 14 or later, with authenticated updates for both Mac architectures.

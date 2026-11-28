@@ -8,6 +8,14 @@
 
 - Ajouter un SDK autonome expérimental en lecture seule avec un traitement CBOR borné, des entrées-sorties contrôlées, deux implémentations indépendantes du protocole et un contrôle de bac à sable qui refuse les exécutions dangereuses. Les extensions tierces restent désactivées dans le produit.
 
+## 0.3.3
+
+- Afficher les commentaires des archives et modifier ceux des archives ZIP, ZIP64 et ZIPX ordinaires accessibles en écriture. Afficher davantage de commentaires et d’attributs dans l’aperçu.
+- Améliorer le traitement des noms et des chemins lors de la création, de la modification et de l’extraction, notamment dans les dossiers Windows partagés.
+- Ajouter les archives récentes, l’extraction rapide et l’ouverture de l’emplacement de l’archive. Actualiser les icônes de l’application et des documents.
+
+Consultez les [notes de version](release-notes/0.3.3.md) et la [version GitHub](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.3) pour les plateformes, les vérifications et les limites connues.
+
 ## 0.3.2
 
 - Publier les paquets natifs de bureau et de CLI autonome pour les Mac Intel sous macOS 14 ou ultérieur, avec des mises à jour authentifiées pour les deux architectures Mac.

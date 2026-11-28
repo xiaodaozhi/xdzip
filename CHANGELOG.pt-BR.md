@@ -8,6 +8,14 @@
 
 - Adicionar um SDK experimental independente e somente para leitura, com processamento limitado de CBOR, E/S controlada, duas implementações independentes do protocolo e uma verificação de isolamento que recusa execuções inseguras. As extensões de terceiros continuam desativadas no produto.
 
+## 0.3.3
+
+- Consultar comentários de arquivos compactados e editar comentários de arquivos ZIP, ZIP64 e ZIPX comuns com permissão de escrita. Mostrar mais comentários e atributos na prévia.
+- Melhorar o tratamento de nomes e caminhos ao criar, editar e extrair arquivos, inclusive em pastas compartilhadas do Windows.
+- Adicionar arquivos recentes, extração rápida e abertura do local do arquivo compactado. Atualizar os ícones do aplicativo e dos documentos.
+
+Consulte as [notas da versão](release-notes/0.3.3.md) e a [versão no GitHub](https://github.com/xiaodaozhi/xdzip/releases/tag/v0.3.3) para saber sobre plataformas, verificações e limitações.
+
 ## 0.3.2
 
 - Publicar pacotes nativos do aplicativo e da CLI independente para Macs Intel com macOS 14 ou posterior, com atualizações autenticadas para as duas arquiteturas de Mac.
