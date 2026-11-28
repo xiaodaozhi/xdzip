@@ -116,6 +116,10 @@ bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &ac
     return runOnNativeWindowNotification(window, NSWindowDidEnterFullScreenNotification, action);
 }
 
+bool runOnNativeFullscreenExit(QWindow *window, const std::function<void()> &action) {
+    return runOnNativeWindowNotification(window, NSWindowDidExitFullScreenNotification, action);
+}
+
 bool runOnNativeDeminiaturize(QWindow *window, const std::function<void()> &action) {
     return runOnNativeWindowNotification(window, NSWindowDidDeminiaturizeNotification, action);
 }

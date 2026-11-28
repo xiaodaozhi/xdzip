@@ -181,6 +181,7 @@ void scheduleNativeFileDialogCancellation();
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
 bool runOnNativeFullscreenEntry(QWindow *window, const std::function<void()> &action);
+bool runOnNativeFullscreenExit(QWindow *window, const std::function<void()> &action);
 bool runOnNativeDeminiaturize(QWindow *window, const std::function<void()> &action);
 void traceNativeWindowState(QWindow *window);
 bool verifyMacDesktopMenus();
@@ -5036,6 +5037,7 @@ QtObject {
         bool interruptArmed = false;
         bool interrupted = false;
         bool nextTurn = false;
+        bool fullscreenExited = false;
         QWindow window;
         window.setProperty("xdzipTraceActivation", true);
         window.resize(480, 320);
@@ -5082,7 +5084,9 @@ QtObject {
         if (window.handle()) {
             QTimer::singleShot(0, &window, [&] { nextTurn = true; });
             QTRY_VERIFY(nextTurn);
+            QVERIFY(runOnNativeFullscreenExit(&window, [&] { fullscreenExited = true; }));
             window.setWindowState(Qt::WindowNoState);
+            QTRY_VERIFY(fullscreenExited);
             QTRY_VERIFY(cocoaActivationIsVisible(&window) && !cocoaActivationInFlight(&window) &&
                         !nativeWindowMatchesState(&window, Qt::WindowFullScreen));
         }
@@ -5099,6 +5103,7 @@ QtObject {
             QSKIP("Native fullscreen transitions require Cocoa");
         QFETCH(QString, intervention);
         WindowActivation::install(qApp);
+        bool fullscreenExited = false;
         QWindow window;
         window.setProperty("xdzipTraceActivation", true);
         window.resize(480, 320);
@@ -5144,7 +5149,9 @@ QtObject {
             bool nextTurn = false;
             QTimer::singleShot(0, &window, [&] { nextTurn = true; });
             QTRY_VERIFY(nextTurn);
+            QVERIFY(runOnNativeFullscreenExit(&window, [&] { fullscreenExited = true; }));
             window.setWindowState(Qt::WindowNoState);
+            QTRY_VERIFY(fullscreenExited);
             QTRY_VERIFY(cocoaActivationIsVisible(&window) && !cocoaActivationInFlight(&window) &&
                         !nativeWindowMatchesState(&window, Qt::WindowFullScreen));
         }
