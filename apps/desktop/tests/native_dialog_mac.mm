@@ -266,7 +266,7 @@ bool watchNativeWindowTransitions(QWindow *window) {
 }
 
 void traceNativeWindowState(QWindow *window) {
-    if (!window || QGuiApplication::platformName() != QStringLiteral("cocoa"))
+    if (!window || !window->handle() || QGuiApplication::platformName() != QStringLiteral("cocoa"))
         return;
     NSView *view = reinterpret_cast<NSView *>(window->winId());
     NSWindow *native = view.window;

@@ -12,7 +12,7 @@ on:
         default: intel
         options: [intel, arm64, both]
       fullscreen_diagnostic:
-        description: Repeat only the native fullscreen entry case for diagnosis
+        description: Repeat the native fullscreen restore and entry sequence for diagnosis
         type: boolean
         default: false
 permissions:

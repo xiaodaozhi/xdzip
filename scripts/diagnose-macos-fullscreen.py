@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Repeat the native fullscreen entry cases and retain the first failure."""
+"""Repeat the native fullscreen restore and entry sequence until failure."""
 
 import argparse
 import importlib.util
@@ -23,13 +23,17 @@ def main():
     if sys.platform != 'darwin' or not output.is_relative_to(native.ROOT / 'build') or args.attempts < 1:
         parser.error('Requires macOS, an output directory under build, and at least one attempt')
     output.mkdir(parents=True, exist_ok=True)
-    env = dict(os.environ, QT_QPA_PLATFORM='cocoa')
+    env = dict(os.environ, QT_QPA_PLATFORM='cocoa', QT_LOGGING_RULES='qt.qpa.window.debug=true')
     runs = []
     for attempt in range(1, args.attempts + 1):
-        result = native.run_cases(args.tests, native.COCOA_ENTRY_CASES,
-                                  output / f'fullscreen-entry-{attempt}.log', env, 90)
-        runs.append(result)
-        print(f"Attempt {attempt}: exit={result['exit_code']}, elapsed_ms={result['elapsed_ms']}", flush=True)
+        for phase, cases in (('restore', native.COCOA_RESTORE_CASES), ('entry', native.COCOA_ENTRY_CASES)):
+            result = native.run_cases(args.tests, cases,
+                                      output / f'fullscreen-{phase}-{attempt}.log', env, 90)
+            runs.append(result)
+            print(f"Attempt {attempt}, {phase}: exit={result['exit_code']}, "
+                  f"elapsed_ms={result['elapsed_ms']}", flush=True)
+            if result['exit_code']:
+                break
         if result['exit_code']:
             break
     (output / 'fullscreen-diagnostic.json').write_text(json.dumps({'runs': runs}, indent=2) + '\n', encoding='utf-8')

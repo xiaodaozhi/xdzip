@@ -5048,6 +5048,8 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowActive(&window));
         QVERIFY(watchNativeWindowTransitions(&window));
         connect(&window, &QWindow::windowStateChanged, &window, [&](Qt::WindowState state) {
+            qInfo() << "activation Qt state changed" << state;
+            traceNativeWindowState(&window);
             if (state == Qt::WindowFullScreen && interruptArmed) {
                 interruptArmed = false;
                 interrupted = true;
@@ -5080,7 +5082,11 @@ QtObject {
             QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen));
             QVERIFY(!window.windowStates().testFlag(Qt::WindowMinimized));
         } else {
-            QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowMinimized));
+            if (!QTest::qWaitFor([&] { return nativeStateSettled(&window, Qt::WindowMinimized); },
+                                 15000)) {
+                traceNativeWindowState(&window);
+                QFAIL("The native window did not become minimized");
+            }
             QVERIFY(window.windowStates().testFlag(Qt::WindowMinimized));
             WindowActivation::reveal(&window);
             QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen));

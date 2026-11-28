@@ -34,6 +34,8 @@ class NativeSessionGroupsTest(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 diagnostic.main()
             self.assertEqual(run.call_count, 2)
+            self.assertEqual(run.call_args_list[0].args[1], sessions.COCOA_RESTORE_CASES)
+            self.assertEqual(run.call_args_list[1].args[1], sessions.COCOA_ENTRY_CASES)
             report = json.loads((Path(directory) / 'fullscreen-diagnostic.json').read_text(encoding='utf-8'))
             self.assertEqual([result['exit_code'] for result in report['runs']], [0, 1])
 
