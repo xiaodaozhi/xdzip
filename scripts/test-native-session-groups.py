@@ -67,6 +67,9 @@ class NativeSessionGroupsTest(unittest.TestCase):
             }
             for name, tests in rows.items():
                 (root / name).write_text(''.join(
+                    (f'QINFO  : BrowserTest::{test}({row}) NSWindowWillExitFullScreenNotification\n'
+                     f'QINFO  : BrowserTest::{test}({row}) NSWindowDidExitFullScreenNotification\n'
+                     if name in ('restore.log', 'entry.log') and row != 'destroy-during-retry' else '') +
                     f'PASS   : BrowserTest::{test}({row})\n'
                     for test, values in tests.items() for row in values), encoding='utf-8')
             receipt = root / 'native-sessions.json'
@@ -75,6 +78,14 @@ class NativeSessionGroupsTest(unittest.TestCase):
                                            'browser_runs': [browser], 'shell_run': shell, 'cocoa_runs': cocoa}),
                                encoding='utf-8')
             self.assertTrue(probe.check(receipt, 'arm64'))
+            restore = root / 'restore.log'
+            original_restore = restore.read_text(encoding='utf-8')
+            restore.write_text(original_restore.replace(
+                'QINFO  : BrowserTest::cocoaMinimizeDuringFullscreenRestore(maximize) '
+                'NSWindowDidExitFullScreenNotification\n', ''), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'Native fullscreen exit did not finish'):
+                probe.check(receipt, 'arm64')
+            restore.write_text(original_restore, encoding='utf-8')
             entry = root / 'entry.log'
             entry.write_text(entry.read_text(encoding='utf-8').replace('PASS   :', 'SKIP   :', 1), encoding='utf-8')
             with self.assertRaisesRegex(ValueError, 'Incomplete native data rows'):

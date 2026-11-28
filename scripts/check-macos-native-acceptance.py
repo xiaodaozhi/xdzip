@@ -45,6 +45,15 @@ def check(path, architecture):
         rows = re.findall(r'^PASS\s+: BrowserTest::' + re.escape(name) + r'\(([^)]+)\)', log, re.M)
         if len(rows) != len(expected) or set(rows) != expected:
             raise ValueError(f'Incomplete native data rows for {name}: {rows}')
+        if name.startswith('cocoaMinimize'):
+            for row in expected - {'destroy-during-retry'}:
+                prefix = f'BrowserTest::{name}({row})'
+                notifications = re.findall(
+                    r'NSWindow(?:Will|Did)(?:Enter|Exit)FullScreenNotification',
+                    '\n'.join(line for line in log.splitlines() if prefix in line))
+                if (not notifications or
+                        notifications[-1] != 'NSWindowDidExitFullScreenNotification'):
+                    raise ValueError(f'Native fullscreen exit did not finish for {name}({row})')
     return {run['log']: run['elapsed_ms'] for run in runs}
 
 

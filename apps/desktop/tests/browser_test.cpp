@@ -5104,6 +5104,7 @@ QtObject {
         QFETCH(QString, intervention);
         WindowActivation::install(qApp);
         bool fullscreenExited = false;
+        bool restoreFullscreenExited = false;
         QWindow window;
         window.setProperty("xdzipTraceActivation", true);
         window.resize(480, 320);
@@ -5130,15 +5131,20 @@ QtObject {
                 window.showMaximized();
             requested = true;
         }));
+        if (intervention == QStringLiteral("normal") || intervention == QStringLiteral("maximize"))
+            QVERIFY(runOnNativeFullscreenExit(&window, [&] { restoreFullscreenExited = true; }));
         WindowActivation::reveal(&window);
         QTRY_VERIFY(requested);
         QVERIFY(enteringAtRequest);
+        if (intervention == QStringLiteral("normal") || intervention == QStringLiteral("maximize"))
+            QTRY_VERIFY(restoreFullscreenExited);
         const auto expected = intervention == QStringLiteral("none")       ? Qt::WindowMinimized
                               : intervention == QStringLiteral("normal")   ? Qt::WindowNoState
                               : intervention == QStringLiteral("maximize") ? Qt::WindowMaximized
                                                                            : Qt::WindowFullScreen;
         QTRY_VERIFY(nativeStateSettled(&window, expected) && !cocoaActivationInFlight(&window));
-        QTRY_COMPARE(window.windowState(), expected);
+        QTRY_VERIFY(window.windowState() == expected && nativeStateSettled(&window, expected) &&
+                    !cocoaActivationInFlight(&window));
         if (expected == Qt::WindowMinimized) {
             WindowActivation::reveal(&window);
             QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowFullScreen) &&
