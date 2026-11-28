@@ -6,6 +6,11 @@ on:
         description: Build only the native session and Cocoa fullscreen verification targets
         type: boolean
         default: false
+      native_acceptance_arch:
+        description: Select the native macOS architecture for the acceptance probe
+        type: choice
+        default: intel
+        options: [intel, arm64, both]
 permissions:
   contents: read
 jobs:
@@ -81,53 +86,65 @@ jobs:
 
   native-acceptance:
     if: ${{ inputs.native_acceptance_probe }}
-    runs-on: macos-15-intel
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(inputs.native_acceptance_arch == 'both' && '["macos-15-intel","macos-15"]' || inputs.native_acceptance_arch == 'arm64' && '["macos-15"]' || '["macos-15-intel"]') }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     permissions:
       contents: read
       actions: read
     env:
-      XDZIP_MACOS_INTEL_CI: '1'
+      XDZIP_MACOS_INTEL_CI: ${{ matrix.os == 'macos-15-intel' && '1' || '' }}
       QT_QUICK_BACKEND: software
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Prepare the native Intel release dependencies
+      - name: Prepare the native macOS release dependencies
         env:
           XDZIP_RELEASE_QT_NETWORK_TOKEN: ${{ github.token }}
         run: |
-          test "$(uname -m)" = x86_64
+          expected=x86_64
+          if [[ "${{ matrix.os }}" == macos-15 ]]; then expected=arm64; fi
+          test "$(uname -m)" = "$expected"
           translated="$(sysctl -n sysctl.proc_translated 2>/dev/null || true)"
           test "${translated:-0}" = 0
           python3 scripts/desktop.py prepare --install-qt --install-rust --release-dependencies auto --output-dir build/review
       - name: Build the browser and shell checks
         run: |
+          expected=x86_64
+          if [[ "${{ matrix.os }}" == macos-15 ]]; then expected=arm64; fi
           cmake -S . -B build/desktop -G Ninja \
             -DCMAKE_BUILD_TYPE=Release -DXDZIP_BUILD_DESKTOP_PREVIEW=ON -DBUILD_TESTING=ON \
             -DCMAKE_PREFIX_PATH="$PWD/build/toolchain/Qt/6.8.2/macos" \
             -DPython3_EXECUTABLE="$PWD/build/toolchain/desktop-tools/bin/python" \
-            -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+            -DCMAKE_OSX_ARCHITECTURES="$expected" -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
             -DXDZIP_MACOS_HANDLER_RANK=Alternate
           cmake --build build/desktop --parallel 3 --target xdzip-browser-tests xdzip-shell-tests
           for target in xdzip-browser-tests xdzip-shell-tests; do
-            lipo "build/desktop/apps/desktop/$target" -verify_arch x86_64
+            lipo "build/desktop/apps/desktop/$target" -verify_arch "$expected"
           done
       - name: Verify the native sessions and both Cocoa fullscreen sequences
         run: |
           export PATH="$PWD/build/toolchain/Qt/6.8.2/macos/bin:$PATH"
+          expected=x86_64
+          if [[ "${{ matrix.os }}" == macos-15 ]]; then expected=arm64; fi
           failed=0
           for pass in 1 2; do
             python3 scripts/check-native-sessions.py --tests build/desktop/apps/desktop/xdzip-browser-tests \
               --shell-tests build/desktop/apps/desktop/xdzip-shell-tests --macos-conflicts \
               --output "build/review/native-acceptance-$pass/native-sessions.json" || failed=1
           done
+          python3 scripts/check-macos-native-acceptance.py --architecture "$expected" \
+            build/review/native-acceptance-{1,2}/native-sessions.json || failed=1
           exit "$failed"
       - name: Retain native acceptance evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: macos-intel-native-acceptance-${{ github.run_attempt }}
+          name: macos-native-acceptance-${{ matrix.os }}-${{ github.run_attempt }}
           path: |
             build/review/native-acceptance-*/*.json
             build/review/native-acceptance-*/*.log

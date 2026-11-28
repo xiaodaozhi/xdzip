@@ -74,6 +74,8 @@ jobs:
       - name: Check workflow contracts
         run: |
           build/ci-check-tools/bin/python scripts/test-ci-workflows.py
+          python3 scripts/test-native-session-groups.py
+          python3 scripts/test-ci-evidence.py
           python3 -B scripts/test-snap-store.py
       - name: Check whitespace
         run: git diff-tree --check --root --first-parent -m HEAD

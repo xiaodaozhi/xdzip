@@ -134,7 +134,7 @@ class WorkflowTests(unittest.TestCase):
                          'scripts/test-ci-workflows.py']:
             self.assertIn(required, runs)
         for heavy in ['cargo test', 'cmake --build', 'ctest ', 'ci-desktop.ps1',
-                      'check-foundation.ps1', 'ci-evidence.py', 'ci-plan.py']:
+                      'check-foundation.ps1', 'scripts/ci-evidence.py', 'ci-plan.py']:
             self.assertNotIn(heavy, runs)
 
     def test_native_format_checks_share_the_tracked_source_inventory(self):

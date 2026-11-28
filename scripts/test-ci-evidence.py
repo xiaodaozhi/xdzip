@@ -213,6 +213,26 @@ class EvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'missing-native-session-case-log'):
             self.qt()
 
+    def test_intel_native_session_requires_all_four_completed_groups(self):
+        self.context.update(platform='macOS', architecture='X64')
+        self.write_json('build/review/ci-timings.json', dict(
+            schema_version=1, scope='qt',
+            **{k: self.context[k] for k in ('revision', 'run_id', 'run_attempt')},
+            commands=[dict(phase=phase, command='owned.py', status='passed', exit_code=0, elapsed_ms=1)
+                      for phase in QT_PHASES + ['attribution']]))
+        self.write_json('build/review/build.json', dict(commit=SOURCE, platform='mac',
+                        architecture='X64', packaged=False, dependencyAuditMode='sdk'))
+        self.write_json('build/review/native-sessions.json', dict(
+            status='passed', timed_out=False, cases=['ownedNative'], native_plugin='cocoa'))
+        log = ('PASS : BrowserTest::ownedNative()\n'
+               'Totals: 1 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms\nFinished testing\n')
+        self.write('build/review/native-sessions.log', log * 4)
+        self.assertEqual(self.qt()['facts']['native_sessions']['passed'], 4)
+        for incomplete in (log * 3, log * 3 + log.replace('0 failed', '1 failed')):
+            self.write('build/review/native-sessions.log', incomplete)
+            with self.assertRaisesRegex(ValueError, 'incomplete-or-failed-qt-log'):
+                self.qt()
+
     def test_isolated_build_tooling_is_clean_but_root_environment_and_source_edits_are_rejected(self):
         self.write('.gitignore', '/build/\n/dist/\n')
         def git(*args):

@@ -5041,6 +5041,9 @@ QtObject {
         window.resize(480, 320);
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
+        window.raise();
+        window.requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(&window));
         QVERIFY(watchNativeWindowTransitions(&window));
         connect(&window, &QWindow::windowStateChanged, &window, [&](Qt::WindowState state) {
             if (state == Qt::WindowFullScreen && interruptArmed) {
@@ -5059,7 +5062,10 @@ QtObject {
             requested = true;
         }));
         window.showFullScreen();
-        QTRY_VERIFY(requested);
+        if (!QTest::qWaitFor([&] { return requested; }, 15000)) {
+            traceNativeWindowState(&window);
+            QFAIL("The native fullscreen entry notification was not delivered");
+        }
         if (intervention == QStringLiteral("destroy")) {
             QTRY_VERIFY(interrupted);
             QVERIFY(!window.handle());

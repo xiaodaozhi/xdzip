@@ -182,7 +182,7 @@ def collect(scope, root, context, role=None):
                 'missing-or-failed-native-sessions')
         native_log = reader.read('build/review/native-sessions.log').decode('utf-8', errors='replace')
         require(all('BrowserTest::' + case + '(' in native_log for case in cases), 'missing-native-session-case-log')
-        native_runs = 2 if platform_key == 'darwin' and context['architecture'] == 'X64' else 1
+        native_runs = 4 if platform_key == 'darwin' and context['architecture'] == 'X64' else 1
         facts['native_sessions'] = text_totals(reader, 'build/review/native-sessions.log', runs=native_runs)
     return dict(schema_version=1, scope=scope, role=role, **context, status='passed', facts=facts,
                 files=sorted(reader.files.values(), key=lambda row: row['file']))

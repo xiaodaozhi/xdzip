@@ -64,11 +64,16 @@ def run_cases(executable, cases, log, env, timeout):
 def browser_runs(executable, cases, log, env):
     if sys.platform != 'darwin' or platform.machine() != 'x86_64':
         return [run_cases(executable, cases, log, env, 150)]
-    # Cocoa runs serially. Separate the bilingual directory matrix from the
-    # shared session sequence so slow runners get an independent deadline.
+    # Keep expensive password/quit scenarios and the bilingual directory
+    # matrix on independent deadlines without dropping or reordering cases.
+    sessions = cases.index('globalSettingsKeepDraftAndAboutCallerAcrossWindows')
+    password_quit = cases.index('globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession')
     directory = cases.index('directoryContextExpansionReasons')
     runs = [run_cases(executable, group, log.with_name(f'{log.stem}-{name}.log'), env, 150)
-            for name, group in (('window', cases[:directory]), ('directory', cases[directory:]))]
+            for name, group in (('window', cases[:sessions]),
+                                ('sessions', cases[sessions:password_quit]),
+                                ('password-quit', cases[password_quit:directory]),
+                                ('directory', cases[directory:]))]
     for suffix in ('.log', '.console.log'):
         combined = '\n'.join(log.with_name(run['log']).with_suffix(suffix).read_text(encoding='utf-8') for run in runs)
         log.with_suffix(suffix).write_text(combined, encoding='utf-8')
