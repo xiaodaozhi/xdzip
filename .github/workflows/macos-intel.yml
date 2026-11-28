@@ -11,6 +11,10 @@ on:
         type: choice
         default: intel
         options: [intel, arm64, both]
+      fullscreen_diagnostic:
+        description: Repeat only the native fullscreen entry case for diagnosis
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -127,6 +131,7 @@ jobs:
             lipo "build/desktop/apps/desktop/$target" -verify_arch "$expected"
           done
       - name: Verify the native sessions and both Cocoa fullscreen sequences
+        if: ${{ !inputs.fullscreen_diagnostic }}
         run: |
           export PATH="$PWD/build/toolchain/Qt/6.8.2/macos/bin:$PATH"
           expected=x86_64
@@ -140,6 +145,13 @@ jobs:
           python3 scripts/check-macos-native-acceptance.py --architecture "$expected" \
             build/review/native-acceptance-{1,2}/native-sessions.json || failed=1
           exit "$failed"
+      - name: Diagnose native fullscreen entry
+        if: ${{ inputs.fullscreen_diagnostic }}
+        run: |
+          export PATH="$PWD/build/toolchain/Qt/6.8.2/macos/bin:$PATH"
+          python3 scripts/diagnose-macos-fullscreen.py \
+            --tests build/desktop/apps/desktop/xdzip-browser-tests \
+            --output build/review/native-acceptance-diagnostic --attempts 12
       - name: Retain native acceptance evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

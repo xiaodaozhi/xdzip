@@ -282,7 +282,14 @@ void traceNativeWindowState(QWindow *window) {
             << window->property("xdzipCocoaFullTransition") << "nativeMinimized"
             << window->property("xdzipNativeMinimized") << "saved"
             << window->property("xdzipRestoreState") << "pending"
-            << window->property("xdzipWakePending");
+            << window->property("xdzipWakePending") << "surfaceGeneration"
+            << window->property("xdzipCocoaSurfaceGeneration") << "minimizeGeneration"
+            << window->property("xdzipCocoaPendingMinimizeGeneration") << "minimizeState"
+            << window->property("xdzipCocoaPendingState") << "candidateGeneration"
+            << window->property("xdzipCocoaStateCandidateGeneration") << "candidateState"
+            << window->property("xdzipCocoaStateCandidate") << "retryGeneration"
+            << window->property("xdzipCocoaMinimizeRetryGeneration") << "revealSerial"
+            << window->property("xdzipCocoaRevealSerial");
 }
 
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state) {

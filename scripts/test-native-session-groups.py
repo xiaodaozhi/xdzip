@@ -17,9 +17,26 @@ probe_spec = importlib.util.spec_from_file_location(
     'macos_native_acceptance', ROOT / 'scripts/check-macos-native-acceptance.py')
 probe = importlib.util.module_from_spec(probe_spec)
 probe_spec.loader.exec_module(probe)
+diagnostic_spec = importlib.util.spec_from_file_location(
+    'macos_fullscreen_diagnostic', ROOT / 'scripts/diagnose-macos-fullscreen.py')
+diagnostic = importlib.util.module_from_spec(diagnostic_spec)
+diagnostic_spec.loader.exec_module(diagnostic)
 
 
 class NativeSessionGroupsTest(unittest.TestCase):
+    def test_fullscreen_diagnostic_retains_first_failed_attempt(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / 'build') as directory, \
+             patch.object(diagnostic.sys, 'platform', 'darwin'), \
+             patch.object(diagnostic.sys, 'argv', ['diagnose', '--tests', 'browser',
+                                                   '--output', directory, '--attempts', '3']), \
+             patch.object(diagnostic.native, 'run_cases', side_effect=[
+                 {'exit_code': 0, 'elapsed_ms': 1}, {'exit_code': 1, 'elapsed_ms': 2}]) as run:
+            with self.assertRaises(SystemExit):
+                diagnostic.main()
+            self.assertEqual(run.call_count, 2)
+            report = json.loads((Path(directory) / 'fullscreen-diagnostic.json').read_text(encoding='utf-8'))
+            self.assertEqual([result['exit_code'] for result in report['runs']], [0, 1])
+
     def test_intel_groups_keep_every_case_and_independent_deadlines(self):
         calls = []
 

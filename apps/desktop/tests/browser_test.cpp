@@ -5060,6 +5060,10 @@ QtObject {
         QVERIFY(runOnNativeFullscreenEntry(&window, [&] {
             window.showMinimized();
             traceNativeWindowState(&window);
+            if (intervention == QStringLiteral("none")) {
+                for (int delay : {50, 250, 1000, 3000})
+                    QTimer::singleShot(delay, &window, [&] { traceNativeWindowState(&window); });
+            }
             interruptArmed = intervention != QStringLiteral("none");
             requested = true;
         }));
